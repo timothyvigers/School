@@ -12,8 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Exercise 1
 Reproducibly simulate a sample of 10,000 from each of the following distributions. Determine the theoretical mean and standard deviation for each distribution and verify that the generated numbers have approximately the correct mean and standard deviation. Create a histogram and boxplot depicting each of the mock samples.
 
-To ensure reproducibility with random number generation, you have to make sure to set the seed when you code. 
-
 ### Normal Distribution (m=125, s=8):
 ```{r}
 set.seed(1017)
@@ -22,7 +20,6 @@ simvalsnormal <- rnorm(n = sample_size, mean = 125, sd = 8)
 mean(simvalsnormal)
 sd(simvalsnormal)
 ```
-
 The means and sd of this sample are very close to the theoretical mean and sd of the distribution (125 and 8, respectively). 
 
 Histogram:
@@ -55,7 +52,7 @@ Boxplot:
 ```{r}
 boxplot(simvalspoisson, xlab = "Poisson, N = 10,000")
 ```
-  
+
 ### Binomial Distribution (n=5, p=0.15)
 ```{r}
 set.seed(1017)
@@ -105,7 +102,6 @@ hist(vector_of_sample_variance, main = "", xlab = "Sample Variance 1000 Iteratio
 b. According to theory, when the population is distributed as a normal with mean m and standard deviation s, the sample mean is Xbar ~ Normal(m, s/n). So here the sampling distribution of the mean should be normal (same for the median since the mean, median, and mode of a normal distribution are equal). 
 
 c. The dchisq() function requires that you specify quantiles and degrees of freedom. So to plot the theoretical distribution we can use this function setting df = 9. We don't need to look at the whole distribution, so quantiles 1 through 30 should be plenty. Also, as recommended in the hint, I've multiplied the sample variance vector from 2a by a factor of 9/100. The shapes of the two plots are very similar, both with a right skew.
-
 ```{r}
 # Plot histogram from samples.
 hist(vector_of_sample_variance * (9/100), main = "", xlab = "Sample Variance * 0.09, 1000 Iterations, N = 10")
@@ -116,7 +112,6 @@ plot(dchisq(x = 1:30,df = 9))
 ## Exercise 3
 
 a. Generate and save a vector containing 500 sample means (i.e., five-hundred simulation iterations) of sample size 10 from a Binomial (n = 1, p = 0.15) population (recall, in rbinom() size=1 and n=10).
-
 ```{r}
 # Set up the simulation, like in exercise 2.
 set.seed(1017)
@@ -148,46 +143,73 @@ for (i in 1:number_of_sims) {
 
 c. Calculate the mean and standard deviation associated with each
 of the five sets of xbar values.
-
 ```{r}
 mean(vector_of_sample_means_10)
 sd(vector_of_sample_means_10)
-
 mean(vector_of_sample_means_20)
 sd(vector_of_sample_means_20)
-
 mean(vector_of_sample_means_30)
 sd(vector_of_sample_means_30)
-
 mean(vector_of_sample_means_40)
 sd(vector_of_sample_means_40)
-
 mean(vector_of_sample_means_50)
 sd(vector_of_sample_means_50)
 ```
 
 d. Create histograms of the sampling distribution of the mean, for
 each sample size n.
-
 ```{r}
 hist(vector_of_sample_means_10, main = "", xlab = "Sampling Distribution of the Mean, n = 10")
-
 hist(vector_of_sample_means_20, main = "", xlab = "Sampling Distribution of the Mean, n = 20")
-
 hist(vector_of_sample_means_30, main = "", xlab = "Sampling Distribution of the Mean, n = 30")
-
 hist(vector_of_sample_means_40, main = "", xlab = "Sampling Distribution of the Mean, n = 40")
-
 hist(vector_of_sample_means_50, main = "", xlab = "Sampling Distribution of the Mean, n = 50")
 ```
 
 e. The distribution of the means starts to look normal at n = 40, which makes sense given the >= 30 heuristic associated with the CLT. 
 
+## Exercise 4
+
+For this problem I just copied the code from exercise 3, but with the rcauchy() function instead of rbinom(). Based on the means and standard deviations produced this way, it appears that sample size does not affect the distribution, and that it stays random as n increases.
+```{r}
+# Set up the simulation, like in exercise 3.
+set.seed(1017)
+number_of_sims <- 500
+# Create vectors for different sample sizes.
+vector_of_sample_means_10 <- rep(-9, number_of_sims)
+vector_of_sample_means_50 <- rep(-9, number_of_sims)
+vector_of_sample_means_100 <- rep(-9, number_of_sims)
+vector_of_sample_means_1000 <- rep(-9, number_of_sims)
+# For loops to generate values and store in the vectors.
+for (i in 1:number_of_sims) {
+  vector_of_sample_means_10[i] <- mean(rcauchy(n = 10))
+  vector_of_sample_means_50[i] <- mean(rcauchy(n = 50))
+  vector_of_sample_means_100[i] <- mean(rcauchy(n = 100))
+  vector_of_sample_means_1000[i] <- mean(rcauchy(n = 1000))
+}
+# Mean and sd of each sample group.
+mean(vector_of_sample_means_10)
+sd(vector_of_sample_means_10)
+mean(vector_of_sample_means_50)
+sd(vector_of_sample_means_50)
+mean(vector_of_sample_means_100)
+sd(vector_of_sample_means_100)
+mean(vector_of_sample_means_1000)
+sd(vector_of_sample_means_1000)
+# Histograms of each sample group.
+hist(vector_of_sample_means_10, main = "", xlab = "Sampling Distribution of the Mean, n = 10")
+hist(vector_of_sample_means_50, main = "", xlab = "Sampling Distribution of the Mean, n = 50")
+hist(vector_of_sample_means_100, main = "", xlab = "Sampling Distribution of the Mean, n = 100")
+hist(vector_of_sample_means_1000, main = "", xlab = "Sampling Distribution of the Mean, n = 1000")
+```
+
 ## Exercise 6
+
 a. Read NAWS2014.csv from the Canvas site into R with the name NAWS.
 ```{r}
 NAWS <- read.csv("C:\\Users\\timbv\\Documents\\School\\UC Denver\\Biostatistics\\Biostatistical Methods 1\\Homework 1\\NAWS2014.csv")
 ```
+
 b. Plot a histogram of the A09 column, which asks how many years of school migrant farmers have completed.
 ```{r}
 hist(NAWS$A09, main = "Education of Migrant Farmers", xlab = "Years of School Completed")
