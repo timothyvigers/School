@@ -232,6 +232,13 @@ b. Plot a histogram of the A09 column, which asks how many years of school migra
 ```{r}
 hist(NAWS$A09, main = "Education of Migrant Farmers", xlab = "Years of School Completed")
 ```
+\pagebreak
 
 ## Goodman Summary
-  
+Goodman's 1999 article traces a little bit of the history of statistical approaches to modern medical data. Most modern experiments involve P values and hypothesis test, as most investigators consider this "a mathematically coherent approach to inference." (Goodman, 1999) However, this method fails to consider outside information or previous research, and mistakenly attempts to boil down both long-term outcomes and single results of experiments into one number (this is what Goodman refers to as the P value fallacy). In a sense, it's trying to see an event from up-close and far away at the same time, which is obviously not possible.
+
+To explore why P values are perhaps not the best approach to clinical science, Goodman first defines two kinds of inferential reasoning: inductive and deductive. Inductive reasoning is an attempt to determine the correct hypothesis based on observed evidence (like when Dr. House makes a differential diagnosis). On the other hand, deductive inference is when one starts with a hypothesis and predict what would happen if it were true (like when Dr. House gives a patient a drug, usually against the wishes of his uptight bosses, just to see what happens).
+
+The P value is an attempt at statistical inference using only deduction, which was proposed "as an informal index to be used as a measure of discrepancy between the data and the null hypothesis." (Goodman, 1999) However, this approach does not take into account the observed effect size. Confidence intervals are better at representing a potential range of effects that appear possible based on the data, which is why they are one of the more common "remedies" for the P value fallacy. Although they are slightly better in this sense, they come from the same frequentist school as the P value and have many of the same drawbacks. 
+
+The frequentist approach to inference was certainly an improvement on the relative lawlessness of previous research, but improvements in software and computing power mean we can move away from this method and towards a better understanding of more complex, but more effective statistics.
