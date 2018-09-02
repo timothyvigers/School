@@ -1,5 +1,5 @@
 ---
-title: "Homework 1"
+title: "Methods Homework 1"
 author: "Tim Vigers"
 date: "September 1, 2018"
 output:
@@ -7,16 +7,14 @@ output:
     fig_width: 6
     fig_height: 3.5
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-# Biostatistical Methods 1
-## Exercise 1
+# Exercise 1
 
 Reproducibly simulate a sample of 10,000 from each of the following distributions. Determine the theoretical mean and standard deviation for each distribution and verify that the generated numbers have approximately the correct mean and standard deviation. Create a histogram and boxplot depicting each of the mock samples.
 
-### Normal Distribution (m=125, s=8):
+## Normal Distribution (m=125, s=8):
 ```{r}
 set.seed(1017)
 sample_size <- 10000
@@ -37,7 +35,7 @@ Boxplot:
 boxplot(simvalsnormal, xlab = "Normal, N = 10,000")
 ```
 
-### Poisson Distribution (l=1.5)
+## Poisson Distribution (l=1.5)
 ```{r}
 set.seed(1017)
 sample_size <- 10000
@@ -60,7 +58,7 @@ boxplot(simvalspoisson, xlab = "Poisson, N = 10,000")
 ```
 \pagebreak
 
-### Binomial Distribution (n=5, p=0.15)
+## Binomial Distribution (n=5, p=0.15)
 ```{r}
 set.seed(1017)
 sample_size <- 10000
@@ -84,7 +82,7 @@ boxplot(simvalsbinom, xlab = "Binomail, N = 10,000")
 ```
 \pagebreak
 
-## Exercise 2
+# Exercise 2
 
 a. For a population that is normally distributed with mean 40 and standard deviation 10, generate histograms showing the sampling distribution of the mean, median, and  variance. Use 1,000 simulation iterations and a sample size of n = 10.
 
@@ -120,7 +118,7 @@ hist(vector_of_sample_variance * (9/100), main = "", xlab = "Sample Variance * 0
 plot(dchisq(x = 1:30,df = 9))
 ```
 
-## Exercise 3
+# Exercise 3
 
 a. Generate and save a vector containing 500 sample means (i.e., five-hundred simulation iterations) of sample size 10 from a Binomial (n = 1, p = 0.15) population (recall, in rbinom() size=1 and n=10).
 
@@ -183,7 +181,7 @@ hist(vector_of_sample_means_50, main = "", xlab = "Sampling Distribution of the 
 
 e. The distribution of the means starts to look normal at n = 40, which makes sense given the >= 30 heuristic associated with the CLT. 
 
-## Exercise 4
+# Exercise 4
 
 For this problem I just copied the code from exercise 3, but with the rcauchy() function instead of rbinom(). Based on the means and standard deviations produced this way, it appears that sample size does not affect the distribution, and that it stays random as n increases.
 
@@ -219,7 +217,7 @@ hist(vector_of_sample_means_100, main = "", xlab = "Sampling Distribution of the
 hist(vector_of_sample_means_1000, main = "", xlab = "Sampling Distribution of the Mean, n = 1000")
 ```
 
-## Exercise 6
+# Exercise 6
 
 a. Read NAWS2014.csv from the Canvas site into R with the name NAWS.
 
@@ -234,7 +232,7 @@ hist(NAWS$A09, main = "Education of Migrant Farmers", xlab = "Years of School Co
 ```
 \pagebreak
 
-## Goodman Summary
+# Goodman Summary
 Goodman's 1999 article traces a little bit of the history of statistical approaches to modern medical data. Most modern experiments involve P values and hypothesis test, as most investigators consider this "a mathematically coherent approach to inference." (Goodman, 1999) However, this method fails to consider outside information or previous research, and mistakenly attempts to boil down both long-term outcomes and single results of experiments into one number (this is what Goodman refers to as the P value fallacy). In a sense, it's trying to see an event from up-close and far away at the same time, which is obviously not possible.
 
 To explore why P values are perhaps not the best approach to clinical science, Goodman first defines two kinds of inferential reasoning: inductive and deductive. Inductive reasoning is an attempt to determine the correct hypothesis based on observed evidence (like when Dr. House makes a differential diagnosis). On the other hand, deductive inference is when one starts with a hypothesis and predict what would happen if it were true (like when Dr. House gives a patient a drug, usually against the wishes of his uptight bosses, just to see what happens).
