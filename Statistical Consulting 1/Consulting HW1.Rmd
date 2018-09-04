@@ -123,7 +123,7 @@ x[c(3:7)]
 x[c(3:7)]-2
 ```
 
-c. xy.mat[14, ]: THis takes row 14 and all columns of the matrix xy.mat (subsetting row 8 is shown below, since there are only 8 rows of our matrix).
+c. xy.mat[14, ]: This takes row 14 and all columns of the matrix xy.mat (subsetting row 8 is shown below, since there are only 8 rows of our matrix).
 ```{r}
 xy.mat[8, ]
 ```
