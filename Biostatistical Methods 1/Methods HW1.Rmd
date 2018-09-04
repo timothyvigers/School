@@ -115,7 +115,7 @@ c. The dchisq() function requires that you specify quantiles and degrees of free
 # Plot histogram from samples.
 hist(vector_of_sample_variance * (9/100), main = "", xlab = "Sample Variance * 0.09, 1000 Iterations, N = 10")
 # Plot theoretical distribution.
-plot(dchisq(x = 1:30,df = 9))
+plot(dchisq(x = 1:30,df = 9), main = "dchisq(x = 1:30,df = 9)",ylab = "")
 ```
 
 # Exercise 3
@@ -153,7 +153,7 @@ for (i in 1:number_of_sims) {
 ```
 
 c. Calculate the mean and standard deviation associated with each
-of the five sets of xbar values.
+of the five sets of Xbar values.
 
 ```{r}
 mean(vector_of_sample_means_10)
