@@ -2,21 +2,38 @@
 title: 'Stats Theory 1: HW 1'
 author: "Tim Vigers"
 date: "8/30/2018"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Intro to R information
-Create a new R markdown file: File -> New File -> R Markdown
+# Problem 1
+Using these tabulated data, find the exact numerical values for the following probabilities:
 
-Note: basic math can be done in R as well. Example:
+a. P(C|H & D): The number of Haitian IV drug users (H & D) is 150. Of these 100 are carriers, so $$\frac{100}{150} = \frac{2}{3}$$
 
-```{r basicmath}
-(5 + 6) / (7 * 3)
+b. P(C or D|H): Since it's given that we're looking at Haitian men, you just find P(C or D) using the data for only Haitian men: $$ P(C \cup D) = P(C) + P(D) - P(C \cap D) = \frac{110}{200} + \frac{150}{200} - \frac{100}{200} = \frac{160}{200} = 0.8$$
+
+c. $$P(H \text{|} C^c) = \frac{P(H \cap C^c)}{P(C^c)} = \frac{50}{300}/{\frac{140}{300}} = \frac{5}{14}$$
+
+d. $$P((C \cap H)^c \text{|}D) = \frac{P((C \cap H)^c \cap D)}{P(D)} = \frac{110}{300} / \frac{210}{300} = \frac{11}{21}$$
+
+e. $$P(C \cup D \cup H) = P(C)+P(D)+P(H)-P(C \cap D)-P(D \cap H)-P(C \cap H)+P(C \cap D \cap H) = $$
+$$\frac{160}{300} + \frac{210}{300} + \frac{200}{300} - \frac{140}{300} - \frac{150}{300} - \frac{110}{300} + \frac{100}{300} = \frac{270}{300} = \frac{9}{10}$$ This makes sense because the complement to this is everyone who is not Haitian, not a carrier, and not an IV drug user, of which there are only 30.
+
+f. $$P(C \cup (D \cap H)) = P(C) + P(D \cap H) - P(C \cap (D \cap H)) = \frac{160}{300} + \frac{150}{300} - \frac{100}{300} = \frac{210}{300}$$
+\pagebreak
+
+# Problem 2 
+
+a. This can be solved using the R binomial function qbinom(), which takes a probability value and returns the value cutoff for that quantile.
+```{r}
+qbinom(p = 0.98,size = 10,prob = 0.75)
 ```
+
+b. 
 
 Learning objectives: dbinom, choose, and a for loop
 
