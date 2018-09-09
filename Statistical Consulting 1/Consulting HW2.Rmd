@@ -1,0 +1,29 @@
+---
+title: "Consulting Homework 2"
+author: "Tim Vigers"
+date: "September 9, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use the tableone package to create the table:
+```{r}
+library(tableone)
+# Read in the data.
+VAdata <- read.csv("C:\\Users\\timbv\\Documents\\School\\UC Denver\\Biostatistics\\Statistical Consulting 1\\Homework 2\\VAdata1.csv")
+VAdata$age <- as.integer(VAdata$age)
+# Subset just the males.
+VAdatamales <- subset(VAdata,VAdata$sex == 'M')
+# Convert ages and previous MI to factors.
+VAdatamales$age <- cut(VAdatamales$age,breaks = c(0,49,65,Inf),labels = c("< 50","50 - 65","> 65"))
+VAdatamales$prevmi <- factor(VAdatamales$prevmi,levels = c(0,1),labels = c("No","Yes"))
+# Create the table.
+tab1 <- CreateTableOne(vars = c("age","weight","height","prevmi"),data = VAdatamales,strata = "proced",test = FALSE)
+# Print the table.
+print(tab1,nonnormal = c("weight","height"))
+```
+
+Nicely formatted in Word:
