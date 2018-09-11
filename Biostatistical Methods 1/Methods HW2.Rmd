@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## a. 
 Calculate the probability that 2.5% of Patagonians have the disease, assuming a sample size of 120 and population prevalence of 1%. Use both the exact binomial probability and the Poisson approximation of it. Compare the two.
 ```{r}
-# Calculate the probability using the binomial PMF. With a sample size 120, 2.5% is equal to three cases.
+# Calculate the probability using the binomial PMF. 
+# With a sample size 120, 2.5% is equal to three cases.
 choose(120,3) * (0.01)^3 * (1 - 0.01)^(120-3)
 # Double check with dbinom().
 dbinom(x = 3,size = 120,prob = 0.01)
@@ -33,7 +34,8 @@ It looks like the Poisson approximation works well for this case (it also fits R
 n=seq(80,400,by=40)
 p=seq(0.0025,.025,by=.0025)
 np<-expand.grid(n=n,p=p)
-# Add a column to np for each of the exact binomial, the Poisson approximation of the binomial, and the difference between the two.
+# Add a column to np for each of the exact binomial, 
+# the Poisson approximation of the binomial, and the difference between the two.
 np$binom <- dbinom(x = (0.025 * np$n),size = np$n,prob = np$p)
 np$poisson <- dpois(x = (0.025 * np$n), lambda = (np$n * np$p))
 np$diff <- abs(np$binom - np$poisson)
@@ -80,6 +82,7 @@ $$u = 2x \text{ and } dv = e^{-3x} \text{ , so } v = -\frac{1}{3}e^{-3x}\text{ a
 $$\int_{0}^{\infty} 2x e^{-3x}=-2xe^{-3x} \bigg\rvert_{0}^{\infty} + \frac{2}{3} \int_{0}^{\infty} e^{-3x} = \frac{2}{3}*\frac{1}{3}=\frac{2}{9}$$
 So:
 $$Var(X) = E[X^2] - E[X]^2 = \frac{2}{9} - \frac{1}{9} = \frac{1}{9}$$
+\pagebreak
 
 ##c. 
 Reproducibly simulate an Exponential(3) distribution of size 100,000:
@@ -92,6 +95,7 @@ expdist <- rexp(n = 100000, rate = 3)
 mean(expdist)
 var(expdist)
 ```
+
 The mean and variance of the simulated data are very close the theoretical values calculated above.
 
 ##d. 
@@ -101,6 +105,79 @@ Because of the memoryless property of the exponential distribution, "'waiting ti
 # Exercise 3
 ##a.
 ```{r}
+set.seed(1017)
 # Simulate the normal distribution.
 normdist <- rnorm(n = 100, mean = 70, sd = sqrt(15))
+# Find the median of the simulated group.
+median(normdist)
+# Find the difference.
+median(normdist) - 70
 ```
+Bias is the difference between the estimator and the population value, so in this case it's -0.5517957.
+
+##b. 
+Increasing sample size by increments of 100:
+```{r}
+set.seed(1017)
+# Create a sequence of increasing sample size. 
+increasingns <- seq(from = 100, to = 100000, by = 100)
+# Create an empty vector to store medians.
+vector_of_sample_medians <- rep(-9, length(increasingns))
+# For each sample size, generate a dataset and find the median. Store in vector of medians. 
+for (i in 1:length(increasingns)) {
+  vector_of_sample_medians[i] <- median(rnorm(n = increasingns[i], mean = 70, sd = sqrt(15)))
+}
+# Calculate the biases.
+vector_of_bias <- vector_of_sample_medians - 70
+plot(x = increasingns,y = vector_of_bias,xlab = "Sample Size", ylab = "Bias")
+```
+
+Consistency means that "when the sample size becomes infinite, we desire that this
+bias disappears." Based on the above plot, it seems like this median estimate is pretty consistent, as the bias approaches 0 as n increases.
+
+##c. 
+```{r}
+set.seed(1017)
+# Make an empty vector for variances.
+var_wrt_estimator <- rep(-9, length(increasingns))
+# For each sample size, generate a distribution.
+for (i in 1:length(increasingns)) {
+  dist <- rnorm(n = increasingns[i], mean = 70, sd = sqrt(15))
+# Take each value in the distribution, subtract the sample median, square the result, and then divide by n. Add all of these values together.
+  var_wrt_estimator[i] <- 
+    sum(((dist - vector_of_sample_medians[i])^2) / increasingns[i])
+}
+# Plot the variance as n increases.
+plot(x = increasingns,y = var_wrt_estimator,main = "Variance w/r/t Median",xlab = "Sample Size", ylab = "Variance")
+```
+
+The variance of the data approaches the theoretical variance of 15 as n increases.
+
+##d.
+```{r}
+# Set seed, determine number of simulations and sample size. 
+set.seed(1017)
+number_of_sims <- 10000
+sample_size <- 1000
+# Create a vector to store sample means and medians.
+vector_of_sample_means <- rep(-9, number_of_sims)
+vector_of_sample_medians <- rep(-9, number_of_sims)
+# For loop to generate values and store in their respective vectors.
+for (i in 1:number_of_sims) {
+  vector_of_sample_means[i] <- 
+    mean(rnorm(n = sample_size, mean = 70, sd = sqrt(15)))
+  vector_of_sample_medians[i] <- 
+    median(rnorm(n = sample_size, mean = 70, sd = sqrt(15)))
+}
+# Compare the variances of means and medians.
+var(vector_of_sample_means)
+var(vector_of_sample_medians)
+var(vector_of_sample_means) / var(vector_of_sample_medians)
+```
+
+Based on the code above, it appears that using the mean is a more efficient estimator than than the median, at least at this large sample size. 
+
+##e. 
+The Cramér-Rao bound expresses a lower bound on the variance of estimators. In other words, if an estimator "achieves this lower bound [it] is said to be (fully) efficient" (https://en.wikipedia.org/wiki/Cram%C3%A9r%E2%80%93Rao_bound). 
+
+In order to test the efficiency of an estimators, you would find the Cramér-Rao bound by taking the inverse of the Fisher information (although I'm not sure how to do that), and dividing that by the estimator's variance. So Using this bound would allow us to compare the efficiencies of our two estimators, in order to figure out which is the best one to use. 
