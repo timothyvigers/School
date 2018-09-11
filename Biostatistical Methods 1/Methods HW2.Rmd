@@ -12,7 +12,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 # Exercise 1
-
 ## a. 
 Calculate the probability that 2.5% of Patagonians have the disease, assuming a sample size of 120 and population prevalence of 1%. Use both the exact binomial probability and the Poisson approximation of it. Compare the two.
 ```{r}
@@ -58,6 +57,7 @@ for (i in 1:length(split)) {
 
 ## c. 
 Looking at the plot of everything together, it looks like the differences start to go a little wild at around index 30 (most likely a little before). Index 30 is p = 0.01 and n = 160. The recommendation depends on how conservative you want to be, but I agree with Rosner that p = 0.01 is the maximum probability you'd want to use the Poisson approximation for. I also think that his rule of n >= 100 makes sense based on this plot, since for p = 0.01, n = 80 looks pretty bad. 
+\pagebreak
 
 # Exercise 2
 ## a. 
@@ -80,3 +80,27 @@ $$u = 2x \text{ and } dv = e^{-3x} \text{ , so } v = -\frac{1}{3}e^{-3x}\text{ a
 $$\int_{0}^{\infty} 2x e^{-3x}=-2xe^{-3x} \bigg\rvert_{0}^{\infty} + \frac{2}{3} \int_{0}^{\infty} e^{-3x} = \frac{2}{3}*\frac{1}{3}=\frac{2}{9}$$
 So:
 $$Var(X) = E[X^2] - E[X]^2 = \frac{2}{9} - \frac{1}{9} = \frac{1}{9}$$
+
+##c. 
+Reproducibly simulate an Exponential(3) distribution of size 100,000:
+```{r}
+# Set seed for reproducibility.
+set.seed(1017)
+# Simulate distribution.
+expdist <- rexp(n = 100000, rate = 3)
+# Calculate mean and variance.
+mean(expdist)
+var(expdist)
+```
+The mean and variance of the simulated data are very close the theoretical values calculated above.
+
+##d. 
+Because of the memoryless property of the exponential distribution, "'waiting time' until a certain event does not depend on how much time has already elapsed." So Sally should still plan on waiting 20 minutes, even though she's already waited 10. This definitely sounds like the DMV.
+\pagebreak
+
+# Exercise 3
+##a.
+```{r}
+# Simulate the normal distribution.
+normdist <- rnorm(n = 100, mean = 70, sd = sqrt(15))
+```
