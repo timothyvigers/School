@@ -1,7 +1,7 @@
 ---
-title: "Methods Homework 1"
+title: "Methods Homework 2"
 author: "Tim Vigers"
-date: "September 9, 2018"
+date: "September 16, 2018"
 output:
   pdf_document:
     fig_width: 6
@@ -133,7 +133,7 @@ plot(x = increasingns,y = vector_of_bias,xlab = "Sample Size", ylab = "Bias")
 ```
 
 Consistency means that "when the sample size becomes infinite, we desire that this
-bias disappears." Based on the above plot, it seems like this median estimate is pretty consistent, as the bias approaches 0 as n increases.
+bias disappears." Based on the above plot, it seems like this median estimate is pretty consistent, since the bias approaches 0 as n increases.
 
 ##c. 
 ```{r}
