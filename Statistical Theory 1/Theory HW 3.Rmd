@@ -1,0 +1,21 @@
+---
+title: "Theory HW 1"
+author: "Tim Vigers"
+date: "September 20, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Sam's R code:
+```{r}
+lambda <- 2
+hist(-lambda * (log(1-(runif(1000,0,1)))), main = "Simulated Data")
+
+x <- seq(0,12,0.1)
+plot(x,dexp(x,lambda),type = "l",main = "True Distribution",ylab = "Frequency")
+```
+
+It looks like the simulated data is a pretty good approximation of the true distribution.
