@@ -1,0 +1,110 @@
+---
+title: "Consulting Homework 4"
+author: "Tim Vigers"
+date: "September 30, 2018"
+output:
+  pdf_document:
+    fig_width: 6
+    fig_height: 3.5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+va <- read.csv("C:\\Users\\timbv\\Documents\\School\\UC Denver\\Biostatistics\\Statistical Consulting 1\\Homework 4\\VAdata3.csv")
+va$hospcode <- as.factor(va$hospcode)
+va$sixmonth <- as.factor(va$sixmonth)
+va$proced <- as.factor(va$proced)
+va$asa <- as.factor(va$asa)
+```
+
+Data examination steps:
+
+* Looked at histograms and boxplots (I know these generally aren't detailed enough, but it helps me spot outliers) of height, weight, and bmi, which raises a lot of questions:
+  + First, weight ranges from 41 to 288, which makes me think that some of these weights were measured in kilograms and some were in pounds (it's unlikely that anyone in this cohort weighs just 41 pounds). Also, you can see in the histogram that there's an unexpected bump in the 50-100 range. So it might be worth confirming with the data manager that units are consistent between hospitals. Based on the weight boxplot by hospital, it looks like hospitals 1-16 are different from the rest. 
+  + The height histogram and boxplots are much more regular, and there don't appear to be any noticable differences between hospitals. However, the range is 45 - 70, so I'm not sure what units they're using. It's clearly not meters, but if it's inches then the tallest person in the cohort is 5'10" and the shortest is 3'9", which seems very unlikely. So either way, I'd like to confirm the height values and units with the data manager.
+  + BMI looks overall like it's what you'd expect (mostly in the 20-30 range, which is normal and slightly overweight), and there isn't an obvious difference by hospital. However, there are 3 obvious outliers with BMIs of 3, 72, and 75. These seem unlikely to be correct, although BMIs in the 70s are technically possible. Also, there are quite a few in the 40-60 range, which is very high. Since this is a CVD study, that might be correct, but worth double checking. The most concerning thing about the BMI scores though, is that if you calculate them yourself based on the weight and height values, the calculated values don't match the reported ones (whether you calculate assuming pounds and inches or kilograms and centimeters).
+  
+Continuous variable ranges:
+
+```{r}
+range(va$height)
+range(va$weight,na.rm = TRUE)
+range(va$bmi,na.rm = TRUE)
+```
+ 
+BMI calculation check:
+ 
+```{r}
+va$bmi_kg_calc <- round(va$weight / ((va$height/100)^2),0)
+va$bmi_lbs_calc <- round(703 * (va$weight / (va$height^2)),0)
+va$bmi_kg_calc[which(va$bmi_kg_calc == va$bmi)]
+va$bmi_lbs_calc[which(va$bmi_lbs_calc == va$bmi)]
+```
+
+
+Check missing continuous data:
+
+* There are no missing height values, and the participants with missing weight values are also missing bmi. So that's a good sign!
+  
+```{r}
+length(which(is.na(va$weight)))
+length(which(is.na(va$height)))
+length(which(is.na(va$bmi)))
+FALSE %in% (which(is.na(va$weight)) == which(is.na(va$bmi)))
+```
+\pagebreak
+
+Check categorical variables:
+
+* Make sure the levels in categorical variables make sense. The hospital codes look good, but we are missing data for six month period 38. It also looks like there are about twice as many values for six month period 37, so I'm wondering if 37 and 38 were accidentally combined. Also, there are two procedures called "2", and I'm not sure what that means, since it should just be 0 or 1. Finally, a huge proportion of the participants have an ASA score of 4. Again, this might be expected for this cohort, but is probably worth double checking. 
+  
+```{r}
+table(va$hospcode)
+summary(va[,c(1:3,7)])
+```
+
+Check for missing categorical data:
+
+* There are 106 missing procedures and 149 missing ASA scores. It might be worth asking PIs about how to handle missing procedure and ASA data. My guess is that they would want to exclude anyone without procedure data, but keep in those without ASA data (since ASA is subjective anyway, and not a huge part of the analysis as far as I know).
+  
+Check everything by procedure code:
+
+* Overall the two procedures look pretty similar to me, so the issues with the data don't appear to be related to the procedure. There are a lot more with procedure 1, but I think that's to be expected.
+
+```{r}
+proc.0 <- as.data.frame(split.data.frame(va,va$proced)[1])
+proc.1 <- as.data.frame(split.data.frame(va,va$proced)[2])
+summary(proc.0)
+summary(proc.1)
+```
+
+\pagebreak
+
+Continuous variable histograms:
+
+```{r echo=FALSE}
+hist(va$weight,xlab = "Weight",main = "")
+hist(va$height,xlab = "Height",main = "")
+hist(va$bmi,xlab = "BMI",main = "")
+```
+\pagebreak
+
+Continuous variable boxplots:
+
+```{r echo=FALSE}
+boxplot(va$weight,main = "Weight")
+boxplot(va$height,main = "Height")
+boxplot(va$bmi,main = "BMI")
+```
+\pagebreak
+
+Continuous variable boxplots by hospital:
+
+```{r echo=FALSE}
+boxplot(weight ~ hospcode,data = va,main = "Weight by Hospital")
+boxplot(height ~ hospcode,data = va,main = "Height by Hospital")
+boxplot(bmi ~ hospcode,data = va,main = "BMI by Hospital")
+```
