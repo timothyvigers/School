@@ -1,0 +1,142 @@
+---
+title: "Methods Homework 4"
+author: "Tim Vigers"
+date: "September 30, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. The Abuse of Power Summary
+
+
+# 2.
+##a. Power Calculations
+###i. Known SD (by hand):
+$$ 
+h_0=0 mcg/dL \text{ and } h_1=100 mcg/dL
+$$
+$$
+\sigma_{change}=75 mcg/dL\text{, }n = 5\text{ and } \alpha=0.05
+$$
+$$
+Z_{1-\beta}=\frac{|\mu_0 - \mu_1|}{\frac{\sigma_{change}}{\sqrt{n}}}-Z_{1-\frac{\alpha}{2}}
+$$
+$$
+= \frac{100}{\frac{75}{\sqrt{5}}} - 1.96 \approx 2.98-1.96=1.02
+$$
+$$
+\Phi[1.02] \approx 0.85=1-\beta = Power
+$$
+
+###ii. Unknown SD (with R):
+```{r}
+power_test <- power.t.test(n = 5, sd = 75, sig.level = 0.05, delta=100, type = "one.sample", alternative = "two.sided")
+power_test
+power_test$power
+```
+
+##b. n Calculations
+###i. Known SD (by hand):
+$$
+n = \frac{\sigma_{change}^2 (Z_{0.90} + Z_{1-\frac{\alpha}{2}})^2}{(\mu_0 - \mu_1)^2}
+$$
+$$
+\frac{(75^2)(1.645+1.96)^2}{100^2}=\frac{5625*12.996}{10000}=\frac{73102.61}{10000}=7.31=8\text{ (rounded up)}
+$$
+
+###ii. Unknown SD (with R):
+```{r}
+n_test <- power.t.test(power=0.9, sd = 75, sig.level = 0.05, delta=100, type = "one.sample", alternative = "two.sided")
+n_test
+n_test$n
+```
+
+##c. Smallest detectable change
+###i. Known SD (by hand):
+$$
+\text{For 90% Power:}
+$$
+$$
+|\mu_0 - \mu_1|=(Z_{0.90} + Z_{1-\frac{\alpha}{2}})*\frac{\sigma}{\sqrt{n}}
+$$
+$$
+= (1.645+1.96)*\frac{75}{\sqrt{5}}=(3.605)*33.54102\approx121
+$$
+
+$$
+\text{For 80% Power:}
+$$
+$$
+|\mu_0 - \mu_1|=(Z_{0.80} + Z_{1-\frac{\alpha}{2}})*\frac{\sigma}{\sqrt{n}}
+$$
+$$
+= (0.84+1.96)*\frac{75}{\sqrt{5}}=(2.8)*33.54102\approx94
+$$
+
+###ii. Unknown SD (with R):
+```{r}
+# 90% power
+delta_test_90 <- power.t.test(n = 5,power = 0.9,sd = 75,sig.level = 0.05,type = "one.sample", alternative = "two.sided")
+delta_test_90
+delta_test_90$delta
+#80% power
+delta_test_80 <- power.t.test(n = 5,power = 0.8,sd = 75,sig.level = 0.05,type = "one.sample", alternative = "two.sided")
+delta_test_80
+delta_test_80$delta
+```
+
+#3. 
+##ia. Rejection Simulation (based on provided code):
+```{r}
+set.seed(2345)
+# Set input values
+n <- 5
+mean <- 0
+sd <- 75
+numTrials <- 10000
+alpha <- 0.05
+# Set a counter to determine the number of rejected hypothesis tests
+count <- 0
+for(i in 1:numTrials){
+# Generate data
+y <- rnorm(n,mean,sd)
+# Perform test
+t <- t.test(y,alternative = "two.sided")
+count <- count + (t$p.value < alpha)
+}
+power <- count/numTrials
+power
+```
+
+The loop above generates 10,000 normal distributions with a mean of 0 and SD of 75. Then it performs a t-test on each distribution to see if the distribution's mean is different from 0. If the p-value of the t-test is below our significance level of 0.05, the loop adds to the counter. Then, you divide the number of times that the mean was different from 0 by the number of simulations, to get the proportion of times the null hypothesis was rejected. The result is 0.0498, or about 5%, which is exactly what we'd expect. 
+
+##ib. Power Simulation (based on provided code):
+```{r}
+set.seed(1796)
+# Set input values
+n <- 5
+mean <- 100
+sd <- 75
+numTrials <- 10000
+alpha <- 0.05
+# Set a counter to determine the number of rejected hypothesis tests
+count <- 0
+for(i in 1:numTrials){
+# Generate data
+y <- rnorm(n,mean,sd)
+# Perform test
+t <- t.test(y,alternative = "two.sided")
+count <- count + (t$p.value < alpha)
+}
+# Power = proportion of rejections
+power <- count/numTrials
+power
+```
+
+The answer above is closest to 2.a.ii, which was calculating power with an unknown standard deviation. Power is the probability that we reject the null hypothesis given that the alternative hypothesis is true. In other words, the probability of finding a difference if it exists. So the result above is pretty much exactly what we would expect based on the power calculation in 2.a.ii.
+
+##iii.
+To estimate the required sample size for a given power, you could take the above for loop and run it for a range of values for n. Once you reached a value of n that resulted in a power of 0.9, you would have a decent estimate for your answer. You could also do the same thing for various values of mean (with a fixed n), in order to determine the smallest detectable difference.
