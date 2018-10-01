@@ -11,6 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 1. The Abuse of Power Summary
 
+  Hoenig and Heisey argue against a surprisingly large literature which advocates the use of post-hoc power testing, to assist with interpreting results that are not statistically significant. This approach to data analysis is generally used to reduce the chance of failing to reject the null hyopthesis of no change, when an effect actually does exist. This is particularly common in studies that might impact environmental, product, or treatment safety. 
+  While this approach usually comes from a genuine desire to improve public wellfare, there are a multitude of flaws in its statistical reasoning. First, "advocates of observed power argue that there is evidence for the null hypothesis being true if statistical significance was not achieved despite the computed power being high at the observed effect size." (Hoenig & Heisey, 2001) However, observed power is always a function of the p value, so it can never add to the interpretation of the results. The authors also provide several counter-examples to reinforce this point.
+  A second approach to using post-hoc power analyses is calculating a theoretical difference which would result in a desired power, based on the observed data. However, imagine two hypothetical experiments with equal observed effect sizes and sample size, but with one experiment closer to significance. This approach would suggest that for a given level of power, the detectable effect size for the significant experiment would be smaller than the second. This would lead to the conclusion that the more significant experiment supports the null hypothesis, which is "in direct contradiction to the standard interpretation of the experimental results (p values)." (Hoenig & Heisey, 2001)
 
 # 2.
 ##a. Power Calculations
