@@ -1,0 +1,22 @@
+---
+title: "Consulting Homework 5: Time Tracking"
+author: "Tim Vigers"
+date: "October 8, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+  After tracking my time last week, I'm happy with both my overall work habits and my ability to estimate how long a task will take. I was also interested in how much time I spend studying vs. how much time I spend relaxing, because I was a little worried that I'm not working hard enough and spend way too much time watching TV.
+
+  The first task I wanted to track was the weekly methods class homework, which I thought would take about 3 hours. Altogether it took me almost exactly 3 hours total, not including a 50-minute break to walk my dog, which I accidentally timed incorrectly. The break was in between the two main sections of the homework, which is great because I'm trying to force myself to take short breaks more often. I tend to get overly involved with what I'm working on and refuse to take a break until it's finished. Not only does this stress me out more than necessary, I think it also makes my work lower quality overall. So, I was proud of myself for doing that at least for the methods assignment. 
+
+  The second task I wanted to track was the consulting homework on data examination. I do a fair amount of data examination as part of my job and was also responsible for all the data when I was a PRA at Children's, so I didn't think it would take too long to finish the homework since I've done it before. I guessed it would be about 2 hours and it ended up taking 1:51, so again I was close. For that homework I didn't take a break in the middle though, so I still need to work on that. I'm testing out the Pomodoro method, but even with a timer I tend to skip breaks. This also ends up giving me headaches because I stare at a screen for long periods of time, so it would help my eyes and brain (as well as my work) if I could make breaks part of my workflow. 
+
+  The final task I wanted to track was a report for an abstract I finished at work last week. My original guess was that the report would only take two hours, but it ended up being significantly more than that. To be fair to my original guess, the PI asked for a couple of extra variables to be included, which we hadn't discussed at our first meeting. Then, when I looked at these new variables there were a couple of strange values that I needed to confirm, and this led to a fair amount of back and forth regarding the correct values for certain participants (the data were pulled from a few different REDCap projects and put together manually, so it all got a bit confusing). Finally, in these ongoing discussions we realized it would be good to look at the whole cohort, and then everyone with data at two specific timepoints, and then again at those with complete data who were also compliant with treatment. And because the abstract was due Friday, this was all very high priority. 
+  
+  So, in the end I spent about 6 times longer on the abstract than I expected and was working on it for most of the week. Also, I did an absolutely terrible job of taking breaks while working on it, and I'm positive it meant the work took longer than it otherwise would have. I spent forever trying to get my code to work efficiently and kept going in circles because I couldn't just walk away and think about something else for a few minutes. When my bus ride home forced me to stop for a little bit, I had a breakthrough and the rest of the project only took me about an hour. 
+  
+  The main takeaway from tracking my time is that my current system seems to work well for me. I don't watch as much TV as I thought and spent a good amount of time working on homework. But I also managed to balance that with my work schedule and downtime. It's very possible that the "watching basketball" category will be a much bigger slice of the pie chart once pre-season is over, but for now I'm happy with my balance. The main thing I need to work on is taking regular breaks, but even that went better than I expected. I have a lot of work to do in that area, but after tracking my time I feel like I'm off to an okay start.
