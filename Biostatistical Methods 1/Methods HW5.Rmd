@@ -9,13 +9,13 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Evaluating diagnostic tests
 ```{r}
 # Load the libraries.
 library(Epi)
 library(knitr)
 ```
 
-# Evaluating diagnostic tests
 ## a. Calculate sensitivity and specificity for CMMS Score <= 20
 ```{r}
 # Make the data table.
@@ -29,7 +29,7 @@ kable(cmms)
 # Convert to 2 x 2 table using <= 20 cutoff.
 cmms20 <- cbind(c(sum(cmms$demented[1:4]),sum(cmms$demented[5:6])),
                 c(sum(cmms$non.demented[1:4]),sum(cmms$non.demented[5:6])))
-colnames(cmms20) <- cols
+colnames(cmms20) <- c("demented","non.demented")
 rownames(cmms20) <- c("<= 20",">20")
 kable(cmms20)
 # Sensitivity = a / (a + c) * 100, specificity = d / (d + b) * 100
@@ -68,7 +68,7 @@ kable(sens.spec.table)
 ```
 
 ##c. False positives and negatives
-A false positive is when a test indicates the presence of a condition (in this case dementia), when the condition actually isn't there. False negatives are when the condition is there, but the test result is negative. The consequences of these depend a little bit on what dementia treatment involves, but in general a false negative is probably worse. If someone tested positive but did not actually have dementia, then they might start an unnecessary treatment. This could be bad, but is probably not as bad as someone testing negative and not getting any treatment when they do in fact have dementia (the false negative). So, I think we would want to optimize our cutoffs to reduce false negatives, which is the same as increasing sensitivity (1 - sensitivity = false negative rate). Then, for those that do test positive, you would want to do some additional testing to make sure they do indeed have dementia before starting treatment. 
+A false positive is when a test indicates the presence of a condition (in this case dementia), when the condition actually isn't there. False negatives are when the condition is there, but the test result is negative. The consequences of these depend a little bit on what dementia treatment involves, but in general a false negative is probably worse. If someone tested positive but did not actually have dementia, then they might start an unnecessary treatment. This could be bad, but is probably not as bad as someone testing negative and not getting any treatment when they do in fact have dementia. So, I think we would want to optimize our cutoffs to reduce false negatives, which is the same as increasing sensitivity (1 - sensitivity = false negative rate). Then, for those that do test positive, you would want to do some additional testing to make sure they do indeed have dementia before starting treatment. 
 
 ##d. Choose a cutoff based on the sensitivity/specificity table.
 If you assume that both false negatives and false positives are equally bad, then I think the <= 20 cutoff is a good one, as it maximizes both. If you wanted to maximize sensitivity, then you might say that anyone with a score <= 30 should get further testing. However, this would make the new test pretty useless, because everyone would need further testing.
@@ -97,7 +97,8 @@ roc.data$dementia <- c(rep(0,cmms$non.demented[1]),rep(1,cmms$demented[1]),
 roc <- ROC(form = dementia ~ score.group,data = roc.data)
 ```
 
-The AUC of a ROC curve can range from 0 to 1, with AUC = 1 meaning the test is perfectly accurate, and AUC = 0.05 meaning the test is no better than random chance. So, this test appears to predict dementia with about 80% accuracy. In other words, if you have a pair of patients with and without dementia, there's an 80% chance that the person with dementia will have a worse CMMS score.
+The AUC of a ROC curve can range from 0 to 1, with AUC = 1 meaning the test is perfectly accurate, and AUC = 0.5 meaning the test is no better than random chance. So, this test appears to predict dementia with about 81% accuracy. In other words, if you have a pair of patients, one with and one without dementia, there's an 81% chance that the person with dementia will have a worse CMMS score.
+\pagebreak
 
 ##f. ROC plot using part B.
 ```{r}
@@ -117,9 +118,9 @@ AUC
 ```
 
 This AUC is exactly the same as the one calculated by the Epi package.
+\pagebreak 
 
 ##g. PPV and NPV
-
 $$ 
 PPV = \frac{\text{(sensitivity)(prior prob)}}{\text{(sensitivity)(prior prob) + (1-specificity)(1-prior prob)}}
 $$
@@ -145,12 +146,12 @@ NPV2 <- (spec * (1-prior))/(((1-sens)*prior)+(spec*(1-prior)))
 NPV2
 ```
 
-For the 10% prevalence rate, a PPV of about 0.24 means that if a person tests positive based on CMMS (in this case a score <=20), there's about a 24% chance they actually have dementia. If the prevalence rate is 40%, then a positive test means the person has about a 66% chance of actually having dementia. PPV is highly dependent on prior probability, so as the prevalence increases, so does the predictive power of the test, which makes some intuitive sense. 
+For the 10% prevalence rate, a PPV of about 0.24 means that if a person tests positive based on CMMS (in this case a score <=20), there's about a 24% chance they actually have dementia. If the prevalence rate is 40%, then a positive test means the person has about a 66% chance of actually having dementia. PPV is highly dependent on prior probability, so as the prevalence increases so does the predictive power of the test, which makes some intuitive sense. 
 
-For the 10% prevalence rate, an NPV of 0.96 means that if someone tests negative based on CMMS (score >20), there's about a 96% chance that they actually don't have the disease. At the higher prevalance rate this probability decreases to about 82%. Like with PPV, NPV is highly dependent on prior probability. But as prevalence goes up, NPV decreases.
+For the 10% prevalence rate, an NPV of around 0.96 means that if someone tests negative based on CMMS (score >20), there's about a 96% chance that they actually don't have the disease. At the higher prevalance rate this probability decreases to about 82%. Like with PPV, NPV is highly dependent on prior probability. But this time as prevalence goes up, NPV decreases.
+\pagebreak
 
 ##h. Likelihood ratios
-
 $$
 LR+ = \frac{\text{sensitivity}}{\text{1 - specificity}}
 $$
@@ -181,6 +182,6 @@ kable(sens.spec.table)
 Based on the criteria that LR+ >= 5 "rules in" disease and LR- <= 0.2 "rules out," none of these cutoffs are good for both.
 
 ###ii. 
-Posterior odds of disease means that after a positive test result, an individual's odds are X:1 in favor of them having the disease. So for example at a <= 15 cutoff, a positive result means the patient has odds of about 2 to 1 that they have the disease. As the cutoff increases, the posterior odds decrease, which makes some intuitive sense. 
+Posterior odds of disease means that after a positive test result, an individual's odds are X:1 in favor of them having the disease. So for example at a <= 15 cutoff, a positive result means the patient has odds of about 2 to 1 that they have the disease. As the cutoff increases, the posterior odds decrease. 
 
-Similarly, posterior odds of no disease means that after a negative test result, an individual's odds are X:1 in favor of them not having the disease. So again at a cutoff of <=15, a negative test result means the patient has odds of 1.16 to 1 of not having the disease. As the cutoff increases, the posterior odds of no disease also increase, which makes intuitive sense as well. 
+Similarly, posterior odds of no disease means that after a negative test result, an individual's odds are X:1 in favor of them not having the disease. So again at a cutoff of <=15, a negative test result means the patient has odds of 1.16 to 1 of not having the disease. As the cutoff increases, the posterior odds of no disease also increase. 
