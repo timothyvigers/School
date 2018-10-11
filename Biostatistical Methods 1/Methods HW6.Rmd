@@ -81,7 +81,7 @@ likelihood
 # Use the code.
 prior_MRD <- ifelse(p_grid > 0.1 & p_grid < 0.4, 0.3, 0)
 prior_MRD
-plot(prior_MRD)
+plot(p_grid,prior_MRD)
 ```
 
 This prior distribution is a uniform(0,0.3) distribution. 
@@ -91,12 +91,15 @@ This prior distribution is a uniform(0,0.3) distribution.
 # Use the code.
 posterior <- likelihood * prior_MRD / sum(likelihood * prior_MRD)
 posterior
-plot(posterior)
+plot(p_grid,posterior)
 ```
 
 #H) Find the means of the prior distribution and the posterior distribution numerically. Hint: Recall the definition of expected value for discrete events.
 ```{r}
-
+prior.mean <- sum(p_grid * prior_MRD) / sum(prior_MRD)
+prior.mean
+post.mean <- sum(p_grid * posterior)
+post.mean
 ```
 
 #I) Plot the likelihood, prior, and posterior (as Y-variables) against p_grid (X-variable) for Treatment group A in the same figure. Make the line of each distribution a different color. Summarize what you observe.
