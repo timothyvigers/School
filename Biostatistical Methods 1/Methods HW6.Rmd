@@ -86,6 +86,10 @@ This prior distribution is a uniform(0,0.3) distribution.
 # Use the code.
 posterior <- likelihood * prior_MRD / sum(likelihood * prior_MRD)
 posterior
+plot(posterior)
 ```
 
 #H) Find the means of the prior distribution and the posterior distribution numerically. Hint: Recall the definition of expected value for discrete events.
+```{r}
+
+```
