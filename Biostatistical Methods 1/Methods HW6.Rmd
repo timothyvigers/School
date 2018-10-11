@@ -9,6 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+# Load the libraries.
+library(ggplot2)
+```
+
 #A) Load gvhd.txt into R, then subset the data to focus on only transplant recipients with an HLA-matched sibling donor.
 ```{r}
 # Read in and subset the data.
@@ -92,4 +97,17 @@ plot(posterior)
 #H) Find the means of the prior distribution and the posterior distribution numerically. Hint: Recall the definition of expected value for discrete events.
 ```{r}
 
+```
+
+#I) Plot the likelihood, prior, and posterior (as Y-variables) against p_grid (X-variable) for Treatment group A in the same figure. Make the line of each distribution a different color. Summarize what you observe.
+```{r}
+# Make a data table for ggplot. Melt for easier plotting.
+dat <- as.data.frame(cbind(p_grid,likelihood,prior_MRD,posterior))
+dat <- melt(dat,id.vars = p_grid)
+# Plot.
+plot <- ggplot(data = dat, aes(x = p_grid,y = value,color = variable)) +
+  geom_line(aes(group = variable)) + 
+  ggtitle("Probability by p_grid") + 
+  theme(plot.title = element_text(hjust = 0.5))
+plot
 ```
