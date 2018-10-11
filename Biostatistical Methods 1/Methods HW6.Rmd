@@ -19,20 +19,16 @@ hla.matched <- gvhd[gvhd$hla.matched.sibling == 1,c(1,3,4)]
 
 #B) Calculate the proportion of recipients that got GvHD in the Treatment A group. Repeat for Treatment B.
 ```{r}
-# Subset by treatment.
-treat.a <- hla.matched[hla.matched$treatment == "A",]
-treat.b <- hla.matched[hla.matched$treatment == "B",]
-# Calculate proportions.
-prop.treat.a <- sum(treat.a$outcome) / length(treat.a$outcome)
-prop.treat.b <- sum(treat.b$outcome) / length(treat.b$outcome)
-prop.treat.a
-prop.treat.b
+# Make a proportion table for both groups.
+prop.table(table(hla.matched[,2],hla.matched[,3]),margin = 1)
 ```
 
 #C) Among transplant recipients with HLA-matched donors, is there a significant association between treatment and GvHD at the 5% level of significance? Carry this test out using both a permutation test, and either an exact or asymptotic method, as appropriate. Summarize your results and comment on differences, if any, between the two methods you applied.
 ```{r}
+# Find the test statistic for the original table.
+observed <- chisq.test(table(hla.matched[,2],hla.matched[,3]))$statistic
 # Make a vector to store permutation results.
-B <- 10^5 - 1
+B <- 10^6 - 1
 result <- numeric(B)
 # Repeat the chi-square test on B permutations.
 for (i in 1:B) {
@@ -43,11 +39,53 @@ for (i in 1:B) {
 }
 # Plot.
 hist(result, freq=FALSE, xlab = expression(Chi^2), main="Permutation distribution for chi-square statistic")
-curve(dchisq(x, 2), add=TRUE, col="green", lwd=2)
-# Find the test statistic for the original table.
-observed <- chisq.test(table(hla.matched[,2],hla.matched[,3]))$statistic
+curve(dchisq(x, 1), add=TRUE, col="green")
 # Compare the p value from the permutation distribution to the p-value from the 
-# chi-square distribution.
+# chi-square distribution (the asymptotic result).
 perm.p <- (sum(result >= observed)+1)/(B + 1)
-dist.p <- 1-pchisq(observed, df=1)
+true.p <- as.numeric(1 - pchisq(observed, df = 1))
+perm.p
+true.p
 ```
+
+For this asymptotic test, I used a chi-square test with 1 degree of freedom, since the question here is very similar to the in-class example about support for medicinal marijuana. The permutation test produced a p-value that is pretty close to the "true" p-value, and the histogram looks fairly similar to the plot of the chi-square distribution (althought maybe not quite as close as the in-class example). At the standard 5% level of significance, there does not appear to be a difference between treatment groups A and B, at least among HLA-matched siblings. 
+
+#D) Using the seq() function, create a vector called p_grid that has 30 evenly spaced probabilities from 0 to 1.
+```{r}
+# Create the vector.
+p_grid <- seq(from=0,to=1,length.out = 30)
+p_grid
+```
+
+#E) Assume that whether or not a patient has GvHD is a binary feature modeled by a Bernoulli distribution (see Lecture 4). Using the dbinom() function, find the likelihood of the number of GvHD cases among subjects in Treatment A at each value in p_grid. You should end up with a 30-element long vector of probabilities. Save this vector as "likelihood".
+```{r}
+# Subset by treatment.
+treat.a <- hla.matched[hla.matched$treatment == "A",]
+treat.b <- hla.matched[hla.matched$treatment == "B",]
+# Define the number of cases among treatment A, and the total number in 
+# treatment A. 
+x <- sum(treat.a$outcome)
+n <- length(treat.a$outcome)
+# Make the likelihood vector.
+likelihood <- dbinom(x,n,prob = p_grid)
+likelihood
+```
+
+#F) Use the following code to generate a possible prior distribution of the probability of GvHD for HLA-matched, related donors (which is based on the existing literature information). What prior distribution does this represent (e.g., normal, Poisson, uniform) and what parameters does this distribution have?
+```{r}
+# Use the code.
+prior_MRD <- ifelse(p_grid > 0.1 & p_grid < 0.4, 0.3, 0)
+prior_MRD
+plot(prior_MRD)
+```
+
+This prior distribution is a uniform(0,0.3) distribution. 
+
+#G) Calculate the posterior distribution, using the following code:
+```{r}
+# Use the code.
+posterior <- likelihood * prior_MRD / sum(likelihood * prior_MRD)
+posterior
+```
+
+#H) Find the means of the prior distribution and the posterior distribution numerically. Hint: Recall the definition of expected value for discrete events.
