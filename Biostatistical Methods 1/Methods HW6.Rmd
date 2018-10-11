@@ -1,0 +1,14 @@
+---
+title: "Methods Homework 6"
+author: "Tim Vigers"
+date: "October 10, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+```
