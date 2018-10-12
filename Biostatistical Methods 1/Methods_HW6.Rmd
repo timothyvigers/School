@@ -114,5 +114,3 @@ plot <- ggplot(data = dat, aes(x = p_grid,y = value,color = variable)) +
   theme(plot.title = element_text(hjust = 0.5))
 plot
 ```
-
-Summary hghkjabsvk
