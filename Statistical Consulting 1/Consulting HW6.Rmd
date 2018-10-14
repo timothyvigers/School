@@ -1,0 +1,27 @@
+---
+title: "Consulting Homework 6"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load the libraries.
+library(ggplot2)
+library(reshape2)
+```
+
+```{r}
+# Read in data saved as a CSV file.
+dat <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Statistical Consulting 1/Homework 6/data.csv")
+# Plot age and BP.
+ggplot(data = dat,aes(x = Age,y = BP,color = Drug,label = L.D)) + 
+  geom_point() + 
+  geom_label(show.legend = F) +
+  ggtitle("Age and Blood Pressure") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
