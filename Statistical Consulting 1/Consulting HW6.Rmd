@@ -12,16 +12,37 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Load the libraries.
 library(ggplot2)
-library(reshape2)
 ```
 
 ```{r}
 # Read in data saved as a CSV file.
-dat <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Statistical Consulting 1/Homework 6/data.csv")
-# Plot age and BP.
-ggplot(data = dat,aes(x = Age,y = BP,color = Drug,label = L.D)) + 
+dat <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Statistical Consulting 1/Homework 6/data.csv",stringsAsFactors = FALSE)
+# Change D and L to "Died" and "Lived" for clearer graphing.
+dat$L.D[dat$L.D == " D"] <- "Died"
+dat$L.D[dat$L.D == " L"] <- "Lived"
+# Plot everything on one graph.
+everything <- ggplot(data = dat,aes(x = Age,y = BP,color = Drug,label = L.D)) + 
   geom_point() + 
   geom_label(show.legend = F) +
-  ggtitle("Age and Blood Pressure") + 
+  ggtitle("Age, Blood Pressure, Drug, and Outcome") + 
   theme(plot.title = element_text(hjust = 0.5))
+everything
+```
+\pagebreak
+
+```{r}
+# Plot using panels.
+panels <- ggplot(data = dat,aes(x = Age,y = BP,color = L.D)) + 
+  geom_point() +
+  labs(color='Outcome')
+panels + facet_wrap( ~ Drug)
+```
+
+The first plot without panels is a little difficult to read, probably because it's trying to cram too much information into one plot. However, when you use a separate panel for each drug, the results seem a little clearer. It appears that the no drug group have a fairly high mortality rate, but it might actually be better than drug 1. Participants on drug 1 had higher blood pressure overall than those on drug 2, and everyone on drug 1 died while everyone on drug 2 lived. These results are pretty interesting, but it's difficult to make any conclusions based on such a small sample size and without any statistical tests. Also, if you add a linear regression to the plot, it appears that no drug and drug 2 might have lower slopes than drug 1, which would mean that drug 1 actively increases BP as patients get older. Again, it's hard to make any conclusions, but the plots suggest it's worth investigating further.  
+\pagebreak
+
+```{r}
+panels + 
+  geom_smooth(method='lm',se = F,color = "grey") +
+  facet_wrap( ~ Drug)
 ```
