@@ -53,6 +53,8 @@ perm.p
 true.p
 ```
 
+***Does this need an exact test?
+
 For this asymptotic test, I used a chi-square test with 1 degree of freedom, since the question here is very similar to the in-class example about support for medicinal marijuana. The permutation test produced a p-value that is pretty close to the "true" p-value, and the histogram looks fairly similar to the plot of the chi-square distribution (althought maybe not quite as close as the in-class example). At the standard 5% level of significance, there does not appear to be a difference between treatment groups A and B, at least among HLA-matched siblings. 
 
 #D) Using the seq() function, create a vector called p_grid that has 30 evenly spaced probabilities from 0 to 1.
