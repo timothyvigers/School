@@ -1,0 +1,19 @@
+---
+title: "Theory Homework 6"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+ylim=c(0,1.5)
+plot(seq(-3,3,.1),dnorm(seq(-3,3,.1)),type="l",ylim=ylim,col = 1,xlab = "x",ylab = "f(x)")
+lines(seq(-3,3,.1),dnorm(seq(-3,3,.1),mean=-2,sd=sqrt(.1)),type="l",col=2)
+lines(seq(-3,3,.1),dnorm(seq(-3,3,.1),mean=2,sd=sqrt(.1)),type="l",col=3)
+lines(seq(-3,3,.1),dnorm(seq(-3,3,.1),mean=0,sd=sqrt(0.5)),type="l",col=4)
+legend(0, 1.5, legend=c("N(0,1)", "N(-2,1)","N(2,1)","N(0,0.5)"),col=c(1:4), lty=1,cex = 0.8)
+```
