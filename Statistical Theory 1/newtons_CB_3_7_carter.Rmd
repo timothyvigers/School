@@ -1,0 +1,76 @@
+---
+title: "C & B 3.7 - Using Newton's Method"
+author: "Carter Sevick"
+date: "October 10, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In the course of this problem we arrived at a point where we needed to solve the following function, set equal to zero, for t (the original problem used lambda).
+
+```{r}
+
+prb <- function(t) {
+  exp(-t)*(1+t)- 0.01
+}
+
+```
+
+Newton's method$^1$ was selected to attempt a solution, and to make that work we also need the derivative of the function:
+(yes, there is an R function for this, ...but that would be cheating!)
+
+```{r}
+
+dprb <- function(t){
+  -t*exp(-t)
+}
+
+```
+
+The process of Newton's method is encapsulated in the following function:
+
+```{r}
+
+newton <- function(f              # function name to be solved 
+                , df              # name of a function that is the derivative of f
+                , initial=1       # an initial value to start the algorithm, default set at 1
+                , tol=0.000000001 # tolerance level for testing convergence to the solution
+                , maxiter = 50    # maximum number of iterations to perform befor giving up on a solution
+) {
+  
+  .f. <- get(f)
+  environment(.f.)  <- environment()
+
+  .df. <- get(df)
+  environment(.df.) <- environment()
+
+  prev <- initial
+  for(i in 1:maxiter) {
+    
+    newVal <- prev - .f.(prev)/.df.(prev)
+    diff <- newVal - prev
+   
+    test <- abs(diff)<= tol
+    if (test==FALSE & i>=maxiter) {print("the maximum number of iterations has been reached with no solution.")}
+    if (test==TRUE) {break}
+    
+    prev <- newVal
+  }
+  list(solution = newVal, iter = i, diff=diff,converged=test)
+}
+
+```
+
+Application of the algorithm:
+```{r}
+
+newton('prb', 'dprb')
+
+```
+
+References:
+
+1. Anton H, Bivens I, Davis S "Calculus, Early Transcendentals, 7th" John Wiley and Sons, 2002
