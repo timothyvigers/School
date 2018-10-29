@@ -11,10 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Load the libraries.
-library(resampledata)
+library(knitr)
 ```
 
-# 1.
+# 1. Bootstrapping
 ```{r}
 # Read in the data.
 proc.cost <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 1/Homework 7/ProcedureCost.csv")
@@ -37,6 +37,7 @@ The cost data is almost certainly not normally distributed, and appears to have 
 summary(proc.cost$Cost)
 sd(proc.cost$Cost)
 ```
+\pagebreak
 
 ###d. Bootstrap sampling distribution plots.
 ```{r}
@@ -78,7 +79,119 @@ UL
 # Coverage of CI at lower end
 sum(cost.mean < LL)/N
 # Coverage of CI at upper end
-sum(cost.mean > LL)/N
+sum(cost.mean > UL)/N
 # Bootstrap percentile 95% CI
 quantile(cost.mean, c(0.025, 0.975))
+# Bias/SE
+abs((mean(cost.mean) - mean(proc.cost$Cost))/sd(cost.mean))
 ```
+
+You can see above that about 2.23% of the bootstrap means are below the bootstrap mean minus 1.96SE, and 2.77% of the means are above the bootstrap mean plus 1.96SE. This is very close to what you'd expect for the normal distribution (2.5% on either side), which further supports the idea that our bootstrap distribution is normal. In other words, the coverage is very good and it's probably okay to rely on the CLT in this case. 
+
+Also, the bootstrap confidence interval is very close to the normal percentiles we calculated, and the absolute value of the bias divided by SE is less than 0.1. So, the bootstrap condfidence interval is accurate for this data, and we can be 95% sure that the population mean is between 0.95 and 1.32.
+\pagebreak
+
+##ii. Ratio of mean costs
+###a. Plots, mean, and standard error
+```{r}
+# Split the cost data by procedure.
+stand.costs <- proc.cost$Cost[proc.cost$Procedure == 1]
+new.costs <- proc.cost$Cost[proc.cost$Procedure == 2]
+# Make the bootstrap sampling distribution.
+set.seed(1017)
+n.stand <- length(stand.costs)
+n.new <- length(new.costs)
+B <- 10^5
+cost.ratio <- numeric(B)
+for (i in 1:B) {
+  stand <- sample(stand.costs,n.stand,replace = T)
+  new <- sample(new.costs,n.new,replace = T)
+  cost.ratio[i] <- mean(stand)/mean(new)
+}
+# Plot.
+hist(cost.ratio,main = "Bootstrap distribution of ratio of mean costs")
+qqnorm(cost.ratio)
+qqline(cost.ratio)
+# Bootstrap mean.
+mean(cost.ratio)
+# Bias
+mean(cost.ratio) - (mean(stand.costs)/mean(new.costs))
+# Bootstrap standard error
+sd(cost.ratio)
+```
+
+The bootstrap sampling distribution of the ratio of mean costs doesn't appear to be normal based on the histogram and qqplot. Instead it appears to be pretty right-skewed. The mean of the bootstrap distribution is very close to the observed data (as you'd expect), but the bias is higher than you might hope for a bootstrapping distribution.
+
+###b. Confidence intervals
+```{r}
+# Obtain the 95% normal percentile and the 95% bootstrap percentile 
+# confidence intervals
+LL <- mean(cost.ratio) - (1.96 * sd(cost.ratio))
+UL <- mean(cost.ratio) + (1.96 * sd(cost.ratio))
+LL
+UL
+# Coverage of CI at lower end
+sum(cost.ratio < LL)/N
+# Coverage of CI at upper end
+sum(cost.ratio > UL)/N
+# Bootstrap percentile 95% CI
+quantile(cost.ratio, c(0.025, 0.975))
+# Bias/SE
+abs((mean(cost.ratio) - (mean(stand.costs)/mean(new.costs)))/sd(cost.ratio))
+```
+
+Here you can see that about 0.67% of the bootstrap ratios are below the 1.96SE mark, and about 2.13% are above, which indicates that the bootstrap distribution is indeed skewed. So it's giving a conservative estimate on the lower end and a liberal estimate on the upper end. You can also see that the 95% normal percentile and the 95% bootstrap percentile confidence intervals are different, which also suggests that the bootstrap percentile confidence interval isn't particularly accurate. Finally, we can see that our bootstrap distribution  bias/SE is above 0.1, which is more evidence that the bootstrap distribution is not accurate. 
+\pagebreak
+
+#2. Multiple testing
+```{r}
+# List p-values
+p <- c(0.04,0.1,0.4,0.55,0.34,0.620,0.001,0.01,0.8,0.005)
+# Rank smallest to largest
+ranked.p <- p[order(p)]
+# Calculate q = kp/rank for each test
+k <- length(p)
+q <- (ranked.p * k)/(1:length(p))
+# Check with R
+p.adjust(ranked.p,"fdr")
+q
+# List in order
+p.adjust(p,"fdr")
+```
+
+At the FDR = 0.05 level, SNPs 7,8, and 10 show statistically significant effects.
+\pagebreak
+
+#3. Sulfur dioxide and asthma.
+##i. Assuming equal variance
+```{r}
+# Enter the data.
+group.a <- c(20.8,4.1,30.0,24.7,13.8)
+group.b <- c(7.5,7.5,11.9,4.5,3.1,8.0,4.7,28.1,10.3,10.0,5.1,2.2)
+group.c <- c(9.2,2.0,2.5,6.1,7.5)
+groups <- c(rep("a",length(group.a)),
+            rep("b",length(group.b)),
+            rep("c",length(group.c)))
+reactivity <- c(group.a,group.b,group.c)
+asthma <- data.frame(groups,reactivity)
+# One-way ANOVA
+anova <- aov(reactivity ~ groups, data = asthma)
+summary(anova)
+```
+
+Assuming equal variance so that we can use a one-way ANOVA, we see that there is a difference between at least two of the groups. Since we now know there is a difference somewhere, we can use Tukey's Honest Significant Differences test to find out which of the groups are different from one another. 
+
+##ii. Tukey's HSD
+```{r}
+TukeyHSD(anova)
+```
+
+Using a standard 95% confidence interval, Tukey's HSD tells us that group A is significantly different from group B and group C, but that groups B and C are not significantly different from one another. 
+
+##iii. Welch's ANOVA
+If you cannot (or don't want to) assume equal variances between the groups, you can use Welch's ANOVA instead. 
+```{r}
+oneway.test(reactivity ~ groups, data = asthma)
+```
+
+If you assume unequal variances between the groups, then there is not a significant difference between them, at least not at the 0.05 level. However, if you felt that a p value of about 0.06 warrants some further investigation, you could use the Kruskal-Wallis method to do a Wilcoxon test between the group pairs. There are many ways to adjust these p values for multiple comparisons, but in this case I think Dunn's method would be the best choice.  
