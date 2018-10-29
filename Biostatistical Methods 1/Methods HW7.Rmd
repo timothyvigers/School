@@ -10,5 +10,75 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+# Load the libraries.
+library(resampledata)
+```
 
+# 1.
+```{r}
+# Read in the data.
+proc.cost <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 1/Homework 7/ProcedureCost.csv")
+```
+
+## i. Observed data
+###a. Plot the observed data
+```{r}
+# Plot the data.
+hist(proc.cost$Cost, xlab = "Cost",main = "Histogram of Procedure Costs")
+qqnorm(proc.cost$Cost)
+qqline(proc.cost$Cost)
+```
+
+###b. Describe the observed distribution
+The cost data is almost certainly not normally distributed, and appears to have a strong right skew. Many of the observations are between 0 and 0.5, and then there is a long tail out to the right, with a couple of procedures costing between 5 and 6. 
+
+###c. Summary statistics of the observed data
+```{r}
+summary(proc.cost$Cost)
+sd(proc.cost$Cost)
+```
+
+###d. Bootstrap sampling distribution plots.
+```{r}
+# Generate bootstrap distribution of means.
+set.seed(1017)
+n <- length(proc.cost$Cost)
+N <- 10^5
+cost.mean <- numeric(N)
+for (i in 1:N) {
+  x <- sample(proc.cost$Cost,n,replace = T)
+  cost.mean[i] <- mean(x)
+}
+hist(cost.mean,main = "Bootstrap distribution of means")
+qqnorm(cost.mean)
+qqline(cost.mean)
+```
+
+###e. Describe the bootstrap distribution of means
+The sampling distribution of means appears to be very normally distributed. The histogram has the classic normal shape, and the points on the qqplot follow the line very closely. 
+
+###f. Estimate the bootstrap mean, standard error of the mean, and bias
+```{r}
+# Bootstrap mean.
+mean(cost.mean)
+# Bias
+mean(cost.mean) - mean(proc.cost$Cost)
+# Bootstrap standard error
+sd(cost.mean)
+```
+
+###g. Confidence intervals
+```{r}
+# Obtain the 95% normal percentile and the 95% bootstrap percentile 
+# confidence intervals
+LL <- mean(cost.mean) - (1.96 * sd(cost.mean))
+UL <- mean(cost.mean) + (1.96 * sd(cost.mean))
+LL
+UL
+# Coverage of CI at lower end
+sum(cost.mean < LL)/N
+# Coverage of CI at upper end
+sum(cost.mean > LL)/N
+# Bootstrap percentile 95% CI
+quantile(cost.mean, c(0.025, 0.975))
 ```
