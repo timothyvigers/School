@@ -65,3 +65,39 @@ $$
 $$
 SS_\text{Total} = SS_\text{Error} + SS_\text{Model} + 0
 $$
+
+#2. Regressions
+##A. SAS output:
+\pagebreak
+
+##B. Least squares regression equation
+
+$$
+\text{Intercept estimate: } 97.39533 = \hat{\beta}_0
+$$
+$$
+\text{Variable estimate: } 3.72738 = \hat{\beta}_1
+$$
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1X_1
+$$
+$$
+\hat{\text{Cholesterol}} = 97.39533 + 3.72738*\text{Weight (kg)}
+$$
+
+##C. Inference about the intercept
+i. The estimated intercept is 97.39533. This means that on average, if someone weighed 0 kilograms, their estimated cholesterol would be 97.39533 mg/100mL. This probably isn't biologically meaningful.
+ii. SAS provides a 95% CI for the intercept, which is between -133.39580 and 328.18646. This means that we're 95% certain that someone who weighs 0 kilograms would have cholesterol between -133.39580 and 328.18646. Again, a lot of that range is biologically irrelevant (negative cholesterol doesn't really mean anything), but it's what the regression tells us. 
+iii. SAS also tests this hypothesis for us and gives a p-value of 0.3275. This means that at a significance level of 0.05, we can't reject the null hypothesis that the intercept is 0.
+iv. It doesn't make sense to look at this intercept particularly closely, since we probably don't care what the estimated cholesterol is for someone who weighs 0 kilograms, as it's physically impossible.
+
+##D. Inference about the slope
+i. The estimated slope is 3.72738, which means that on average we would expect cholesterol to increase by 3.72738 mg/100mL for every 1 kg increase in weight.
+ii. SAS also provides a 95% CI for the slope, which is between 0.28236 and 7.17241. So for every 1 kg increase in weight, we are 95% certain that cholesterol would increase between 0.28236 and 7.17241 mg/100mL.
+iii. SAS also tests the hypothesis that the true slope is equal to 0 for us. The p-value is 0.0388, so at the 0.05 significance level, we can reject the null hypothesis that the true slope is 0. This indicates a real relationship between weight and cholesterol.
+
+##E. Effect summary
+There is a significant increase in cholesterol as weight increases (p < 0.05). On average, cholesterol increases by 3.72738 mg/100mL (95% CI: 0.28 to 7.17 mg/100mL) for every 1 kg increase in weight.
+
+##F. Scatterplot (included in PROC REG)
+\pagebreak
