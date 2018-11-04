@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#1.
+#1. Show that SSTotal = SSModel + SSError
 $$
 SS_\text{Total} = \sum_{i=1}^n(Y_i-\bar{Y})^2=\sum_{i=1}^n((Y_i-\hat{Y}_i)+(\hat{Y}_i-\bar{Y}))^2=
 $$
@@ -30,13 +30,37 @@ $$
 SS_\text{Total} = SS_\text{Error} + SS_\text{Model} + 2\sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y})
 $$
 $$
-\text{We also know that:}
+2\sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y}) =
 $$
 $$
-\sum_{i=1}^n(Y_i-\hat{Y}_i) = 0
+2\sum_{i=1}^nY_i\hat{Y}_i-\bar{Y}Y_i-\hat{Y}_i^2+\bar{Y}\hat{Y}_i
 $$
 $$
-\text{Therefore } \sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y})\text{ as well. So: }
+\text{This can be rearranged to:}
+$$
+$$
+2(\sum_{i=1}^n\hat{Y}_i(Y_i-\hat{Y}_i)-\bar{Y}(Y_i-\hat{Y}_i))=2(\sum_{i=1}^n\hat{Y}_i(Y_i-\hat{Y}_i)-\sum_{i=1}^n\bar{Y}(Y_i-\hat{Y}_i))
+$$
+$$
+\bar{Y}\text{ is a constant, so it can be pulled out of the sum, meaning: }
+$$
+$$
+\sum_{i=1}^n\bar{Y}(Y_i-\hat{Y}_i) = \bar{Y}\sum_{i=1}^n(Y_i-\hat{Y}_i)=\bar{Y}*0 = 0
+$$
+$$
+\text{Because }\hat{Y_i}=\hat{\beta}_0+\hat{\beta}_1X_i\text{ :}
+$$
+$$
+\sum_{i=1}^n\hat{Y}_i(Y_i-\hat{Y}_i) = \sum_{i=1}^n(\hat{\beta}_0+\hat{\beta}_1X_i)(Y_i-\hat{Y}_i) = \hat{\beta}_0\sum_{i=1}^n(Y_i-\hat{Y}_i)+\hat{\beta}_1\sum_{i=1}^nX_i(Y_i-\hat{Y}_i)
+$$
+$$
+\text{As before, we've pulled out the constants and know both of the above sums are equal to 0. Therefore: }
+$$
+$$
+2\sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y}) = 2 (0+0-0) = 0
+$$
+$$
+\text{Which leaves us with: }
 $$
 $$
 SS_\text{Total} = SS_\text{Error} + SS_\text{Model} + 0
