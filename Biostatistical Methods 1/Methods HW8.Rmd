@@ -1,0 +1,43 @@
+---
+title: "Methods Homework 8"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1.
+$$
+SS_\text{Total} = \sum_{i=1}^n(Y_i-\bar{Y})^2=\sum_{i=1}^n((Y_i-\hat{Y}_i)+(\hat{Y}_i-\bar{Y}))^2=
+$$
+$$
+\sum_{i=1}^n(Y_i-\hat{Y}_i)^2+\sum_{i=1}^n(\hat{Y}_i-\bar{Y})^2+2\sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y})
+$$
+$$
+\text{From the lecture notes we know that:}
+$$
+$$
+SS_\text{Error}=\sum_{i=1}^n(Y_i-\hat{Y}_i)^2
+\text{ and }SS_\text{Model}=\sum_{i=1}^n(\hat{Y}_i-\bar{Y})^2
+$$
+$$
+\text{So: }
+$$
+$$
+SS_\text{Total} = SS_\text{Error} + SS_\text{Model} + 2\sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y})
+$$
+$$
+\text{We also know that:}
+$$
+$$
+\sum_{i=1}^n(Y_i-\hat{Y}_i) = 0
+$$
+$$
+\text{Therefore } \sum_{i=1}^n(Y_i-\hat{Y}_i)(\hat{Y}_i-\bar{Y})\text{ as well. So: }
+$$
+$$
+SS_\text{Total} = SS_\text{Error} + SS_\text{Model} + 0
+$$
