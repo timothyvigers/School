@@ -20,11 +20,3 @@ RUN;
 PROC REG;
 MODEL chol=wtkg/CLB;
 RUN;
-
-PROC GPLOT data=hw1;
-PLOT chol*wtkg=1 chol*wtkg=2 / OVERLAY VAXIS=axis1;
-SYMBOL1 INTERPOL=rlcli COLOR=black VALUE=dot;
-SYMBOL2 INTERPOL=rlclm COLOR=black VALUE=dot;
-AXIS1 LABEL = (FONT=ARIAL HEIGHT= 1.5 ANGLE=90 POSITION=center );
-RUN;
- 
