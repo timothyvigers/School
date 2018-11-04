@@ -93,7 +93,7 @@ iv. It doesn't make sense to look at this intercept particularly closely, since 
 
 ##D. Inference about the slope
 i. The estimated slope is 3.72738, which means that on average we would expect cholesterol to increase by 3.72738 mg/100mL for every 1 kg increase in weight.
-ii. SAS also provides a 95% CI for the slope, which is between 0.28236 and 7.17241. So for every 1 kg increase in weight, we are 95% certain that cholesterol would increase between 0.28236 and 7.17241 mg/100mL.
+ii. SAS also provides a 95% CI for the slope, which is between 0.28236 and 7.17241. So, for every 1 kg increase in weight, we are 95% certain that cholesterol would increase between 0.28236 and 7.17241 mg/100mL.
 iii. SAS also tests the hypothesis that the true slope is equal to 0 for us. The p-value is 0.0388, so at the 0.05 significance level, we can reject the null hypothesis that the true slope is 0. This indicates a real relationship between weight and cholesterol.
 
 ##E. Effect summary
@@ -101,3 +101,6 @@ There is a significant increase in cholesterol as weight increases (p < 0.05). O
 
 ##F. Scatterplot (included in PROC REG)
 \pagebreak
+
+#3. Moser & Stevens paper
+Moser and Stevens compare three different approaches to comparing the means of two independent, normally distributed populations: The Smith/Welch/Satterthwaite (SWS) test, the t test, and what they refer to as the "sometimes t test" (ST), which is a preliminary variance test follow by either an SWS test or a t test. In order to compare the tests, they examined the power and size of each test under different conditions of sample sizes and variance ratios. They found that with equal sample sizes, all three tests have the same power and size, which makes a variance test unnecessary, and means that either the SWS or t test is appropriate. When sample sizes are unequal, but the variance ratio is close to 1, they recommend the t test. And finally, when sample size is unequal, and the variance ratio is known to be different from 1, they recommend the SWS test. So, in the future, I will eliminate the preliminary variance testing step, and base my choice between an SWS test and a t test mostly on sample size (assuming there's nothing really bizarre happening with data, both populations are normally distributed, etc.).
