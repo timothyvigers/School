@@ -214,3 +214,15 @@ $$
 \pagebreak
 
 #2. Principal Component Analysis 4 Dummies: Eigenvectors, Eigenvalues and Dimension Reduction
+
+##a. 
+In the triangle example, the principle component is the horizontal line, because it's the direction where there is the most variability. If you collapsed all of the traingles onto points on the horizontal line, they would be more spread out than if you did the same for any other line. In the later triangle example the principle component isn't horizontal with respect to the x and y axis, but it is still horizontal with respect to the new axes (ev1 and ev2). 
+
+##b. 
+Yes, in this example the eigenvectors are orthogonal (perpendicular) to each other. 
+
+##c. 
+The third eigenvalue was 0 because all of the triangles are on the same 2D plane. Therefore there is no third dimension to the data.
+
+##d. 
+In the OxIS 2013 example, the data was reduced from 50 to 4 dimensions. 
