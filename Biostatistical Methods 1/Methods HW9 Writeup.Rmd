@@ -1,0 +1,16 @@
+---
+title: "Methods Homework 9"
+author: "Tim Vigers"
+date: "11/26/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1. Use linear regression to examine the relationship between IQ (iq) and lead exposure (expose).
+
+##A. What is the unadjusted (crude) estimate for the association between IQ and lead exposure?
+
+There is a significant difference in the average IQ for those who haven't been exposed versus those who have (p = 0.0084). On average, IQ is 7.77035 points (95% CI:  to  points) lower for those exposed compared to unexposed.
