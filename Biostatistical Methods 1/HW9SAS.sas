@@ -17,8 +17,23 @@ data lead;
 	milesxfirst2y = miles*first2y;
 run; 
 
+DATA lead;
+SET lead;
+IF first2y = 1 THEN notfirst2y = 0; 
+IF first2y = 0 THEN notfirst2y = 1;
+milesf2y = miles*first2y;
+milesNf2y = miles*notfirst2y;
+LABEL notfirst2y = 'Not exposed first 2years'
+milesf2y = 'miles*first2y'
+milesNf2y = 'miles*notfirst2y';
+RUN;
+
 proc reg data = lead;
-model iq = miles first2y milesxfirst2y / clb;
+model iq = miles first2y milesf2y / clb;
+run;
+
+proc reg data = lead;
+model iq = miles notfirst2y milesNf2y / clb;
 run;
 
 PROC GPLOT DATA=lead;
