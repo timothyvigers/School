@@ -13,4 +13,72 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##A. What is the unadjusted (crude) estimate for the association between IQ and lead exposure?
 
-There is a significant difference in the average IQ for those who haven't been exposed versus those who have (p = 0.0084). On average, IQ is 7.77035 points (95% CI:  to  points) lower for those exposed compared to unexposed.
+There is a significant difference in average IQ for those who haven't been exposed to lead versus those who have (p = 0.0084). On average, IQ is 7.77 points (95% CI: 13.51 to 2.03 points) lower for those exposed compared to unexposed.
+
+##B. Adjusting for the effect of race, what is the adjusted estimate for the association between IQ and lead exposure?
+
+After adjusting for race, there is no longer a significant difference in average IQ for those who haven't been exposed to lead versus those who have (p = 0.086). On average, IQ is 7.47 points (95% CI: 16.02 to 1.07 points) lower for those exposed compared to unexposed.
+
+##C. Is race a confounder of the association between IQ and lead exposure? Should you report the results from (A) or (B)?
+
+I think that race fits all of the requirements for a confounding variable. It's associated with the exposure and is a risk factor in the sense that IQ tests are known to be racially biased. Also, race is not affected by the exposure or the dependent variable. Finally, from an operational point of view it is a confounder because the betas are different in the crude model and adjusted model. However, you could also argue that the adjusted and crude models are still pretty close, so it might depend on your threshold. If you don't need the parameter estimates to be exactly the same, then you could argue that race actually isn't a confounder.
+
+Ideally, I think it would be good to report both models if possible, but if you have to pick one the adjusted model is a more accurate reflection of the data. However, I think you could make the argument that the models are close enough, and that race is not really a confounder. As long as you're explicit about what you did and why you won't count race as a confounder, I don't think there's anything wrong with reporting the crude model.
+
+#2. Use linear regression to examine the relationship between IQ (iq) and the distance of the current residence from the smelter (miles).
+
+##A. Write down the regression equation for the regression of IQ on miles, first2y, and the interaction between miles and first2y. Provide an interpretation for each of the coefficients in the model (including the intercept).
+
+$$
+\hat{IQ} = 98.45 + 0.59 * \text{miles} + -19.61*\text{first2y} + 17.65*\text{miles}*\text{first2y}
+$$
+
+$$
+\beta_0 = 98.45 = \text{Theoretical average IQ for those who live 0 miles from the smelter, but were not}
+$$
+$$
+\text{in the residence during the first two years of life.}
+$$
+
+$$
+\beta_1 = 0.59 = \text{Slope for those not living in the residence during the first two years of life.}
+$$
+
+$$
+\beta_2 = -19.61 = \text{The difference in IQ at 0 miles, between those living in the residence during}
+$$
+$$
+\text{the first two years of life and those not.}
+$$
+
+$$
+\beta_3 = 17.65 = \text{The difference in slope between those living in the residence during the first two years}
+$$
+$$
+\text{of life and those not.}
+$$
+
+##B. Test whether the relationship between IQ and distance of the residence from the smelter (miles) depends on whether the child lived in the residence during the first two years of life.
+
+The relationship between IQ and the distance from the smelter does depend on whether or not the participant lived in the residence in the first two years of life, because the interaction term between distance from the smelter and first2y is significant (p = 0.0016). 
+
+##C. What is the regression equation for children who lived in the current residence during the first two years of life? What is the regression equation for children who didn't live in the residence during the first two years of life?
+
+For those who lived in the residence during the first two years of life:
+$$
+\hat{IQ} = 98.45 + 0.59 * \text{miles} + -19.61*1 + 17.65*\text{miles}*1 =
+$$
+$$
+78.84 + (0.59 + 17.65)* \text{miles} = 78.84 + 18.24*\text{miles}
+$$
+
+For those who did not live in the residence during the first two years of life:
+$$
+\hat{IQ} = 98.45 + 0.59 * \text{miles} + -19.61*0 + 17.65*\text{miles}*0 = 
+$$
+$$
+98.45 + 0.59*\text{miles}
+$$
+
+##D. Provide a brief, but complete, summary of the relationship between IQ and distance of the current residence from the smelter, accounting for any observed interaction with exposure during the first two years of life.
+
