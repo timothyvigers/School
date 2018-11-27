@@ -24,6 +24,7 @@ After adjusting for race, there is no longer a significant difference in average
 I think that race fits all of the requirements for a confounding variable. It's associated with the exposure and is a risk factor in the sense that IQ tests are known to be racially biased. Also, race is not affected by the exposure or the dependent variable. Finally, from an operational point of view it is a confounder because the betas are different in the crude model and adjusted model. However, you could also argue that the adjusted and crude models are still pretty close, so it might depend on your threshold. If you don't need the parameter estimates to be exactly the same, then you could argue that race actually isn't a confounder.
 
 Ideally, I think it would be good to report both models if possible, but if you have to pick one the adjusted model is a more accurate reflection of the data. However, I think you could make the argument that the models are close enough, and that race is not really a confounder. As long as you're explicit about what you did and why you won't count race as a confounder, I don't think there's anything wrong with reporting the crude model.
+\pagebreak
 
 #2. Use linear regression to examine the relationship between IQ (iq) and the distance of the current residence from the smelter (miles).
 
@@ -83,7 +84,19 @@ $$
 ##D. Provide a brief, but complete, summary of the relationship between IQ and distance of the current residence from the smelter, accounting for any observed interaction with exposure during the first two years of life.
 
 For those not exposed during the first two years of life, the average IQ is 98.45, and this increases by 0.59 points on average (95% CI: -3.58 to 4.76 points), for each mile away from the smelter the participant lives, although the relationship is not significant (p = 0.78). However, whether or not the participant was living in the residence during the first two years of life has a significant impact on the relationship between IQ and distance from the smelter (p = 0.014). For those who were living in the residence during the first two years of life, the average IQ is 78.84, and increases by 18.24 points on average (95% CI: 8.22574 to 28.26617 points), for each mile away from the smelter the participant lives. This relationship is significant (p = 0.0005), which means there is an interaction between distance from the smelter and whether or not the participant was exposed in the first two years of life. 
+
 All of these effects are fairly apparent when you look at the plot of IQ vs. miles from the smelter for each group (exposed in the first two years or not exposed). The intercept for non-exposed participants is close to 100, and is close to 80 for the exposed group. As the distance increases, the non-exposed group's predicted IQ stays about the same, only increasing a tiny bit as you'd expect with a slope of 0.59. However, the exposed group's IQ increases much more quickly as distance increases. This all suggests that children under 2 should not live within about 1 mile of the smelter (since the trend lines cross at about the 1 mile mark). 
+\pagebreak
 
 #3. By "hand"", using the output from PROC REG, determine if the addition of both the covariate first2y and the interaction term miles*first2y in question 2A significantly contributes to the prediction of IQ, given the variable miles is included in the model 2A.
 
+The reduced model is a simple regression of IQ vs. miles, and the full model includes first2y and the interaction term. Since there are two additional coefficients in the full model, we set k = 2. Using this, we calculate an F statistic in order to test the null hypothesis (that all of our betas are equal to 0). 
+
+$$
+F = \frac{SS_{\text{model}}(full)-SS_{\text{model}}(reduced) / k}{MS_{\text{error}}(full)} = \frac{(3106.32999 - 443.85069)/2}{236.29806} = 
+$$
+$$
+\frac{1331.24}{236.29806} = 5.63
+$$
+
+Because the F statistic is larger than F2,120 = 3.07, we know that the addition of the two variables does improve the model (p = 0.0046). 
