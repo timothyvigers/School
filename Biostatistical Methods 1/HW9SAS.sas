@@ -49,3 +49,13 @@ PROC GPLOT DATA=lead;
 	POSITION=(bottom inside right) ACROSS=1;
 	FORMAT first2y;
 RUN;
+
+proc reg data = lead;
+model iq = miles first2y milesf2y / clb; 
+model iq = miles / clb;
+run;
+
+proc reg data = lead;
+model iq = miles first2y milesf2y;
+first_miles: TEST first2y,milesf2y;
+run;
