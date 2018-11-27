@@ -46,6 +46,8 @@ n = \frac{\sigma^2(Z_{0.9}+Z_{0.975})^2}{(\text{detectable difference})^2}=\frac
 $$
 So for 90% power to detect a TAZ of 0.6 mg/day, Jamie will need 568 participants (assuming a fairly high SD of 4.41 mg/day).
 
+###ii. Assuming an unknown SD
+
 ```{r echo=FALSE}
 
 ```
