@@ -22,13 +22,9 @@ var betaplas;
 run;
 
 proc reg data = carotenoids;
-model betaplas = former current;
+model betaplas = former current / covb;
 run;
 
 proc reg data = carotenoids;
-model betaplas = never current;
-run;
-
-proc reg data = carotenoids;
-model betaplas = never former;
+model betaplas = never former current / noint;
 run;
