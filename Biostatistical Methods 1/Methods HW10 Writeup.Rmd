@@ -17,9 +17,107 @@ knitr::opts_chunk$set(echo = TRUE)
 ##b. Fit a “reference cell” linear regression model (MODEL 1) regressing plasma beta-carotene levels, betaplas (the dependent variable) on smoking status (the independent variable). Make the never smokers the reference group. Write down the regression equation.
 
 $$
-\hat{Y} = \beta_0 + \beta_1(I_\text{former}) + \beta_2(I_\text{current}) = 
+\hat{Y} = \beta_\text{never} + \beta_\text{former}(I_\text{former}) + \beta_\text{current}(I_\text{current}) = 
 $$
 $$
 206.05096 + (-12.58139 * I_\text{former}) + (-84.72537 * I_\text{current})
 $$
+
+##c. Using MODEL 1, is smoking status significantly associated with plasma beta-carotene levels? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+
+$$
+H_0: \beta_\text{former} = \beta_\text{current} = 0
+$$
+$$
+H_0: \mu_\text{never} = \mu_\text{former} = \mu_\text{current}
+$$
+$$
+H_1: \beta_\text{former} \neq 0 \text{ or } \beta_\text{current} \neq 0
+$$
+$$
+H_1: \mu_\text{never} \neq \mu_\text{former} \text{ or } \mu_\text{never} \neq \mu_\text{current}\text{ or }\mu_\text{former} \neq \mu_\text{current}
+$$
+
+In MODEL 1, smoking status significantly contributes to plasma beta-carotene levels (p = 0.0254).
+
+##d. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+
+$$
+H_0: \beta_\text{current} = 0
+$$
+$$
+H_1: \beta_\text{current} \neq 0
+$$
+$$
+H_0: \mu_\text{never} = \mu_\text{current}
+$$
+$$
+H_1: \mu_\text{never} \neq \mu_\text{current}
+$$
+
+According to MODEL 1, never smokers are significantly different from current smokers (p = 0.0070).
+
+##e. Using MODEL 1, do plasma beta-carotene levels differ between former smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+
+$$
+H_0: \beta_\text{former} = 0
+$$
+$$
+H_1: \beta_\text{former} \neq 0
+$$
+$$
+H_0: \mu_\text{never} = \mu_\text{former}
+$$
+$$
+H_1: \mu_\text{never} \neq \mu_\text{former}
+$$
+
+According to MODEL 1, never smokers are not significantly different from former smokers (p = 0.5725).
+
+##f. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and former smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion. (USE the variance-covariance matrix for the betas to answer this question).
+
+$$
+H_0: \beta_\text{current} - \beta_\text{former} = 0
+$$
+$$
+H_1: \beta_\text{current} - \beta_\text{former} \neq 0
+$$
+$$
+H_0: \mu_\text{current} = \mu_\text{former}
+$$
+$$
+H_1: \mu_\text{current} \neq \mu_\text{former}
+$$
+
+$$
+t = \frac{\hat{\beta}_\text{current} - \hat{\beta}_\text{former}}{\sqrt{Var(\hat{\beta}_\text{current})+Var(\hat{\beta}_\text{former}) - 2*Cov(\hat{\beta}_\text{current},\hat{\beta}_\text{former})}}=
+$$
+
+$$
+\frac{-84.72537 + 12.58139}{\sqrt{975.26042464 + 495.94112724 - 2 * (209.6809913)}} = -2.224464
+$$
+```{r}
+t <- -2.224464
+p <- pt(-abs(t),df = 312)
+p
+```
+
+$$
+-2.224464 \text{ ~ } t_{312}\text{; p} \approx 0.013
+$$
+
+According to MODEL 1, current smokers are significantly different from former smokers (p < 0.05).
+
+#2. Cell means model
+##a. Fit a “cell means” linear regression model (MODEL 2) predicting plasma beta-carotene levels from smoking status. Write down the regression equation.
+
+$$
+\hat{Y} = \beta_\text{never}I_\text{never} + \beta_\text{former}I_\text{former} + \beta_\text{current}I_\text{current}
+$$
+
+$$
+E[\text{plasma beta-carotene}] = 206.05096*I_\text{never} + 193.46957*I_\text{former} + 121.32558*I_\text{current}
+$$
+
+##b. Use the cell means model (MODEL 2) to test if smoking status is significantly associated with plasma beta-carotene levels.
 
