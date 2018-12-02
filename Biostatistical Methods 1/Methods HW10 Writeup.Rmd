@@ -1,0 +1,25 @@
+---
+title: "Methods Homework 10"
+author: "Tim Vigers"
+date: "12/2/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#1. The relationship between plasma beta-carotene (the response) and smoking status (current smokers, former smokers, and never smokers).
+
+##a. Obtain the sample size, mean, standard deviation (SD), and standard error of the mean (SE) for plasma beta-carotene levels within each of the three smoking groups.
+\pagebreak
+
+##b. Fit a “reference cell” linear regression model (MODEL 1) regressing plasma beta-carotene levels, betaplas (the dependent variable) on smoking status (the independent variable). Make the never smokers the reference group. Write down the regression equation.
+
+$$
+\hat{Y} = \beta_0 + \beta_1(I_\text{former}) + \beta_2(I_\text{current}) = 
+$$
+$$
+206.05096 + (-12.58139 * I_\text{former}) + (-84.72537 * I_\text{current})
+$$
+
