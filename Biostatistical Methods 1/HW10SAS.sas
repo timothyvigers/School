@@ -23,8 +23,13 @@ run;
 
 proc reg data = carotenoids;
 model betaplas = former current / covb;
+model betaplas = never former current / noint;
+test former-current;
+test 0.58*never + 0.42*former - current;
 run;
 
-proc reg data = carotenoids;
-model betaplas = never former current / noint;
+proc ttest data = carotenoids;
+where smoke in (2,3);
+class smoke;
+var betaplas;
 run;
