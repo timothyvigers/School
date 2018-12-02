@@ -9,12 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#1. The relationship between plasma beta-carotene (the response) and smoking status (current smokers, former smokers, and never smokers).
+##1. The relationship between plasma beta-carotene (the response) and smoking status (current smokers, former smokers, and never smokers).
 
-##a. Obtain the sample size, mean, standard deviation (SD), and standard error of the mean (SE) for plasma beta-carotene levels within each of the three smoking groups.
-\pagebreak
+###a. Obtain the sample size, mean, standard deviation (SD), and standard error of the mean (SE) for plasma beta-carotene levels within each of the three smoking groups.
 
-##b. Fit a “reference cell” linear regression model (MODEL 1) regressing plasma beta-carotene levels, betaplas (the dependent variable) on smoking status (the independent variable). Make the never smokers the reference group. Write down the regression equation.
+###b. Fit a “reference cell” linear regression model (MODEL 1) regressing plasma beta-carotene levels, betaplas (the dependent variable) on smoking status (the independent variable). Make the never smokers the reference group. Write down the regression equation.
 
 $$
 \hat{Y} = \beta_\text{never} + \beta_\text{former}(I_\text{former}) + \beta_\text{current}(I_\text{current}) = 
@@ -23,7 +22,7 @@ $$
 206.05096 + (-12.58139 * I_\text{former}) + (-84.72537 * I_\text{current})
 $$
 
-##c. Using MODEL 1, is smoking status significantly associated with plasma beta-carotene levels? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+###c. Using MODEL 1, is smoking status significantly associated with plasma beta-carotene levels? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
 
 $$
 H_0: \beta_\text{former} = \beta_\text{current} = 0
@@ -40,7 +39,7 @@ $$
 
 In MODEL 1, smoking status significantly contributes to plasma beta-carotene levels (p = 0.0254).
 
-##d. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+###d. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
 
 $$
 H_0: \beta_\text{current} = 0
@@ -57,7 +56,7 @@ $$
 
 According to MODEL 1, never smokers are significantly different from current smokers (p = 0.0070).
 
-##e. Using MODEL 1, do plasma beta-carotene levels differ between former smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+###e. Using MODEL 1, do plasma beta-carotene levels differ between former smokers and never smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
 
 $$
 H_0: \beta_\text{former} = 0
@@ -74,7 +73,7 @@ $$
 
 According to MODEL 1, never smokers are not significantly different from former smokers (p = 0.5725).
 
-##f. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and former smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion. (USE the variance-covariance matrix for the betas to answer this question).
+###f. Using MODEL 1, do plasma beta-carotene levels differ between current smokers and former smokers? Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion. (USE the variance-covariance matrix for the betas to answer this question).
 
 $$
 H_0: \beta_\text{current} - \beta_\text{former} = 0
@@ -107,9 +106,10 @@ $$
 $$
 
 According to MODEL 1, current smokers are significantly different from former smokers (p < 0.05).
+\pagebreak
 
-#2. Cell means model
-##a. Fit a “cell means” linear regression model (MODEL 2) predicting plasma beta-carotene levels from smoking status. Write down the regression equation.
+##2. Cell means model
+###a. Fit a “cell means” linear regression model (MODEL 2) predicting plasma beta-carotene levels from smoking status. Write down the regression equation.
 
 $$
 \hat{Y} = \beta_\text{never}I_\text{never} + \beta_\text{former}I_\text{former} + \beta_\text{current}I_\text{current}
@@ -119,5 +119,40 @@ $$
 E[\text{plasma beta-carotene}] = 206.05096*I_\text{never} + 193.46957*I_\text{former} + 121.32558*I_\text{current}
 $$
 
-##b. Use the cell means model (MODEL 2) to test if smoking status is significantly associated with plasma beta-carotene levels.
+###b. Use the cell means model (MODEL 2) to test if smoking status is significantly associated with plasma beta-carotene levels.
 
+According to MODEL 2, smoking status is significantly associated with plasma beta-carotene levels (F = 117.49, p < 0.0001).
+
+###c. Use the cell means model (MODEL 2) to test whether plasma beta-carotene levels differ between current smokers and former smokers. Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+
+$$
+H_0: \mu_\text{current} = \mu_\text{former} \text{ or }\beta_\text{current} = \beta_\text{former}
+$$
+$$
+H_1: \mu_\text{current} \neq \mu_\text{former}\text{ or }\beta_\text{current} \neq \beta_\text{former}
+$$
+
+There is a significant difference in plasma beta-carotene levels between current and former smokers (p = 0.0268).
+
+###d. Use the cell means model (MODEL 2) to test whether plasma beta-carotene levels differ between non-smokers (the average of never smokers and former smokers) and current smokers. Write the null and alternative hypotheses in terms of the appropriate beta coefficient(s) and also in terms of the appropriate means, test the null hypothesis, and state your conclusion.
+
+$$
+H_0: \frac{157}{272}*\beta_\text{never} + \frac{115}{272}*\beta_\text{former} - \beta_\text{current} = 0
+$$
+$$
+H_1: \frac{157}{272}*\beta_\text{never} + \frac{115}{272}*\beta_\text{former} - \beta_\text{current} \neq 0
+$$
+
+$$
+H_0: \frac{157}{272}*\mu_\text{never} + \frac{115}{272}*\mu_\text{former} - \mu_\text{current} = 0
+$$
+$$
+H_1: \frac{157}{272}*\mu_\text{never} + \frac{115}{272}*\mu_\text{former} - \mu_\text{current} \neq 0
+$$
+
+Weighting the average of never smokers and former smokers by sample size, there is a significant difference in plasma beta-carotene levels between smokers and non-smokers (p = 0.0080).
+\pagebreak 
+
+##3. Perform an independent samples t-test comparing plasma beta-carotene levels in current smokers versus former smokers. Compare your results to those obtained in parts (1F and 2C) and explain any differences.
+
+Overall the t-test is very close to the earlier results, because both found a significant difference between current and former smokers (whether you use a t-test assuming equal or unequal variances). The p-values are slightly different, but I think that's because the linear contrast uses more degrees of freedom when you get a p-value from the t distribution. The means calculated by proc ttest are the same as the parameter estimates in MODEL 2 for current and former smokers, which is also a good sign. There are likely some rounding differences between the two procedures that contribute to the small differences in t values. However, the important thing is that the conclusions are the same for the two approaches.
