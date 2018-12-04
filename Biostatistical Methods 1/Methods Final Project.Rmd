@@ -177,6 +177,8 @@ tenmonth <- lm(updrsbaseto10mon ~ Group, data = dat)
 ```{r echo=FALSE}
 kable(anova(fourmonth))
 kable(anova(tenmonth))
+summary(fourmonth)
+summary(tenmonth)
 ```
 
 # References
