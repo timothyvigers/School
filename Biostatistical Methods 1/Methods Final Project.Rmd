@@ -1,0 +1,83 @@
+---
+title: "Methods Final Project"
+author: "Tim Vigers"
+date: "December 3, 2018"
+output: word_document
+dpi: 1200
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE, include=FALSE}
+# Load the libraries.
+library(tableone)
+library(dplyr)
+library(knitr)
+library(nortest)
+```
+
+# Introduction
+
+Parkinson's Disease (PD) is a neurodegenerative disorder that is expected to affect between 8-9 million people worldwide by 2030, an is generally treated with a combination of pharmacology and surgery. There is some evidence suggesting that exercise improves function and quality of life in individuals with PD, but there is currently no consensus regarding physiotherapy best practices. This study was designed to compare three forms of exercise intervention: a standard aerobic endurance program (AE), a flexibility/balance/function (FBF) program designed for people with PD, and a series of at-home exercises as recommended by the National Parkinson's Foundation (CON). The primary outcome for this study was improvement on the on the Unified Parkinson’s Disease Rating Scale (UPDRS) from baseline to 4 months (the end of the supervised period) and baseline to 10 months. At the time of data collection, the UPDRS was the gold standard for assessing PD severity (Schenkman et al., 2012). 
+
+# Hypothesis
+
+We hypothesized that during the supervised period, the FBF program would improve UPDRS scores more than both AE and CON, because the focus on flexibility and balance was expected to translate more directly to PD-specific function measures. 
+
+Our secondary hypothesis was that participants randomized to the FBF program would still show clinically significant improvement 6 months after the end of the supervised exercise period (the 10 month endpoint), while the other two groups would not.
+
+# Materials and Methods
+
+Participants had PD diagnosed by movement specialists and were in stages 1-3 of Hoehn and Yahr. Exclusion criteria included: "uncontrolled hypertension, on-state freezing or exercise limitations from other disorders, and Mini-Mental State Examination less than 24." (Schenkman et al., 2012) After completing baseline testing, 121 patients were randomized to one of the three exercise programs, stratified by sex. All study personnel were blinded to exercise group, and the UPDRS was performed by experienced physical therapists as baseline, 4 months, and 10 months. For the first 4 months of the study, FBF and AE patients participated in supervised exercise 3 days/week, after which supervision was tapered. CON patients were supervised 1 day/month for the duration of the study. All participants were encouraged to exercise 5-7 days per week, and were assisted with the development of long-term habits regardless of exercise group.   (Schenkman et al., 2012) 
+
+# Analysis Plan
+
+Variables were assessed for normality using the Kolmogorov-Smirnov test. Continuous variables were compared using t-tests or Kruskal-Wallis Rank Sum tests, and chi-square tests or Fisher’s exact tests were used for categorical variables. 
+
+Analyses were performed using R version 3.5.1 (ahsfb) and descriptive statistics were compared using the “tableone” package (akjshvb).
+
+# Results
+
+At baseline there were no significant differences between the three groups for gender, age, disease duration, Hoehn and Yahr stage, five meter walk in number of steps and seconds, timed up and go in seconds, total UPDRS score, six minute walk in meters, or Levodopa equivalents (mg/day).
+
+```{r echo=FALSE,include=FALSE}
+# Read in data.
+dat <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 1/Final Project/PD+Exercise+RCT+Selected+Secondary+Outcomes+-+Wide.csv")
+# Calculate difference from baseline to 4 months, then baseline to 10 months.
+dat$updrsbaseto4mon <- dat$UPDRS4 - dat$UPDRS0
+dat$updrsbaseto10mon <- dat$UPDRS10 - dat$UPDRS0
+# Edit group names.
+dat$Group <- recode(dat$Group,`4` = "CON",`5` = "FBF",`6` = "AE")
+# Re-code gender
+dat$Gender <- recode(dat$Gender,`1` = "Male",`2` = "Female")
+# Convert necessary columns to factors.
+dat$HYstage0 <- as.factor(dat$HYstage0)
+
+# Define Table 1 variables at baseline.
+t1vars <- c("Gender","Age","YearsDx","HYstage0","FiveM_Wk0","FiveM_Tm0","TUG0",
+            "UPDRS0","SixMn_Wk0","LEDD0")
+# Normality check for continuous variables.
+norms <- as.data.frame(sapply(dat[,c("Age","YearsDx","FiveM_Wk0","FiveM_Tm0","TUG0",
+                                     "UPDRS0","SixMn_Wk0","LEDD0")], lillie.test))
+nonnorms <- colnames(norms)[which(norms[2,] < 0.05)]
+# Make Table 1
+t1 <- CreateTableOne(t1vars,strata = "Group",data = dat)
+# Formatting.
+rows <- rownames(print(t1,showAllLevels = T,nonnormal = nonnorms, 
+                       exact = "HYstage0"))
+t1 <- as.data.frame(print(t1,showAllLevels = T,nonnormal = nonnorms, 
+                          exact = "HYstage0"))
+t1$` ` <- rows
+t1 <- t1[,c(" ","level","AE","CON","FBF","p","test")]
+```
+
+Table 1: Descriptive Characteristics at Baseline.
+```{r echo=FALSE}
+kable(t1,row.names = F)
+```
+
+# References
+Schenkman, M., Hall, D. A., Baron, A. E., Schwartz, R. S., Mettler, P., & Kohrt, W.M. (2012). Exercise for People in Early- or Mid-Stage Parkinson Disease: A 16-Month Randomized Controlled Trial. Physical Therapy, 92(11), 1395–1410. https://doi.org/10.2522/ptj.20110472
+
