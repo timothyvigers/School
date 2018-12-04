@@ -33,7 +33,7 @@ Participants had PD diagnosed by movement specialists and were in stages 1-3 of 
 
 # Analysis Plan
 
-Variables were assessed for normality using the Kolmogorov-Smirnov test. Continuous variables were compared using t-tests or Kruskal-Wallis Rank Sum tests, and chi-square tests or Fisher’s exact tests were used for categorical variables. 
+Variables were assessed for normality using the Kolmogorov-Smirnov test. Continuous variables were compared using t-tests or Kruskal-Wallis Rank Sum tests, and chi-square tests or Fisher’s exact tests were used for categorical variables. Bootstrap distributions were generated for outcome variables, and normality of the sampling distributions was assessed. Each variable 
 
 Analyses were performed using R version 3.5.1 (ahsfb) and descriptive statistics were compared using the “tableone” package (akjshvb).
 
