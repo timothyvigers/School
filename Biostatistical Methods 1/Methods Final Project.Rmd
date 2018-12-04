@@ -3,7 +3,6 @@ title: "Methods Final Project"
 author: "Tim Vigers"
 date: "December 3, 2018"
 output: word_document
-dpi: 1200
 ---
 
 ```{r setup, include=FALSE}
@@ -76,6 +75,24 @@ t1 <- t1[,c(" ","level","AE","CON","FBF","p","test")]
 Table 1: Descriptive Characteristics at Baseline.
 ```{r echo=FALSE}
 kable(t1,row.names = F)
+```
+
+```{r echo=FALSE, include=FALSE}
+# Generate bootstrap distribution of means.
+set.seed(1017)
+n <- length(dat$UPDRS0)
+N <- 10^5
+updrs0.mean <- numeric(N)
+for (i in 1:N) {
+  x <- sample(dat$UPDRS0,n,replace = T)
+  updrs0.mean[i] <- mean(x)
+}
+```
+
+```{r echo=FALSE, dpi=1200}
+hist(updrs0.mean,main = "Bootstrap distribution of means",xlab = "Baseline UPDRS Score")
+qqnorm(updrs0.mean)
+qqline(updrs0.mean)
 ```
 
 # References
