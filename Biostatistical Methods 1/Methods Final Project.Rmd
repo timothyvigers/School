@@ -77,7 +77,7 @@ Table 1: Descriptive Characteristics at Baseline.
 kable(t1,row.names = F)
 ```
 
-```{r echo=FALSE, include=FALSE}
+```{r echo=FALSE}
 # Generate bootstrap distribution of means.
 set.seed(1017)
 n <- length(dat$UPDRS0)
@@ -87,12 +87,84 @@ for (i in 1:N) {
   x <- sample(dat$UPDRS0,n,replace = T)
   updrs0.mean[i] <- mean(x)
 }
+# Obtain the 95% normal percentile and the 95% bootstrap percentile 
+# confidence intervals
+LL <- mean(updrs0.mean) - (1.96 * sd(updrs0.mean))
+UL <- mean(updrs0.mean) + (1.96 * sd(updrs0.mean))
+LL
+UL
+# Coverage of CI at lower end
+sum(updrs0.mean < LL)/N
+# Coverage of CI at upper end
+sum(updrs0.mean > UL)/N
+# Bootstrap percentile 95% CI
+quantile(updrs0.mean, c(0.025, 0.975))
 ```
 
 ```{r echo=FALSE, dpi=1200}
 hist(updrs0.mean,main = "Bootstrap distribution of means",xlab = "Baseline UPDRS Score")
 qqnorm(updrs0.mean)
 qqline(updrs0.mean)
+```
+
+```{r echo=FALSE}
+# Generate bootstrap distribution of means.
+set.seed(1017)
+n <- length(dat$UPDRS4)
+N <- 10^5
+updrs4.mean <- numeric(N)
+for (i in 1:N) {
+  x <- sample(dat$UPDRS4,n,replace = T)
+  updrs4.mean[i] <- mean(x,na.rm = T)
+}
+# Obtain the 95% normal percentile and the 95% bootstrap percentile 
+# confidence intervals
+LL <- mean(updrs4.mean) - (1.96 * sd(updrs4.mean))
+UL <- mean(updrs4.mean) + (1.96 * sd(updrs4.mean))
+LL
+UL
+# Coverage of CI at lower end
+sum(updrs4.mean < LL)/N
+# Coverage of CI at upper end
+sum(updrs4.mean > UL)/N
+# Bootstrap percentile 95% CI
+quantile(updrs4.mean, c(0.025, 0.975))
+```
+
+```{r echo=FALSE, dpi=1200}
+hist(updrs4.mean,main = "Bootstrap distribution of means",xlab = "4 Month UPDRS Score")
+qqnorm(updrs4.mean)
+qqline(updrs4.mean)
+```
+
+```{r echo=FALSE}
+# Generate bootstrap distribution of means.
+set.seed(1017)
+n <- length(dat$UPDRS10)
+N <- 10^5
+updrs10.mean <- numeric(N)
+for (i in 1:N) {
+  x <- sample(dat$UPDRS10,n,replace = T)
+  updrs10.mean[i] <- mean(x,na.rm = T)
+}
+# Obtain the 95% normal percentile and the 95% bootstrap percentile 
+# confidence intervals
+LL <- mean(updrs10.mean) - (1.96 * sd(updrs10.mean))
+UL <- mean(updrs10.mean) + (1.96 * sd(updrs10.mean))
+LL
+UL
+# Coverage of CI at lower end
+sum(updrs10.mean < LL)/N
+# Coverage of CI at upper end
+sum(updrs10.mean > UL)/N
+# Bootstrap percentile 95% CI
+quantile(updrs10.mean, c(0.025, 0.975))
+```
+
+```{r echo=FALSE, dpi=1200}
+hist(updrs10.mean,main = "Bootstrap distribution of means",xlab = "10 Month UPDRS Score")
+qqnorm(updrs10.mean)
+qqline(updrs10.mean)
 ```
 
 # References
