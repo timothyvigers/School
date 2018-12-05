@@ -15,6 +15,7 @@ library(tableone)
 library(dplyr)
 library(knitr)
 library(nortest)
+library(broom)
 ```
 
 # Introduction
@@ -55,7 +56,6 @@ dat$Group <- recode(dat$Group,`4` = "CON",`5` = "FBF",`6` = "AE")
 dat$Gender <- recode(dat$Gender,`1` = "Male",`2` = "Female")
 # Convert necessary columns to factors.
 dat$HYstage0 <- as.factor(dat$HYstage0)
-
 # Define Table 1 variables at baseline.
 t1vars <- c("Gender","Age","YearsDx","HYstage0","FiveM_Wk0","FiveM_Tm0","TUG0",
             "UPDRS0","SixMn_Wk0","LEDD0")
@@ -103,6 +103,7 @@ sum(updrs0.mean > UL)/N
 quantile(updrs0.mean, c(0.025, 0.975))
 ```
 
+Figure 1: Bootstrap Distribution of Baseline UPDRS Score
 ```{r echo=FALSE, dpi=1200}
 hist(updrs0.mean,main = "Bootstrap distribution of means",xlab = "Baseline UPDRS Score")
 qqnorm(updrs0.mean)
@@ -133,6 +134,7 @@ sum(updrs4.mean > UL)/N
 quantile(updrs4.mean, c(0.025, 0.975))
 ```
 
+Figure 2: Bootstrap Distribution of 4 Month UPDRS Score
 ```{r echo=FALSE, dpi=1200}
 hist(updrs4.mean,main = "Bootstrap distribution of means",xlab = "4 Month UPDRS Score")
 qqnorm(updrs4.mean)
@@ -163,6 +165,7 @@ sum(updrs10.mean > UL)/N
 quantile(updrs10.mean, c(0.025, 0.975))
 ```
 
+Figure 3: Bootstrap Distribution of 10 Month UPDRS Score
 ```{r echo=FALSE, dpi=1200}
 hist(updrs10.mean,main = "Bootstrap distribution of means",xlab = "10 Month UPDRS Score")
 qqnorm(updrs10.mean)
@@ -174,13 +177,32 @@ fourmonth<- lm(updrsbaseto4mon ~ Group, data = dat)
 tenmonth <- lm(updrsbaseto10mon ~ Group, data = dat)
 ```
 
+Table 2a: Analysis of Variance Baseline to 4 Month UPDRS Score
 ```{r echo=FALSE}
 kable(anova(fourmonth))
+```
+
+Table 2b: Analysis of Variance Baseline to 10 Month UPDRS Score
+```{r echo=FALSE}
 kable(anova(tenmonth))
-summary(fourmonth)
-summary(tenmonth)
+```
+
+Table 3a: Parameter Estimates Baseline to 4 Month UPDRS Score
+```{r echo=FALSE}
+kable(tidy(fourmonth))
+```
+
+Table 3b: Parameter Estimates Baseline to 10 Month UPDRS Score
+```{r echo=FALSE}
+kable(tidy(tenmonth))
 ```
 
 # References
 Schenkman, M., Hall, D. A., Baron, A. E., Schwartz, R. S., Mettler, P., & Kohrt, W.M. (2012). Exercise for People in Early- or Mid-Stage Parkinson Disease: A 16-Month Randomized Controlled Trial. Physical Therapy, 92(11), 1395–1410. https://doi.org/10.2522/ptj.20110472
 
+```{r echo=FALSE,eval=FALSE, include=FALSE}
+# Write CSV to double check with SAS.
+sas <- dat
+sas[is.na(sas)] <- ""
+write.csv(sas,file = "/Users/timvigers/Desktop/PD.csv",row.names = F)
+```
