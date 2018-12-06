@@ -2,7 +2,10 @@
 title: "Methods Final Project"
 author: "Tim Vigers"
 date: "December 3, 2018"
-output: word_document
+output:
+  word_document:
+    fig_width: 6
+    fig_height: 3.5
 ---
 
 ```{r setup, include=FALSE}
@@ -30,19 +33,17 @@ Our secondary hypothesis was that participants randomized to the FBF program wou
 
 # Materials and Methods
 
-Participants had PD diagnosed by movement specialists and were in stages 1-3 of Hoehn and Yahr. Exclusion criteria included: "uncontrolled hypertension, on-state freezing or exercise limitations from other disorders, and Mini-Mental State Examination less than 24." (Schenkman et al., 2012) After completing baseline testing, 121 patients were randomized to one of the three exercise programs, stratified by sex. All study personnel were blinded to exercise group, and the UPDRS was performed by experienced physical therapists as baseline, 4 months, and 10 months. For the first 4 months of the study, FBF and AE patients participated in supervised exercise 3 days/week, after which supervision was tapered. CON patients were supervised 1 day/month for the duration of the study. All participants were encouraged to exercise 5-7 days per week, and were assisted with the development of long-term habits regardless of exercise group.   (Schenkman et al., 2012) 
+Participants had PD diagnosed by movement specialists and were in stages 1-3 of Hoehn and Yahr. Exclusion criteria included: "uncontrolled hypertension, on-state freezing or exercise limitations from other disorders, and Mini-Mental State Examination less than 24." (Schenkman et al., 2012) After completing baseline testing, 121 patients were randomized to one of the three exercise programs, stratified by sex. All study personnel were blinded to exercise group, and the UPDRS was performed by experienced physical therapists as baseline, 4 months, and 10 months. For the first 4 months of the study, FBF and AE patients participated in supervised exercise 3 days/week, after which supervision was tapered. CON patients were supervised 1 day/month for the duration of the study. All participants were encouraged to exercise 5-7 days per week, and were assisted with the development of long-term habits regardless of exercise group. (Schenkman et al., 2012) 
 
 # Analysis Plan
 
 Variables were assessed for normality using the Kolmogorov-Smirnov test. Continuous variables were compared using Analysis of Variance (ANOVA) or Kruskal-Wallis Rank Sum tests, and chi-square tests or Fisher’s exact tests were used for categorical variables. 
 
-Bootstrap distributions were generated for baseline, 4 month, and 10 month UPDRS scores, and normality of the sampling distributions was assessed. Approximately 5% of each distribution was beyond the bootstrap mean plus/minus 1.96SE, so the central limit theorem was assumed to hold for the primary outcome variables.
+Bootstrap distributions were generated for change from baseline to 4 months and baseline to 10 months, and normality of the sampling distributions was assessed. Approximately 5% of each distribution was beyond the bootstrap mean plus/minus 1.96SE (Table 2), so the central limit theorem was assumed to hold for the primary outcome variables.
 
-Analyses were performed using R version 3.5.1 (ahsfb) and descriptive statistics were compared using the “tableone” package (akjshvb).
+Linear models were used to assess the relationship between exercise group and change in UPDRS score. 
 
-# Results
-
-At baseline there were no significant differences between the three groups for gender, age, disease duration, Hoehn and Yahr stage, five meter walk in number of steps and seconds, timed up and go in seconds, total UPDRS score, six minute walk in meters, or Levodopa equivalents (mg/day).
+Analyses were performed using R version 3.5.1 (R Core Team, 2018) and descriptive statistics were compared using the “tableone” package (Yoshida & Bohn, 2018).
 
 ```{r echo=FALSE,include=FALSE}
 # Read in data.
@@ -70,8 +71,16 @@ rows <- rownames(print(t1,showAllLevels = T,nonnormal = nonnorms,
                        exact = "HYstage0"))
 t1 <- as.data.frame(print(t1,showAllLevels = T,nonnormal = nonnorms, 
                           exact = "HYstage0"))
-t1$` ` <- rows
+t1$` ` <- NA
 t1 <- t1[,c(" ","level","AE","CON","FBF","p","test")]
+t1[,1] <- c("n","Gender (%)","","Age (mean (sd))",
+            "Years with PD (median [IQR])"," Hoehn and Yahr stage (%)",
+            "","","","","Five meter walk number of steps (median [IQR])",
+            "Five meter walk in seconds (median [IQR])",
+            "Timed Up and Go in seconds (median [IQR])",
+            " Total score on UPDRS (mean (sd))",
+            "Six Minute Walk in meters (mean (sd))",
+            "Levodopa equivalents (mg/day) (median [IQR])")
 ```
 
 Table 1: Descriptive Characteristics at Baseline.
@@ -79,97 +88,60 @@ Table 1: Descriptive Characteristics at Baseline.
 kable(t1,row.names = F)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE,include=FALSE}
 # Generate bootstrap distribution of means.
 set.seed(1017)
-n <- length(dat$UPDRS0)
+n <- length(dat$updrsbaseto4mon)
 N <- 10^5
-updrs0.mean <- numeric(N)
+updrsbaseto4.mean <- numeric(N)
 for (i in 1:N) {
-  x <- sample(dat$UPDRS0,n,replace = T)
-  updrs0.mean[i] <- mean(x)
+  x <- sample(dat$updrsbaseto4mon,n,replace = T)
+  updrsbaseto4.mean[i] <- mean(x, na.rm = T)
 }
 # Obtain the 95% normal percentile and the 95% bootstrap percentile 
 # confidence intervals
-LL <- mean(updrs0.mean) - (1.96 * sd(updrs0.mean))
-UL <- mean(updrs0.mean) + (1.96 * sd(updrs0.mean))
-LL
-UL
+LL.4 <- mean(updrsbaseto4.mean) - (1.96 * sd(updrsbaseto4.mean))
+UL.4 <- mean(updrsbaseto4.mean) + (1.96 * sd(updrsbaseto4.mean))
 # Coverage of CI at lower end
-sum(updrs0.mean < LL)/N
+low.coverage.4 <- sum(updrsbaseto4.mean < LL.4)/N
 # Coverage of CI at upper end
-sum(updrs0.mean > UL)/N
+high.coverage.4 <- sum(updrsbaseto4.mean > UL.4)/N
 # Bootstrap percentile 95% CI
-quantile(updrs0.mean, c(0.025, 0.975))
-```
-
-Figure 1: Bootstrap Distribution of Baseline UPDRS Score
-```{r echo=FALSE, dpi=1200}
-hist(updrs0.mean,main = "Bootstrap distribution of means",xlab = "Baseline UPDRS Score")
-qqnorm(updrs0.mean)
-qqline(updrs0.mean)
+bootstrap.quant.4 <- quantile(updrsbaseto4.mean, c(0.025, 0.975))
 ```
 
 ```{r echo=FALSE}
 # Generate bootstrap distribution of means.
 set.seed(1017)
-n <- length(dat$UPDRS4)
+n <- length(dat$updrsbaseto10mon)
 N <- 10^5
-updrs4.mean <- numeric(N)
+updrsbaseto10.mean <- numeric(N)
 for (i in 1:N) {
-  x <- sample(dat$UPDRS4,n,replace = T)
-  updrs4.mean[i] <- mean(x,na.rm = T)
+  x <- sample(dat$updrsbaseto10mon,n,replace = T)
+  updrsbaseto10.mean[i] <- mean(x,na.rm = T)
 }
 # Obtain the 95% normal percentile and the 95% bootstrap percentile 
 # confidence intervals
-LL <- mean(updrs4.mean) - (1.96 * sd(updrs4.mean))
-UL <- mean(updrs4.mean) + (1.96 * sd(updrs4.mean))
-LL
-UL
+LL.10 <- mean(updrsbaseto10.mean) - (1.96 * sd(updrsbaseto10.mean))
+UL.10 <- mean(updrsbaseto10.mean) + (1.96 * sd(updrsbaseto10.mean))
 # Coverage of CI at lower end
-sum(updrs4.mean < LL)/N
+low.coverage.10 <- sum(updrsbaseto10.mean < LL.10)/N
 # Coverage of CI at upper end
-sum(updrs4.mean > UL)/N
+high.coverage.10 <- sum(updrsbaseto10.mean > UL.10)/N
 # Bootstrap percentile 95% CI
-quantile(updrs4.mean, c(0.025, 0.975))
-```
-
-Figure 2: Bootstrap Distribution of 4 Month UPDRS Score
-```{r echo=FALSE, dpi=1200}
-hist(updrs4.mean,main = "Bootstrap distribution of means",xlab = "4 Month UPDRS Score")
-qqnorm(updrs4.mean)
-qqline(updrs4.mean)
-```
-
-```{r echo=FALSE}
-# Generate bootstrap distribution of means.
-set.seed(1017)
-n <- length(dat$UPDRS10)
-N <- 10^5
-updrs10.mean <- numeric(N)
-for (i in 1:N) {
-  x <- sample(dat$UPDRS10,n,replace = T)
-  updrs10.mean[i] <- mean(x,na.rm = T)
-}
-# Obtain the 95% normal percentile and the 95% bootstrap percentile 
-# confidence intervals
-LL <- mean(updrs10.mean) - (1.96 * sd(updrs10.mean))
-UL <- mean(updrs10.mean) + (1.96 * sd(updrs10.mean))
-LL
-UL
-# Coverage of CI at lower end
-sum(updrs10.mean < LL)/N
-# Coverage of CI at upper end
-sum(updrs10.mean > UL)/N
-# Bootstrap percentile 95% CI
-quantile(updrs10.mean, c(0.025, 0.975))
-```
-
-Figure 3: Bootstrap Distribution of 10 Month UPDRS Score
-```{r echo=FALSE, dpi=1200}
-hist(updrs10.mean,main = "Bootstrap distribution of means",xlab = "10 Month UPDRS Score")
-qqnorm(updrs10.mean)
-qqline(updrs10.mean)
+bootstrap.quant.10 <- quantile(updrsbaseto10.mean, c(0.025, 0.975))
+# Results table
+bootstrap.results <- as.data.frame(matrix(nrow = 4,ncol = 3))
+colnames(bootstrap.results) <- c("","Baseline to 4 Month Change",
+                                 "Baseline to 10 Month Change")
+bootstrap.results[,1] <- c("Low End Distribution Coverage (%)",
+                           "High End Distribution Coverage (%)",
+                           "2.5%ile Value (Score Change)",
+                           "97.5%ile Value (Score Change)")
+bootstrap.results[,2] <- round(c(low.coverage.4*100,
+                                 high.coverage.4*100,bootstrap.quant.4),2)
+bootstrap.results[,3] <- round(c(low.coverage.10*100,
+                                 high.coverage.10*100,bootstrap.quant.10),2)
 ```
 
 ```{r echo=FALSE, include=FALSE}
@@ -177,28 +149,80 @@ fourmonth<- lm(updrsbaseto4mon ~ Group, data = dat)
 tenmonth <- lm(updrsbaseto10mon ~ Group, data = dat)
 ```
 
-Table 2a: Analysis of Variance Baseline to 4 Month UPDRS Score
+Table 2: Bootstrap Variables
+```{r echo=FALSE}
+kable(bootstrap.results)
+```
+
+Table 3a: Analysis of Variance Baseline to 4 Month UPDRS Score
 ```{r echo=FALSE}
 kable(anova(fourmonth))
 ```
 
-Table 2b: Analysis of Variance Baseline to 10 Month UPDRS Score
+Table 4a: Analysis of Variance Baseline to 10 Month UPDRS Score
 ```{r echo=FALSE}
 kable(anova(tenmonth))
 ```
 
-Table 3a: Parameter Estimates Baseline to 4 Month UPDRS Score
+# Results
+
+At baseline there were no significant differences between the three groups for gender, age, disease duration, Hoehn and Yahr stage, five meter walk in number of steps and seconds, timed up and go in seconds, total UPDRS score, six minute walk in meters, or Levodopa equivalents (Table 1). 
+
+This study did not find any significant difference in UPDRS score from baseline to 4 months (p = 0.395) or from baseline to 10 months (p = 0.322). There were also no differences in UPDRS score change between the standard aerobic endurance program, the flexibility/balance/function program, and the recommended series of at-home exercises, either over a month period or a 10 month period. However, a follow-up study one year after program completion found that participant quality of life continued to benefit post-study (Ene et al., 2011). See appendix for complete results.
+
+# Discussion
+
+
+
+\pagebreak
+
+# References
+
+Ene, H., et al. (2011). "Attitudes toward exercise following participation in an exercise intervention study." J Neurol Phys Ther 35(1): 34-40.
+
+Kazuki Yoshida and Justin Bohn. (2018). tableone: Create 'Table 1' to Describe Baseline Characteristics. R package version 0.9.3. https://CRAN.R-project.org/package=tableone
+
+R Core Team (2018). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+Schenkman, M., Hall, D. A., Baron, A. E., Schwartz, R. S., Mettler, P., & Kohrt, W.M. (2012). Exercise for People in Early- or Mid-Stage Parkinson Disease: A 16-Month Randomized Controlled Trial. Physical Therapy, 92(11), 1395–1410. https://doi.org/10.2522/ptj.20110472
+
+\pagebreak
+
+# Appendix
+
+Figure 1: Bootstrap Distribution of 4 Month Change in UPDRS Score
+```{r echo=FALSE, dpi=1200}
+hist(updrsbaseto4.mean,main = "Bootstrap distribution of means",xlab = "Baseline to 4 Month Change in UPDRS Score")
+qqnorm(updrsbaseto4.mean)
+qqline(updrsbaseto4.mean)
+```
+
+Figure 2: Bootstrap Distribution of 10 Month Change in UPDRS Score
+```{r echo=FALSE, dpi=1200}
+hist(updrsbaseto10.mean,main = "Bootstrap distribution of means",xlab = "Baseline to 10 Month Change in UPDRS Score")
+qqnorm(updrsbaseto10.mean)
+qqline(updrsbaseto10.mean)
+```
+
+Table 3b: Parameter Estimates Baseline to 4 Month UPDRS Score
 ```{r echo=FALSE}
 kable(tidy(fourmonth))
 ```
 
-Table 3b: Parameter Estimates Baseline to 10 Month UPDRS Score
+Table 4b: Parameter Estimates Baseline to 10 Month UPDRS Score
 ```{r echo=FALSE}
 kable(tidy(tenmonth))
 ```
 
-# References
-Schenkman, M., Hall, D. A., Baron, A. E., Schwartz, R. S., Mettler, P., & Kohrt, W.M. (2012). Exercise for People in Early- or Mid-Stage Parkinson Disease: A 16-Month Randomized Controlled Trial. Physical Therapy, 92(11), 1395–1410. https://doi.org/10.2522/ptj.20110472
+Table 5a: Comparison of Baseline and 4 month UPDRS Scores
+```{r echo=FALSE}
+kable(tidy(t.test(dat$UPDRS0,dat$UPDRS4,paired = T)))
+```
+
+Table 5b: Comparison of Baseline and 10 month UPDRS Scores
+```{r echo=FALSE}
+kable(tidy(t.test(dat$UPDRS0,dat$UPDRS10,paired = T)))
+```
 
 ```{r echo=FALSE,eval=FALSE, include=FALSE}
 # Write CSV to double check with SAS.
