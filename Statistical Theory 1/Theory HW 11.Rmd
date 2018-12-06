@@ -1,0 +1,52 @@
+---
+title: "Theory Homework 11"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 12. 
+### a. 
+
+$$
+P(X_{(7)} \leq 3) = \sum_7^{20}{20\choose{k}}(0.3)^{k}(1-0.3)^{20-{k}}
+$$
+
+```{r}
+sum(dbinom(size = 20,prob = 0.3,x=c(7:20)))
+```
+
+###b. 
+
+$$
+P(X_{(8)} \geq 5) = 1- \sum_8^{20}{20\choose{k}}(0.4)^{k}(1-0.4)^{20-{k}}
+$$
+
+```{r}
+1 - sum(dbinom(size = 20,prob = 0.4,x=c(8:20)))
+```
+
+###c. 
+
+$$
+P(X_{(20)} \leq 7) = \sum_{20}^{20}{20\choose20}(0.2)^{k}(1-0.2)^{20-k} = (0.2)^{20}
+$$
+
+```{r}
+sum(dbinom(size = 20,prob = 0.2,x=c(20)))
+(0.2)^20
+```
+
+###d. 
+
+$$
+P(X_{(4)} = 3) = \sum_4^{20}{20\choose{k}}(((0.3)^{k}(1-0.3)^{20-k}) - ((0.2)^{k}(1-0.2)^{20-k}))
+$$
+
+```{r}
+sum(dbinom(size = 20,prob = 0.3,x=c(4:20)) - dbinom(size = 20,prob = 0.2,x=c(4:20)))
+```
