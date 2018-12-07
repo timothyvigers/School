@@ -1,5 +1,5 @@
 ---
-title: "Methods Final Project"
+title: "The Effect of Exercise Programs in Early- and Mid-Stage Parkinson’s Disease"
 author: "Tim Vigers"
 date: "December 3, 2018"
 output:
@@ -23,7 +23,7 @@ library(broom)
 
 # Introduction
 
-Parkinson's Disease (PD) is a neurodegenerative disorder that is expected to affect between 8-9 million people worldwide by 2030, an is generally treated with a combination of pharmacology and surgery. There is some evidence suggesting that exercise improves function and quality of life in individuals with PD as well, but there is currently no consensus regarding physiotherapy best practices. This study was designed to compare three forms of exercise intervention: a standard aerobic endurance program (AE), a flexibility/balance/function (FBF) program designed for people with PD, and a series of at-home exercises as recommended by the National Parkinson's Foundation (CON). The primary outcome for this study was improvement on the on the Unified Parkinson’s Disease Rating Scale (UPDRS) from baseline to 4 months (the end of the supervised period) and baseline to 10 months. At the time of data collection, the UPDRS was the gold standard for assessing PD severity (Schenkman et al., 2012). 
+Parkinson's Disease (PD) is a neurodegenerative disorder that is expected to affect between 8-9 million people worldwide by 2030 and is generally treated with a combination of pharmacology and surgery. There is some evidence suggesting that exercise improves function and quality of life in individuals with PD as well, but there is currently no consensus regarding physiotherapy best practices. This study was designed to compare three forms of exercise intervention: a standard aerobic endurance program (AE), a flexibility/balance/function (FBF) program designed for people with PD, and a series of at-home exercises as recommended by the National Parkinson's Foundation (CON). The primary outcome for this study was improvement on the on the Unified Parkinson’s Disease Rating Scale (UPDRS) from baseline to 4 months (the end of the supervised period) and baseline to 10 months. At the time of data collection, the UPDRS was the gold standard for assessing PD severity (Schenkman et al., 2012). 
 
 # Hypothesis
 
