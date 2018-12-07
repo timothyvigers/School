@@ -23,7 +23,7 @@ library(broom)
 
 # Introduction
 
-Parkinson's Disease (PD) is a neurodegenerative disorder that is expected to affect between 8-9 million people worldwide by 2030, an is generally treated with a combination of pharmacology and surgery. There is some evidence suggesting that exercise improves function and quality of life in individuals with PD, but there is currently no consensus regarding physiotherapy best practices. This study was designed to compare three forms of exercise intervention: a standard aerobic endurance program (AE), a flexibility/balance/function (FBF) program designed for people with PD, and a series of at-home exercises as recommended by the National Parkinson's Foundation (CON). The primary outcome for this study was improvement on the on the Unified Parkinson’s Disease Rating Scale (UPDRS) from baseline to 4 months (the end of the supervised period) and baseline to 10 months. At the time of data collection, the UPDRS was the gold standard for assessing PD severity (Schenkman et al., 2012). 
+Parkinson's Disease (PD) is a neurodegenerative disorder that is expected to affect between 8-9 million people worldwide by 2030, an is generally treated with a combination of pharmacology and surgery. There is some evidence suggesting that exercise improves function and quality of life in individuals with PD as well, but there is currently no consensus regarding physiotherapy best practices. This study was designed to compare three forms of exercise intervention: a standard aerobic endurance program (AE), a flexibility/balance/function (FBF) program designed for people with PD, and a series of at-home exercises as recommended by the National Parkinson's Foundation (CON). The primary outcome for this study was improvement on the on the Unified Parkinson’s Disease Rating Scale (UPDRS) from baseline to 4 months (the end of the supervised period) and baseline to 10 months. At the time of data collection, the UPDRS was the gold standard for assessing PD severity (Schenkman et al., 2012). 
 
 # Hypothesis
 
@@ -33,17 +33,15 @@ Our secondary hypothesis was that participants randomized to the FBF program wou
 
 # Materials and Methods
 
-Participants had PD diagnosed by movement specialists and were in stages 1-3 of Hoehn and Yahr. Exclusion criteria included: "uncontrolled hypertension, on-state freezing or exercise limitations from other disorders, and Mini-Mental State Examination less than 24." (Schenkman et al., 2012) After completing baseline testing, 121 patients were randomized to one of the three exercise programs, stratified by sex. All study personnel were blinded to exercise group, and the UPDRS was performed by experienced physical therapists as baseline, 4 months, and 10 months. For the first 4 months of the study, FBF and AE patients participated in supervised exercise 3 days/week, after which supervision was tapered. CON patients were supervised 1 day/month for the duration of the study. All participants were encouraged to exercise 5-7 days per week, and were assisted with the development of long-term habits regardless of exercise group. (Schenkman et al., 2012) 
+Participants had PD diagnosed by movement specialists and were in stages 1-3 of Hoehn and Yahr. Exclusion criteria included: "uncontrolled hypertension, on-state freezing or exercise limitations from other disorders, and Mini-Mental State Examination less than 24." (Schenkman et al., 2012) After completing baseline testing, 121 patients were randomized to one of the three exercise programs, stratified by sex. All study personnel were blinded to exercise group, and the UPDRS test was performed by experienced physical therapists as baseline, 4 months, and 10 months. For the first 4 months of the study, FBF and AE patients participated in supervised exercise 3 days/week, after which supervision was tapered. CON patients were supervised 1 day/month for the duration of the study. All participants were encouraged to exercise 5-7 days per week, and were assisted with the development of long-term habits regardless of exercise group. (Schenkman et al., 2012) 
 
 # Analysis Plan
 
 Variables were assessed for normality using the Kolmogorov-Smirnov test. Continuous variables were compared using Analysis of Variance (ANOVA) or Kruskal-Wallis Rank Sum tests, and chi-square tests or Fisher’s exact tests were used for categorical variables. 
 
-Bootstrap distributions were generated for change from baseline to 4 months and baseline to 10 months, and normality of the sampling distributions was assessed. Approximately 5% of each distribution was beyond the bootstrap mean plus/minus 1.96SE (Table 2), so the central limit theorem was assumed to hold for the primary outcome variables.
+Bootstrap distributions were generated for change from baseline to 4 months and baseline to 10 months, and normality of the sampling distributions was assessed. Approximately 5% of each distribution was beyond the bootstrap mean plus/minus 1.96SE (Table A2), so the central limit theorem was assumed to hold for the primary outcome variables.
 
-Linear models were used to assess the relationship between exercise group and change in UPDRS score. 
-
-Analyses were performed using R version 3.5.1 (R Core Team, 2018) and descriptive statistics were compared using the “tableone” package (Yoshida & Bohn, 2018).
+Linear models were used to assess the relationship between exercise group and change in UPDRS score. Analyses were performed using R version 3.5.1 (R Core Team, 2018) and descriptive statistics were compared using the “tableone” package (Yoshida & Bohn, 2018).
 
 ```{r echo=FALSE,include=FALSE}
 # Read in data.
@@ -75,17 +73,12 @@ t1$` ` <- NA
 t1 <- t1[,c(" ","level","AE","CON","FBF","p","test")]
 t1[,1] <- c("n","Gender (%)","","Age (mean (sd))",
             "Years with PD (median [IQR])"," Hoehn and Yahr stage (%)",
-            "","","","","Five meter walk number of steps (median [IQR])",
-            "Five meter walk in seconds (median [IQR])",
+            "","","","","Five-meter walk number of steps (median [IQR])",
+            "Five-meter walk in seconds (median [IQR])",
             "Timed Up and Go in seconds (median [IQR])",
             " Total score on UPDRS (mean (sd))",
-            "Six Minute Walk in meters (mean (sd))",
+            "Six-minute Walk in meters (mean (sd))",
             "Levodopa equivalents (mg/day) (median [IQR])")
-```
-
-Table 1: Descriptive Characteristics at Baseline.
-```{r echo=FALSE}
-kable(t1,row.names = F)
 ```
 
 ```{r echo=FALSE,include=FALSE}
@@ -149,32 +142,29 @@ fourmonth<- lm(updrsbaseto4mon ~ Group, data = dat)
 tenmonth <- lm(updrsbaseto10mon ~ Group, data = dat)
 ```
 
-Table 2: Bootstrap Variables
-```{r echo=FALSE}
-kable(bootstrap.results)
-```
+# Results
 
-Table 3a: Analysis of Variance Baseline to 4 Month UPDRS Score
+Table 1: Analysis of Variance Baseline to 4 Month UPDRS Score
 ```{r echo=FALSE}
 kable(anova(fourmonth))
 ```
 
-Table 4a: Analysis of Variance Baseline to 10 Month UPDRS Score
+Table 2: Analysis of Variance Baseline to 10 Month UPDRS Score
 ```{r echo=FALSE}
 kable(anova(tenmonth))
 ```
 
-# Results
+At baseline there were no significant differences between the three groups for gender, age, disease duration, Hoehn and Yahr stage, five-meter walk in number of steps and seconds, timed up and go in seconds, total UPDRS score, six-minute walk in meters, or Levodopa equivalents (Table A1). 
 
-At baseline there were no significant differences between the three groups for gender, age, disease duration, Hoehn and Yahr stage, five meter walk in number of steps and seconds, timed up and go in seconds, total UPDRS score, six minute walk in meters, or Levodopa equivalents (Table 1). 
-
-This study did not find any significant difference in UPDRS score from baseline to 4 months (p = 0.395) or from baseline to 10 months (p = 0.322). There were also no differences in UPDRS score change between the standard aerobic endurance program, the flexibility/balance/function program, and the recommended series of at-home exercises, either over a month period or a 10 month period. However, a follow-up study one year after program completion found that participant quality of life continued to benefit post-study (Ene et al., 2011). See appendix for complete results.
+This study did not find any significant difference in UPDRS score from baseline to 4 months (p = 0.593) or from baseline to 10 months (p = 0.322). There were also no differences in UPDRS score change between the standard aerobic endurance program, the flexibility/balance/function program, and the recommended series of at-home exercises, either over a 4 month period (Table A3) or a 10 month period (Table A4). However, a follow-up study one year after program completion found that participant quality of life continued to benefit post-study (Ene et al., 2011).
 
 # Discussion
 
+Although there were no significant changes from baseline for any of the exercise groups, the results of this study are still somewhat encouraging. Based on the normal progression of PD, UPDRS scores would be expected to decrease by 2-3 points per year without intervention (Schenkman et al., 2012), and the average decline for this cohort was approximately 1 point. 
 
+Retention was relatively high for a long-term intervention study (Schenkman et al., 2012), but approximately 13% of participants were missing data at the 4 month timepoint and almost 20% were lost to follow-up at 10 months. It is possible that a self-selection bias caused participants with more severe PD, who may have benfitted more from the exercise programs, to withdraw from the study. It is also possible that the UPDRS score is too general an outcome measure for assessing the impact of exercise. Finally, exercise adherence was measured by self-reported activity diaries, which are known to be inaccurate. 
 
-\pagebreak
+While our results are not statistically significant, the qualitative improvements reported by participants and the limitations of this study suggest that further research is warranted. It would be worthwhile comparing these exercise programs again over a longer period of time using activity monitoring, and to gauge their impact on motor function-specific PD measures.
 
 # References
 
@@ -186,42 +176,52 @@ R Core Team (2018). R: A language and environment for statistical computing. R F
 
 Schenkman, M., Hall, D. A., Baron, A. E., Schwartz, R. S., Mettler, P., & Kohrt, W.M. (2012). Exercise for People in Early- or Mid-Stage Parkinson Disease: A 16-Month Randomized Controlled Trial. Physical Therapy, 92(11), 1395–1410. https://doi.org/10.2522/ptj.20110472
 
-\pagebreak
-
 # Appendix
 
-Figure 1: Bootstrap Distribution of 4 Month Change in UPDRS Score
+Table A1: Descriptive Characteristics at Baseline.
+```{r echo=FALSE}
+kable(t1[,1:6],row.names = F)
+```
+
+Table A2: Bootstrap Variables
+```{r echo=FALSE}
+kable(bootstrap.results)
+```
+
+Figure A1: Bootstrap Distribution of 4 Month Change in UPDRS Score
 ```{r echo=FALSE, dpi=1200}
 hist(updrsbaseto4.mean,main = "Bootstrap distribution of means",xlab = "Baseline to 4 Month Change in UPDRS Score")
 qqnorm(updrsbaseto4.mean)
 qqline(updrsbaseto4.mean)
 ```
 
-Figure 2: Bootstrap Distribution of 10 Month Change in UPDRS Score
+Figure A2: Bootstrap Distribution of 10 Month Change in UPDRS Score
 ```{r echo=FALSE, dpi=1200}
 hist(updrsbaseto10.mean,main = "Bootstrap distribution of means",xlab = "Baseline to 10 Month Change in UPDRS Score")
 qqnorm(updrsbaseto10.mean)
 qqline(updrsbaseto10.mean)
 ```
 
-Table 3b: Parameter Estimates Baseline to 4 Month UPDRS Score
+Table A3: Parameter Estimates Baseline to 4 Month UPDRS Score
 ```{r echo=FALSE}
 kable(tidy(fourmonth))
 ```
 
-Table 4b: Parameter Estimates Baseline to 10 Month UPDRS Score
+Table A4: Parameter Estimates Baseline to 10 Month UPDRS Score
 ```{r echo=FALSE}
 kable(tidy(tenmonth))
 ```
 
-Table 5a: Comparison of Baseline and 4 month UPDRS Scores
+Table A5: Comparison of Baseline and 4 Month UPDRS Scores
 ```{r echo=FALSE}
-kable(tidy(t.test(dat$UPDRS0,dat$UPDRS4,paired = T)))
+a5 <- as.data.frame(tidy(t.test(dat$UPDRS0,dat$UPDRS4,paired = T)))
+kable(a5[,1:3])
 ```
 
-Table 5b: Comparison of Baseline and 10 month UPDRS Scores
+Table A6: Comparison of Baseline and 10 month UPDRS Scores
 ```{r echo=FALSE}
-kable(tidy(t.test(dat$UPDRS0,dat$UPDRS10,paired = T)))
+a6 <- as.data.frame(tidy(t.test(dat$UPDRS0,dat$UPDRS10,paired = T)))
+kable(a6[,1:3])
 ```
 
 ```{r echo=FALSE,eval=FALSE, include=FALSE}
