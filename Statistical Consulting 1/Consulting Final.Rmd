@@ -9,15 +9,15 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##a. Sample size calculations with pilot data
-###i. Assuming known variance
+## a. Sample size calculations with pilot data
+### i. Assuming known variance
 
 ```{r echo=FALSE, include=FALSE}
 # Read in data.
 bpdata <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Statistical Consulting 1/Final Exam/BIOS6621exam.csv")
 ```
 
-Using the SD of BP change from the pilot dataset (excluding two outliers):
+Using the standard deviation (SD) of blood pressure (BP) change from the pilot dataset (excluding two outliers):
 
 ```{r echo=FALSE,include=FALSE}
 # Calculate changes
@@ -34,9 +34,10 @@ dd <- 5
 $$
 n = \frac{\sigma^2(Z_{0.9}+Z_{0.975})^2}{(\text{detectable difference})^2}=\frac{8.263^2 (1.282+1.960)^2}{(5)^2}=\frac{716.669}{25}=28.667
 $$
+
 So, with 29 participants you would be able to detect a 5 mmHg difference with 90% power at the alpha = 0.05 level (assuming known variance).
 
-###ii. Assuming an unknown variance
+### ii. Assuming an unknown variance
 
 Using R's built-in power calculation function:
 ```{r}
@@ -45,8 +46,8 @@ power.t.test(delta = 5, sd = sigma, power = 0.9, type = "one.sample")
 
 With an unknown variance, R recommends a sample size of 31 participants.
 
-##a. Sample size calculations based on He, F. J., et al. (2009).
-###i. Assuming known variance
+## a. Sample size calculations based on He, F. J., et al. (2009).
+### i. Assuming known variance
 
 To calculate SD from He et al.'s mean change and 95% CI:
 
@@ -68,7 +69,7 @@ $$
 n = \frac{\sigma^2(Z_{0.9}+Z_{0.975})^2}{(\text{detectable difference})^2}=\frac{7.296^2 (1.282+1.960)^2}{(5)^2}=\frac{559.494}{25}=22.380
 $$
 
-###ii. Assuming an unknown variance
+### ii. Assuming an unknown variance
 
 Using R's built-in power calculation function:
 ```{r}
@@ -77,5 +78,26 @@ power.t.test(delta = 5, sd = sigma2, power = 0.9, type = "one.sample")
 
 With an unknown variance, R recommends a sample size of 25 participants.
 
-##b. Sample size summary
-The standard deviation for AZ after a 2 mg dose of zinc was used as an estimate of within group variation.  This value is 0.35 mg/day.  Assuming an alpha level of 0.05 for a two-sided test comparing two groups, a sample size of 9 subjects per group provides 90% power to detect a difference in AZ between groups of 0.6 mg/day.  This is a clinically meaningful difference that we consider a realistic expectation of the intervention in this study.  Assuming a drop-out rate of 20%, we will recruit 11 subjects per group.  
+## b. Sample size summary
+
+Two different but similar standard deviations were used as estimates for variation of BP change. The first was calculated from pilot data after excluding two outliers, and was approximately 8.263 mmHg. The second was calculated from He et al.'s 2009 study. This SD was calculated from mean change and a 95% CI (assuming normality), and was approximately 7.296 mmHg. All sample size calculations were performed assuming a two-sided alpha level of 0.05 and a desired power of 90% to predict a change in systolic BP of 5 mmHg. Sample size was calculated assuming both known and unknown variance.
+
+Using the SD estimate based on pilot data, assuming known and unknown variance resulted in sample sizes of 29 and 31, respectively. 
+
+Using the SD estimate based on He et al., assuming known and unknown variance resulted in sample sizes of 23 and 25, respectively. 
+
+```{r echo=FALSE}
+ntable <- matrix(ncol = 2,nrow = 2)
+dimnames(ntable) <- list(Source = c("Pilot","He Study"),Variance = c("Known","Unknown"))
+ntable[1,] <- c(29,31)
+ntable[2,] <- c(23,25)
+ntable
+```
+
+  Because these estimates are relatively close, and we don't anticipate any trouble recruiting participants, we will aim to enroll 35 participants. This assumes a sample failure rate of about 10%. 
+
+\pagebreak
+
+References
+
+1. He, F. J., et al. (2009). "Effect of modest salt reduction on blood pressure, urinary albumin, and pulse wave velocity in white, black, and Asian mild hypertensives." Hypertension 54(3): 482-488.
