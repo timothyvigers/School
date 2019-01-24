@@ -9,15 +9,20 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r echo=FALSE,include=FALSE}
+# Load libraries
+library(car)
 # Read in data
 hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",sep = " ",header = T)
-
 ```
 
 # 1. First consider transforming covariates and the outcome.
 ## a. Is categorization necessary for BMI?
 
 ```{r}
-
+polymod <- lm(sodium ~ bmi + I(bmi^2) + I(bmi^3) + I(bmi^4),data = hyponat)
+anova(polymod)
+vif(polymod)
 ```
+
+The quadratic BMI term is significant, and the VIF values for the polynomials are really large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical. 
