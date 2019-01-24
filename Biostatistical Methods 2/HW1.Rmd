@@ -1,0 +1,23 @@
+---
+title: 'Methods II: Homework 1'
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Read in data
+hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",sep = " ",header = T)
+
+```
+
+# 1. First consider transforming covariates and the outcome.
+## a. Is categorization necessary for BMI?
+
+```{r}
+
+```
