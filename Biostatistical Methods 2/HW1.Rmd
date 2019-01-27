@@ -12,15 +12,16 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r echo=FALSE,include=FALSE}
+```{r}
 # Load libraries
 library(car)
 library(nortest)
+library(MASS)
 # Read in data
 hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",sep = " ",header = T)
 ```
 
-# 1. First consider transforming covariates and the outcome.
+# 1. Consider transforming covariates and the outcome.
 ## a. Is categorization necessary for BMI?
 
 ```{r}
@@ -81,3 +82,58 @@ lillie.test(I(log(hyponat$sodium)))
 ```
 
 Log transforming the outcome clearly doesn't change much (the log transformed outcome is still not normally distributed, and the histograms look very similar). So, I would keep the outcome as it is, especially since it's generally best to avoid transforming the outcome if possible.
+
+# 2. Run the single variable analyses.
+
+```{r}
+vars <- colnames(hyponat)[-c(which(colnames(hyponat)=="sodium"))]
+univar <- lapply(vars, function(x){
+  summary(lm(as.formula(paste0("sodium ~ ",x)), data = hyponat))
+})
+univar
+```
+
+## a. Which variables are associated with sodium levels at the 0.05 level of significance?
+
+Based on the above output, the variables significantly associated with sodium are: female, lwobup01, fluidfr3, wtdiff, runtime, trainpse. So sex, whether you use anti-inflammatory medications, fluid intake frequency, weight change during the marathon, how quickly you run the marathon, and your training pace are all associated with sodium levels. 
+
+## b. How do these univariate analyses compare to the original paper where sodium levels were dichotomous?
+
+The paper concluded that "considerable weight gain while running, a long racing time, and bodymass index extremes were associated with hyponatremia, whereas female sex, composition of fluids ingested, and use of nonsteroidal anti-inflammatory drugs were not." So our analyses agree that weight change and running time are associated with sodium. However, we did not find that BMI was associated (when treated as a continuous or a categorical variable), and did find that sex and use of NSAIDs were. 
+
+# 3. Multivariable analyses with stepwise regression based on AIC
+
+```{r}
+sigvars <- c("female","lwobup01","fluidfr3","wtdiff","runtime","trainpse","bmiC")
+sigvars <- paste(sigvars,collapse = " + ")
+formula <- as.formula(paste0("sodium ~ ",sigvars))
+stepwise <- stepAIC(lm(formula, data = hyponat),direction = "both",trace = 0)
+stepwise
+```
+
+## a. What predictors are included in the final model?
+
+Using both forward and backward stepwise regression based in AIC, change in weight and anti-inflammatory usage are both associated with sodium level, and so is BMI category.
+
+## b. 
+
+There are a couple of problems with this method. First, it's possible that some variables are significant in a multiple regression model, but are not significant when tested on their own. Second, it doesn't take polynomial associations (e.g. BMI) or collinearity into account. Lastly, this way of approaching things doesn't really think about the scientific question. All of the variables in this data set make sense to test, but many data sets include lots of variables that don't make sense with the question at hand, so just using this approach without thinking can end up including nonsensical variables in the model. 
+
+# 4. Partial F test with all covariates with a p-value less than 0.1
+
+```{r}
+sigvars <- c("female","lwobup01","fluidfr3","wtdiff","runtime","trainpse","bmiC")
+sigvars <- paste(sigvars,collapse = " + ")
+formula <- as.formula(paste0("sodium ~ ",sigvars))
+anova(lm(formula, data = hyponat))
+```
+
+## a. What predictors are included in the final model?
+
+The predictors in this model are the same as above. Changing the alpha level to 0.1 instead of 0.05 did not alter which variables were considered significant (i.e. there were no p values > 0.05 and < 0.1).
+
+## b. What are the results of the F test?
+
+Based on this ANOVA table, we would keep sex, NSAID usage, fluid frequency, and weight change in the model. 
+
+# 5. 
