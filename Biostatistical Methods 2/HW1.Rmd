@@ -20,14 +20,33 @@ hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics
 ## a. Is categorization necessary for BMI?
 
 ```{r}
-polymod <- lm(sodium ~ bmi + I(bmi^2) + I(bmi^3) + I(bmi^4),data = hyponat)
-anova(polymod)
+mod <- lm(sodium ~ bmi,data = hyponat)
+summary(mod)
+polymod <- lm(sodium ~ bmi + I(bmi^2),data = hyponat)
+summary(polymod)
 vif(polymod)
 hyponat$bmiC <- cut(hyponat$bmi,c(0,20,25,Inf))
 ```
 
-The quadratic BMI term is significant, and the VIF values for the polynomials are really large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical. 
+The quadratic BMI term is significant, and the VIF values for the polynomials are large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical as long as doing so makes scientific sense. In the case of BMI, it does make sense to split people into categorical groups like underweight, normal, and overweight. This removes the collinearity concern, and the model is still easily interpretable. 
 
 WHY CATEGORICAL?
 
 ## b. Should the number of previous marathons run be dichotomized?
+
+```{r}
+hist(hyponat$howmany)
+```
+
+The number of previous marathons is very skewed, which violates the assumption of normality. So dichotomizing this variable at the median is a good idea.
+
+## c. Is there a quadratic relationship between weight change and sodium levels?
+
+```{r}
+mod <- lm(sodium ~ wtdiff, data = hyponat)
+polymod <- lm(sodium ~ wtdiff + I(wtdiff^2),data = hyponat)
+summary(polymod)
+anova(mod,polymod)
+```
+
+Because the partial F test is significant at the 0.05 level, there does appear to be a quadratic relationship between weight change and sodium levels.
