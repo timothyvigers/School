@@ -9,10 +9,25 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Dear Retired,
+
+Thanks for getting in touch! Below are the results of a quick t-test between your "on" and "off" groups. While on the drug your average number of nightly urinations is 2.5, while off drug the average is 4.34, and this difference appears to be statistically significant (p < 0.0001).
+
+I'll let you decide whether this counts as highly efficacious, but I'm sure you'll understand that I can't recommend basing medical decisions on just this kind of analysis. I would suggest looking at the results of clinical trials as well.
+
+Best,
+Tim
+
+
 ```{r echo=FALSE}
 # Make dataframe
 on <- c(1,1,2,2,3,1,0,3,3,2,5,2,1,3,2,1,1,2,1,2,2,2,2,1,1,5,1,2,3,1,2,5,1,5,3,3,3,2,5,2,3,4,3,4,5,3,4,3,2,3,5,2,2,3)
 off <- c(10,7,4,4,3,5,6,7,7,3,5,2,4,4,6,3,6,2,5,3,5,2,4,2,3,6,4,5,4,7,4,3,3,4,2,4,4,3)
 off <- c(off,rep(NA,times = (length(on) - length(off))))
 dat <- as.data.frame(cbind(on,off))
+```
+
+```{r echo=FALSE}
+test <- t.test(dat$on,dat$off)
+print(test)
 ```
