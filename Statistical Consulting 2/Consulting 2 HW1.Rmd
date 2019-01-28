@@ -1,7 +1,7 @@
 ---
-title: 'Consulting 2: Homework 1'
-author: "Tim Vigers"
-date: "1/27/2019"
+title: ''
+author: ""
+date: ""
 output: pdf_document
 ---
 
@@ -16,8 +16,8 @@ Thanks for getting in touch! Below are the results of a quick t-test between you
 I'll let you decide whether this counts as highly efficacious, but I'm sure you'll understand that I can't recommend basing medical decisions on just this kind of analysis. I would suggest looking at the results of clinical trials as well.
 
 Best,
-Tim
 
+Tim Vigers
 
 ```{r echo=FALSE}
 # Make dataframe
