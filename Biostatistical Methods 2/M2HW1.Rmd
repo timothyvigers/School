@@ -36,7 +36,7 @@ summary(category)
 AIC(polymod,category)
 ```
 
-# *Compare the categorical to the polynomial model (use AIC). Use mean centering to fix collinearity. 
+# *Compare the categorical to the polynomial model (use AIC). Use mean centering to fix collinearity. Add some model diagnostics as well.*
 
 The quadratic BMI term is significant, and the VIF values for the polynomials are large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical as long as doing so makes scientific sense. In the case of BMI, it does make sense to split people into categorical groups like underweight, normal, and overweight. This removes the collinearity concern, and the model is still easily interpretable. 
 
