@@ -31,7 +31,12 @@ polymod <- lm(sodium ~ bmi + I(bmi^2),data = hyponat)
 summary(polymod)
 vif(polymod)
 hyponat$bmiC <- cut(hyponat$bmi,c(0,20,25,Inf))
+category <- lm(sodium ~ bmiC, data = hyponat)
+summary(category)
+AIC(polymod,category)
 ```
+
+# *Compare the categorical to the polynomial model (use AIC). Use mean centering to fix collinearity. 
 
 The quadratic BMI term is significant, and the VIF values for the polynomials are large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical as long as doing so makes scientific sense. In the case of BMI, it does make sense to split people into categorical groups like underweight, normal, and overweight. This removes the collinearity concern, and the model is still easily interpretable. 
 
@@ -95,6 +100,8 @@ univar
 
 ## a. Which variables are associated with sodium levels at the 0.05 level of significance?
 
+# *Add bmiC to these
+
 Based on the above output, the variables significantly associated with sodium are: female, lwobup01, fluidfr3, wtdiff, runtime, trainpse. So sex, whether you use anti-inflammatory medications, fluid intake frequency, weight change during the marathon, how quickly you run the marathon, and your training pace are all associated with sodium levels. 
 
 ## b. How do these univariate analyses compare to the original paper where sodium levels were dichotomous?
@@ -136,4 +143,5 @@ The predictors in this model are the same as above. Changing the alpha level to 
 
 Based on this ANOVA table, we would keep sex, NSAID usage, fluid frequency, and weight change in the model. 
 
-# 5. 
+# 5. Why do you think that there are more significant covariates in the final model for a binary outcome than there are for a continuous outcome?
+
