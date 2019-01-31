@@ -1,0 +1,158 @@
+---
+title: 'Methods II: Homework 1'
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load libraries
+library(car)
+library(nortest)
+library(MASS)
+# Read in data
+hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",sep = " ",header = T)
+```
+
+# 1. Consider transforming covariates and the outcome.
+## a. Is categorization necessary for BMI?
+The quadratic BMI term is significant, and the VIF values for the polynomials are large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical as long as doing so makes scientific sense. In the case of BMI, it does make sense to split people into categorical groups like underweight, normal, and overweight. This removes the collinearity concern, and the model is still easily interpretable. 
+
+## b. Should the number of previous marathons run be dichotomized?
+The number of previous marathons is very skewed, which violates the assumption of normality. So, dichotomizing this variable at the median is a good idea.
+
+## c. Is there a quadratic relationship between weight change and sodium levels?
+There does appear to be a quadratic relationship between weight change and sodium levels (p = 0.00483). However, the VIF isn't too high, so I don't think it's necessary to make it a categorical variable. 
+
+## d. Should fluid frequency be treated as a continuous variable or 2 indicator variables?
+The levels of fluidfr3 are 1 = every one mile, 2 = every two miles, and 3 = every third mile or more. I don't see how this could be treated as a continuous variable, so I think it's best to keep it as a categorical variable (indicator functions). You could maybe use total water intake as a continuous variable if that information was available, but this data can't be treated as continuous.
+
+## e. The authors only used weight change and excluded the self-reported variables from the multivariable analysis. Is this an issue?
+I think this approach sort of makes sense. Weight difference is probably the best measure of fluid loss/intake (assuming they're consuming a negligible amount of solid food), and the other three variables are reporting similar information. When this is the case, dropping the self-reported variables makes sense as they're most likely the least accurate. 
+
+My main concern would be if one of those variables is really reporting different information, and by excluding them you're losing valuable data. Also, I worry a little bit about dropping 3 out of 4 variables, so it might be good to investigate the collinearity further and only drop 2.
+
+## f. Only running time was used in the multivariable model and not training pace since it is self-reported. Is this an issue?
+I'm more comfortable with this than the previous question, since you're only looking at two variables, and they pretty clearly tell you the same information. If you ran the whole marathon quickly, it seems safe to assume that your training pace was also fast. And since it's self reported (and possibly hard to measure accurately yourself), you have to worry about inaccuracy or people intentionally overestimating how quickly they run. 
+
+## g. Should the outcome sodium levels be log transformed?
+Log transforming the outcome clearly doesn't change much (the log transformed outcome is still not normally distributed, and the histograms look very similar). So, I would keep the outcome as it is, especially since it's generally best to avoid transforming the outcome if possible.
+
+# 2. Run the single variable analyses.
+## a. Which variables are associated with sodium levels at the 0.05 level of significance?
+Based on the above output, the variables significantly associated with sodium are: female, lwobup01, fluidfr3, wtdiff (quadratic relationship), runtime, trainpse. So sex, whether you use anti-inflammatory medications, fluid intake frequency, weight change during the marathon, how quickly you run the marathon, and your training pace are all associated with sodium levels. 
+
+## b. How do these univariate analyses compare to the original paper where sodium levels were dichotomous?
+The paper concluded that "considerable weight gain while running, a long racing time, and bodymass index extremes were associated with hyponatremia, whereas female sex, composition of fluids ingested, and use of nonsteroidal anti-inflammatory drugs were not." So our analyses agree that weight change and running time are associated with sodium. However, we did not find that BMI was associated (when treated as a continuous or a categorical variable), and did find that sex and use of NSAIDs were. 
+
+# 3. Multivariable analyses with stepwise regression based on AIC
+## a. What predictors are included in the final model?
+Using both forward and backward stepwise regression based in AIC, change in weight and anti-inflammatory usage are both associated with sodium level, and so is BMI category.
+
+## b. 
+There are a couple of problems with this method. First, it's possible that some variables are significant in a multiple regression model, but are not significant when tested on their own. Second, it doesn't take polynomial associations (e.g. BMI) or collinearity into account. Lastly, this way of approaching things doesn't really think about the scientific question. All of the variables in this data set make sense to test, but many data sets include lots of variables that don't make sense with the question at hand, so just using this approach without thinking can end up including nonsensical variables in the model. 
+
+# 4. Partial F test with all covariates with a p-value less than 0.1
+## a. What predictors are included in the final model?
+The only variable included after partial F tests is weight difference.
+
+## b. What are the results of the F test?
+The reduced model is not significantly different from the full model. 
+
+# 5. Why do you think that there are more significant covariates in the final model for a binary outcome than there are for a continuous outcome?
+By turning the outcome into a categorical variable, you're throwing out a lot of information, and this inceases the risk of a false positive. You lose a lot of statistical power by dichotomizing a variable, which makes some intuitive sense if you think about it as a reduction in sample size.
+
+\pagebreak
+
+# Code
+
+```{r}
+# Problem 1a
+polymod <- lm(sodium ~ bmi + I(bmi^2),data = hyponat)
+summary(polymod)
+vif(polymod)
+hyponat$bmiC <- cut(hyponat$bmi,c(0,20,25,Inf))
+category <- lm(sodium ~ bmiC, data = hyponat)
+summary(category)
+```
+
+```{r}
+# Problem 1b
+hist(hyponat$howmany)
+```
+
+```{r}
+# Problem 1c
+fit <- lm(sodium ~ poly(wtdiff,2), data = hyponat)
+summary(fit)
+weightmod <- lm(sodium ~ wtdiff + I(wtdiff^2),data = hyponat)
+vif(weightmod)
+```
+
+```{r}
+# Problem 1d
+hyponat$fluidfr3 <- as.factor(hyponat$fluidfr3)
+catmod <- lm(sodium ~ fluidfr3, data = hyponat)
+summary(catmod)
+```
+
+```{r}
+# Problem 1g - log transform sodium levels
+hist(hyponat$sodium)
+hist(I(log(hyponat$sodium)))
+lillie.test(hyponat$sodium)
+lillie.test(I(log(hyponat$sodium)))
+```
+
+```{r}
+# Probem 2 - univariate analysis
+vars <- colnames(hyponat)[-c(which(colnames(hyponat)=="sodium"))]
+univar <- lapply(vars, function(x){
+  summary(lm(as.formula(paste0("sodium ~ ",x)), data = hyponat))
+})
+univar
+```
+
+```{r}
+# Problem 3 - stepwise AIC
+sigvars <- c("female","lwobup01","fluidfr3","wtdiff","runtime","trainpse","bmiC")
+sigvars <- paste(sigvars,collapse = " + ")
+formula <- as.formula(paste0("sodium ~ ",sigvars))
+stepwise <- stepAIC(lm(formula, data = hyponat),direction = "both",trace = 0)
+stepwise
+```
+
+```{r}
+# Problem 4 - partial F test
+sigvars
+full <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime + trainpse + bmiC,data = hyponat)
+# Remove bmiC
+mod1 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime + trainpse,data = hyponat)
+anova(full,mod1)
+# Remove trainpse
+mod2 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime,data = hyponat)
+anova(mod1,mod2)
+# Remove runtime
+mod3 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod2,mod3)
+# Remove weight difference
+mod4 <- lm(sodium ~ female + lwobup01 + fluidfr3,data = hyponat)
+anova(mod3,mod4)
+# Put weight difference back in
+mod5 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod4,mod5)
+# Remove fluid frequency
+mod6 <- lm(sodium ~ female + lwobup01 + wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod5,mod6)
+# Remove NSAIDs
+mod7 <- lm(sodium ~ female + wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod6,mod7)
+# Remove female
+mod8 <- lm(sodium ~ wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod7,mod8)
+anova(mod8,full)
+```
