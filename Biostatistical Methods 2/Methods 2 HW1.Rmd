@@ -9,15 +9,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-# Load libraries
-library(car)
-library(nortest)
-library(MASS)
-# Read in data
-hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",sep = " ",header = T)
-```
-
 # 1. Consider transforming covariates and the outcome.
 ## a. Is categorization necessary for BMI?
 The quadratic BMI term is significant, and the VIF values for the polynomials are large. This just shows that there is indeed a quadratic relationship and that the polynomial terms are collinear (as we were told in the question). When this is the case, it's correct to make the variable categorical as long as doing so makes scientific sense. In the case of BMI, it does make sense to split people into categorical groups like underweight, normal, and overweight. This removes the collinearity concern, and the model is still easily interpretable. 
@@ -58,10 +49,10 @@ There are a couple of problems with this method. First, it's possible that some 
 
 # 4. Partial F test with all covariates with a p-value less than 0.1
 ## a. What predictors are included in the final model?
-The only variable included after partial F tests is weight difference.
+The only variables included after partial F tests are NSAID use and weight difference.
 
 ## b. What are the results of the F test?
-The reduced model is not significantly different from the full model. 
+The reduced model is not significantly different from the full model, but it includes NSAIDs, which wouldn't be the case just going off the t-test summary results. 
 
 # 5. Why do you think that there are more significant covariates in the final model for a binary outcome than there are for a continuous outcome?
 By turning the outcome into a categorical variable, you're throwing out a lot of information, and this inceases the risk of a false positive. You lose a lot of statistical power by dichotomizing a variable, which makes some intuitive sense if you think about it as a reduction in sample size.
@@ -69,6 +60,15 @@ By turning the outcome into a categorical variable, you're throwing out a lot of
 \pagebreak
 
 # Code
+```{r}
+# Load libraries
+library(car)
+library(nortest)
+library(MASS)
+# Read in data
+hyponat <- read.table("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 1/data.txt",
+                      sep = " ",header = T)
+```
 
 ```{r}
 # Problem 1a
@@ -119,7 +119,8 @@ univar
 
 ```{r}
 # Problem 3 - stepwise AIC
-sigvars <- c("female","lwobup01","fluidfr3","wtdiff","runtime","trainpse","bmiC")
+sigvars <- c("female","lwobup01","fluidfr3","wtdiff","runtime","trainpse",
+             "bmiC")
 sigvars <- paste(sigvars,collapse = " + ")
 formula <- as.formula(paste0("sodium ~ ",sigvars))
 stepwise <- stepAIC(lm(formula, data = hyponat),direction = "both",trace = 0)
@@ -128,31 +129,30 @@ stepwise
 
 ```{r}
 # Problem 4 - partial F test
-sigvars
-full <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime + trainpse + bmiC,data = hyponat)
-# Remove bmiC
-mod1 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime + trainpse,data = hyponat)
-anova(full,mod1)
+full <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + 
+             runtime + trainpse + bmiC,data = hyponat)
+summary(full)
 # Remove trainpse
-mod2 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + runtime,data = hyponat)
-anova(mod1,mod2)
+mod1 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + 
+             runtime + bmiC,data = hyponat)
+anova(full,mod1)
 # Remove runtime
+mod2 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2) + 
+             bmiC,data = hyponat)
+anova(mod1,mod2)
+# Remove bmiC
 mod3 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2),data = hyponat)
 anova(mod2,mod3)
-# Remove weight difference
-mod4 <- lm(sodium ~ female + lwobup01 + fluidfr3,data = hyponat)
+# Remove fluidfr
+mod4 <- lm(sodium ~ female + lwobup01 + wtdiff + I(wtdiff^2),data = hyponat)
 anova(mod3,mod4)
-# Put weight difference back in
-mod5 <- lm(sodium ~ female + lwobup01 + fluidfr3 + wtdiff + I(wtdiff^2),data = hyponat)
-anova(mod4,mod5)
-# Remove fluid frequency
-mod6 <- lm(sodium ~ female + lwobup01 + wtdiff + I(wtdiff^2),data = hyponat)
-anova(mod5,mod6)
-# Remove NSAIDs
-mod7 <- lm(sodium ~ female + wtdiff + I(wtdiff^2),data = hyponat)
-anova(mod6,mod7)
 # Remove female
-mod8 <- lm(sodium ~ wtdiff + I(wtdiff^2),data = hyponat)
-anova(mod7,mod8)
-anova(mod8,full)
+mod5 <- lm(sodium ~ lwobup01 + wtdiff + I(wtdiff^2),data = hyponat)
+anova(mod4,mod5)
+# Remove NSAIDs
+mod6 <- lm(sodium ~ wtdiff + I(wtdiff^2),
+           data = hyponat)
+anova(mod5,mod6)
+# NSAIDs are good actually, put them back
+anova(mod5,full)
 ```
