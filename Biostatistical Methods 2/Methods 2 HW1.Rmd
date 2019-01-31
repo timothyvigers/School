@@ -56,7 +56,7 @@ So, the only variables included after partial F tests are NSAID use and weight d
 The reduced model is not significantly different from the full model, but it includes NSAIDs, which wouldn't be the case just going off the t-test summary results with alpha < 0.05. 
 
 # 5. Why do you think that there are more significant covariates in the final model for a binary outcome than there are for a continuous outcome?
-By turning the outcome into a categorical variable, you're throwing out a lot of information, and this inceases the risk of a false positive. You lose a lot of statistical power by dichotomizing a variable, which makes some intuitive sense if you think about it as a reduction in sample size.
+By turning the outcome into a categorical variable, you're throwing out a lot of information, and this inceases the risk of a false positive. You lose a lot of statistical power by dichotomizing a variable, which makes some sense if you think about it as a reduction in sample size. It's not very intuitive that loss of power would increase false positives, since you'd expect it to increase false negatives instead, but this does happen (Altman, D. G. and P. Royston (2006). "The cost of dichotomising continuous variables." BMJ 332(7549): 1080).
 
 \pagebreak
 
