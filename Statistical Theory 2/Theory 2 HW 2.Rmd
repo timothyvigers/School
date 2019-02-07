@@ -1,0 +1,21 @@
+---
+title: "Theory 2 Homework 2"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 4. 
+###a. 
+
+$$
+P(X_{(5)} \geq 5) = 1- \sum_5^{20}{20\choose{k}}(0.5)^{k}(0.5)^{20-{k}}
+$$
+
+```{r}
+1 - sum(dbinom(size = 20,prob = 0.5,x=c(5:20)))
+```
