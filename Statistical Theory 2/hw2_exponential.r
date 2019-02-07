@@ -23,7 +23,7 @@
 	# use paste() command to attach file name to current directory
 	# paste() creates a character string by combining text and/or numeric values
 
-	dir<-"C:/sam/teaching/splus_theory_10/hw-2/"
+	dir<-"/Users/timvigers/Documents/GitHub/School/Statistical Theory 2/"
 
 	file.out<-paste(dir,"hw2_exponential_out.txt",sep="")
 	file.run<-paste(dir,"hw2_exponential.r",sep="")
@@ -45,14 +45,18 @@
 	# ---------------------------------------------------------------------
 	# exponential(2)
 
-	set.seed(16)
+	set.seed(1017)
 
+  # Set number of u(0,1) variables
 	N<-1000
+	# Set exponential parameter
 	beta<-2
-	
+	# Generate u(0,1) variables
 	u<- runif(N,0,1)
+	# Set y = inverse CDF of exponential distribution
+	# Transform all u(0,1) variables
 	y<- -beta*log(1-u)
-	
+	# Check y
 	mean.y<-mean(y)
 	var.y<-var(y)
 	cat("mean of 'exponential(2)' RVs")

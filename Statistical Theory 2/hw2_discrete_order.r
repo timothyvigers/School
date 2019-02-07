@@ -25,7 +25,7 @@
 	# use paste() command to attach file name to current directory
 	# paste() creates a character string by combining text and/or numeric values
 
-	dir<-"C:/sam/teaching/splus_theory_10/hw-2/"
+	dir<-"/Users/timvigers/Documents/GitHub/School/Statistical Theory 2/"
 
 	file.out<-paste(dir,"hw2_discrete_out.txt",sep="")
 	file.run<-paste(dir,"hw2_discrete_order.r",sep="")
@@ -47,14 +47,17 @@
 	# allow 4 graphs on one page
 	#par(mfrow=c(2,2),oma=c(0,0,4,0))
 
-	set.seed(16)
-
+	set.seed(1017)
+  # Set number of random samples
 	N<-10000
+	# Set number of order statistics/sample size
 	nn<-20
 	
 	Y<-c(length=N) 	# create vector of length N
 	
-	
+	# For each random sample, generate a random u(0,1) of size 20. For each value
+	# above 0.2, assign value 3 (in a new vector), for any above 0.5, assign 5, etc.
+	# Order the new vector, and for each value >= 5 set a value in vector Y to 1.
 	for(i in 1:N) {
 		Y[i]<-0
 		x<-runif(nn,0,1)
@@ -68,7 +71,7 @@
 			Y[i]<-1
 		}
 	}
-
+  # Calculate proportion of 1s in Y.
 	cat("Proportion of samples of size nn with X_(5)>5\n")
 	print(sum(Y)/N)
 	cat("EXPECTED Proportion of samples of size nn with X_(5)>5\n")

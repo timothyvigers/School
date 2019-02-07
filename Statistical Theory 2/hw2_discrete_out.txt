@@ -1,0 +1,15 @@
+
+
+
+Program:/Users/timvigers/Documents/GitHub/School/Statistical Theory 2/hw2_discrete_order.r
+
+Program to generate N random sample of size nn=20 from a discrete distribution 
+ and determine the proportion with X_(5)>5, compare to expected under order stat dist'n 
+[1] "Thu Feb  7 09:01:04 2019"
+
+
+Proportion of samples of size nn with X_(5)>5
+[1] 0.0042
+EXPECTED Proportion of samples of size nn with X_(5)>5
+[1] 0.005908966
+[1] 0.005908966
