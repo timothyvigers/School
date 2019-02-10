@@ -39,27 +39,48 @@ $$
 
 ## 2. Log-likelihood for Model 1
 
-### Calculate p estimate
+$$
+p1 = \frac{619}{2416}\\
+p2 = \frac{355}{771}\\
+p3 = \frac{162}{731}\\
+$$
+$$
+LL = 619*ln(p1) + 1797*ln(1-p1) + 355*ln(p2) + 416*ln(1-p2) + 162*ln(p3) + 569*ln(1-p3) = -2293.492
+$$
+
+## 3. Log-likelihood for Model 0
+### Calculate p estimate at the MLE
 $$
 \hat{p} = \frac{\text{number with misconduct}}{\text{total n}} = \frac{1136}{3918} = 0.290
 $$
 
-### Calculate likelihood estimate
+### Calculate log-likelihood estimate
 $$
-LL = \text{number with misconduct}*ln(\hat{p}) + \text{number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
-$$
-
-## 3. Log-likelihood for Model 0
-
-### Calculate p estimate
-$$
-\hat{p}_{\text{null}} = \frac{e^{\beta_0}}{1 + e^{\beta_0}} = \frac{e^{-1.066}}{1 + e^{-1.066}} = \frac{0.344}{1.344} = 0.256
+LL = \text{total number with misconduct}*ln(\hat{p}) + \text{total number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
 $$
 
-### Calculate likelihood estimate
+## 4. Perform a likelihood ratio test comparing Model 1 with Model 0
+### Calculate the LRT statistic
 $$
-LL = \text{number with misconduct}*ln(\hat{p}_{\text{null}}) + \text{number without misconduct}*ln(1-\hat{p}_{\text{null}})=1136*ln(0.290) + 2782*ln(0.710) = -2370.451
+\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 2}})=2(-2293.492-(-2359.033))=131.082
 $$
+
+This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that B1 = B2 = 0, and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0). 
+
+## 5. Consider a model for this data where strikes enters as a linear term
+$$
+\hat{p} = \frac{e^{-0.99461+0.0627*\text{strike}}}{1+e^{-0.99461+0.0627*\text{strike}}}
+$$
+$$
+\text{So, for a prisoner with 1 strike:}\\
+\hat{p} = \frac{e^{-0.99461+0.0627*1}}{1+e^{-0.99461+0.0627*1}} = 0.283
+$$
+$$
+\text{And for a prisoner with 3 strikes:}\\
+\hat{p} = \frac{e^{-0.99461+0.0627*3}}{1+e^{-0.99461+0.0627*3}} = 0.309
+$$
+
+## Relative odds using model 2
 
 ## Code
 
@@ -82,4 +103,11 @@ summary(mod1)
 # Check log-likelihood for model 1 (ungrouped)
 ungroup_mod1 <- glm(misconduct ~ strikes,dat_longrep,family = binomial)
 logLik(ungroup_mod1)
+# LRT 
+ungroup_mod0 <- glm(misconduct ~ 1,dat_longrep,family = binomial)
+anova(ungroup_mod0,ungroup_mod1,test = "LRT")
+# Check model 2 predictions
+mod2 <- glm(formula = cbind(y,n) ~ as.numeric(strikes), family = binomial,
+            data = dat)
+predict(mod2, newdata=list(strikes=c(1,3)),type = "response")
 ```

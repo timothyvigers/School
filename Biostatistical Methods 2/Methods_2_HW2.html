@@ -225,18 +225,53 @@ ln(\text{odds}_\text{strike 3}) = ln(\frac{162}{569}) = -1.256 = \hat{\beta_0} +
 </div>
 <div id="log-likelihood-for-model-1" class="section level2">
 <h2>2. Log-likelihood for Model 1</h2>
-<div id="calculate-p-estimate" class="section level3">
-<h3>Calculate p estimate</h3>
+<p><span class="math display">\[
+p1 = \frac{619}{2416}\\
+p2 = \frac{355}{771}\\
+p3 = \frac{162}{731}\\
+\]</span> <span class="math display">\[
+LL = 619*ln(p1) + 1797*ln(1-p1) + 355*ln(p2) + 416*ln(1-p2) + 162*ln(p3) + 569*ln(1-p3) = -2293.492
+\]</span></p>
+</div>
+<div id="log-likelihood-for-model-0" class="section level2">
+<h2>3. Log-likelihood for Model 0</h2>
+<div id="calculate-p-estimate-at-the-mle" class="section level3">
+<h3>Calculate p estimate at the MLE</h3>
 <p><span class="math display">\[
 \hat{p} = \frac{\text{number with misconduct}}{\text{total n}} = \frac{1136}{3918} = 0.290
 \]</span></p>
 </div>
-<div id="calculate-likelihood-estimate" class="section level3">
-<h3>Calculate likelihood estimate</h3>
+<div id="calculate-log-likelihood-estimate" class="section level3">
+<h3>Calculate log-likelihood estimate</h3>
 <p><span class="math display">\[
-LL = \text{number with misconduct}*ln(\hat{p}) + \text{number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
+LL = \text{total number with misconduct}*ln(\hat{p}) + \text{total number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
 \]</span></p>
 </div>
+</div>
+<div id="perform-a-likelihood-ratio-test-comparing-model-1-with-model-0" class="section level2">
+<h2>4. Perform a likelihood ratio test comparing Model 1 with Model 0</h2>
+<div id="calculate-the-lrt-statistic" class="section level3">
+<h3>Calculate the LRT statistic</h3>
+<p><span class="math display">\[
+\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 2}})=2(-2293.492-(-2359.033))=131.082
+\]</span></p>
+<p>This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that B1 = B2 = 0, and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0).</p>
+</div>
+</div>
+<div id="consider-a-model-for-this-data-where-strikes-enters-as-a-linear-term" class="section level2">
+<h2>5. Consider a model for this data where strikes enters as a linear term</h2>
+<p><span class="math display">\[
+\hat{p} = \frac{e^{-0.99461+0.0627*\text{strike}}}{1+e^{-0.99461+0.0627*\text{strike}}}
+\]</span> <span class="math display">\[
+\text{So, for a prisoner with 1 strike:}\\
+\hat{p} = \frac{e^{-0.99461+0.0627*1}}{1+e^{-0.99461+0.0627*1}} = 0.283
+\]</span> <span class="math display">\[
+\text{And for a prisoner with 3 strikes:}\\
+\hat{p} = \frac{e^{-0.99461+0.0627*3}}{1+e^{-0.99461+0.0627*3}} = 0.309
+\]</span></p>
+</div>
+<div id="relative-odds-using-model-2" class="section level2">
+<h2>Relative odds using model 2</h2>
 </div>
 <div id="code" class="section level2">
 <h2>Code</h2>
@@ -281,6 +316,24 @@ summary(mod1)</code></pre>
 ungroup_mod1 &lt;- glm(misconduct ~ strikes,dat_longrep,family = binomial)
 logLik(ungroup_mod1)</code></pre>
 <pre><code>## 'log Lik.' -2293.492 (df=3)</code></pre>
+<pre class="r"><code># LRT 
+ungroup_mod0 &lt;- glm(misconduct ~ 1,dat_longrep,family = binomial)
+anova(ungroup_mod0,ungroup_mod1,test = &quot;LRT&quot;)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: misconduct ~ 1
+## Model 2: misconduct ~ strikes
+##   Resid. Df Resid. Dev Df Deviance  Pr(&gt;Chi)    
+## 1      3917     4718.1                          
+## 2      3915     4587.0  2   131.08 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<pre class="r"><code># Check model 2 predictions
+mod2 &lt;- glm(formula = cbind(y,n) ~ as.numeric(strikes), family = binomial,
+            data = dat)
+predict(mod2, newdata=list(strikes=c(1,3)),type = &quot;response&quot;)</code></pre>
+<pre><code>##         1         2 
+## 0.2825393 0.3086388</code></pre>
 </div>
 
 
