@@ -192,39 +192,8 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code># Create dataframe
-dat &lt;- as.data.frame(matrix(c(1,619,1797,
-                              2,355,416,
-                              3,162,569),
-                            nrow = 3,ncol = 3,byrow = T))
-colnames(dat) &lt;- c(&quot;strikes&quot;, &quot;y&quot;, &quot;n&quot;)
-dat$strikes &lt;- as.factor(dat$strikes)
-mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
-summary(mod1)</code></pre>
-<pre><code>## 
-## Call:
-## glm(formula = cbind(y, n) ~ strikes, family = binomial, data = dat)
-## 
-## Deviance Residuals: 
-## [1]  0  0  0
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.06577    0.04660 -22.868   &lt;2e-16 ***
-## strikes2     0.90720    0.08598  10.551   &lt;2e-16 ***
-## strikes3    -0.19052    0.10051  -1.895    0.058 .  
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 1.3108e+02  on 2  degrees of freedom
-## Residual deviance: 6.3061e-14  on 0  degrees of freedom
-## AIC: 27.74
-## 
-## Number of Fisher Scoring iterations: 2</code></pre>
 <div id="model-1-equation-estimates" class="section level2">
-<h2>Model 1 equation estimates</h2>
+<h2>1. Model 1 equation estimates</h2>
 <div id="strike-1" class="section level3">
 <h3>Strike 1</h3>
 <p><span class="math display">\[
@@ -253,6 +222,65 @@ ln(\text{odds}_\text{strike 3}) = ln(\frac{162}{569}) = -1.256 = \hat{\beta_0} +
 \text{logit P (misconduct violation)} = \hat{\beta_0} + \hat{\beta_1}*\text{strikes 2} + \hat{\beta_2}*\text{strikes 3} = -1.066 + 0.907*\text{strikes 2} -0.190*\text{strikes 3}
 \]</span></p>
 </div>
+</div>
+<div id="log-likelihood-for-model-1" class="section level2">
+<h2>2. Log-likelihood for Model 1</h2>
+<div id="calculate-p-estimate" class="section level3">
+<h3>Calculate p estimate</h3>
+<p><span class="math display">\[
+\hat{p} = \frac{\text{number with misconduct}}{\text{total n}} = \frac{1136}{3918} = 0.290
+\]</span></p>
+</div>
+<div id="calculate-likelihood-estimate" class="section level3">
+<h3>Calculate likelihood estimate</h3>
+<p><span class="math display">\[
+LL = \text{number with misconduct}*ln(\hat{p}) + \text{number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
+\]</span></p>
+</div>
+</div>
+<div id="code" class="section level2">
+<h2>Code</h2>
+<pre class="r"><code># Create dataframe
+dat &lt;- as.data.frame(matrix(c(1,619,1797,
+                              2,355,416,
+                              3,162,569),
+                            nrow = 3,ncol = 3,byrow = T))
+colnames(dat) &lt;- c(&quot;strikes&quot;, &quot;y&quot;, &quot;n&quot;)
+dat$strikes &lt;- as.factor(dat$strikes)
+# Long data
+dat_long &lt;- reshape(dat,direction='long',varying=c('y','n'),
+                    v.names='count',timevar='misconduct',times=1:0)
+# Replicated data
+dat_longrep &lt;- dat_long[rep(1:6,dat_long$count),c('strikes','misconduct')]
+# Check model 1 estimates
+mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
+summary(mod1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = cbind(y, n) ~ strikes, family = binomial, data = dat)
+## 
+## Deviance Residuals: 
+## [1]  0  0  0
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.06577    0.04660 -22.868   &lt;2e-16 ***
+## strikes2     0.90720    0.08598  10.551   &lt;2e-16 ***
+## strikes3    -0.19052    0.10051  -1.895    0.058 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1.3108e+02  on 2  degrees of freedom
+## Residual deviance: 6.3061e-14  on 0  degrees of freedom
+## AIC: 27.74
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<pre class="r"><code># Check log-likelihood for model 1 (ungrouped)
+ungroup_mod1 &lt;- glm(misconduct ~ strikes,dat_longrep,family = binomial)
+logLik(ungroup_mod1)</code></pre>
+<pre><code>## 'log Lik.' -2293.492 (df=3)</code></pre>
 </div>
 
 

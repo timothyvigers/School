@@ -9,19 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-# Create dataframe
-dat <- as.data.frame(matrix(c(1,619,1797,
-                              2,355,416,
-                              3,162,569),
-                            nrow = 3,ncol = 3,byrow = T))
-colnames(dat) <- c("strikes", "y", "n")
-dat$strikes <- as.factor(dat$strikes)
-mod1 <- glm(cbind(y,n) ~ strikes,dat,family=binomial)
-summary(mod1)
-```
+## 1. Model 1 equation estimates
 
-## Model 1 equation estimates
 ### Strike 1
 $$
 ln(\text{odds}_\text{strike 1}) = ln(\frac{619}{1797}) = -1.066 = \hat{\beta_0}
@@ -47,3 +36,50 @@ $$
 $$
 \text{logit P (misconduct violation)} = \hat{\beta_0} + \hat{\beta_1}*\text{strikes 2} + \hat{\beta_2}*\text{strikes 3} = -1.066 + 0.907*\text{strikes 2} -0.190*\text{strikes 3}
 $$
+
+## 2. Log-likelihood for Model 1
+
+### Calculate p estimate
+$$
+\hat{p} = \frac{\text{number with misconduct}}{\text{total n}} = \frac{1136}{3918} = 0.290
+$$
+
+### Calculate likelihood estimate
+$$
+LL = \text{number with misconduct}*ln(\hat{p}) + \text{number without misconduct}*ln(1-\hat{p})=1136*ln(0.290) + 2782*ln(0.710) = -2359.033
+$$
+
+## 3. Log-likelihood for Model 0
+
+### Calculate p estimate
+$$
+\hat{p}_{\text{null}} = \frac{e^{\beta_0}}{1 + e^{\beta_0}} = \frac{e^{-1.066}}{1 + e^{-1.066}} = \frac{0.344}{1.344} = 0.256
+$$
+
+### Calculate likelihood estimate
+$$
+LL = \text{number with misconduct}*ln(\hat{p}_{\text{null}}) + \text{number without misconduct}*ln(1-\hat{p}_{\text{null}})=1136*ln(0.290) + 2782*ln(0.710) = -2370.451
+$$
+
+## Code
+
+```{r}
+# Create dataframe
+dat <- as.data.frame(matrix(c(1,619,1797,
+                              2,355,416,
+                              3,162,569),
+                            nrow = 3,ncol = 3,byrow = T))
+colnames(dat) <- c("strikes", "y", "n")
+dat$strikes <- as.factor(dat$strikes)
+# Long data
+dat_long <- reshape(dat,direction='long',varying=c('y','n'),
+                    v.names='count',timevar='misconduct',times=1:0)
+# Replicated data
+dat_longrep <- dat_long[rep(1:6,dat_long$count),c('strikes','misconduct')]
+# Check model 1 estimates
+mod1 <- glm(cbind(y,n) ~ strikes,dat,family=binomial)
+summary(mod1)
+# Check log-likelihood for model 1 (ungrouped)
+ungroup_mod1 <- glm(misconduct ~ strikes,dat_longrep,family = binomial)
+logLik(ungroup_mod1)
+```
