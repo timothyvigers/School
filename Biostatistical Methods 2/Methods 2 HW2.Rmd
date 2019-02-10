@@ -1,0 +1,25 @@
+---
+title: 'Methods II: Homework 2'
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Create dataframe
+dat <- as.data.frame(matrix(c(1,619,1797,
+                              2,355,416,
+                              3,162,569),
+                            nrow = 3,ncol = 3,byrow = T))
+colnames(dat) <- c("strikes", "misconduct=1", "misconduct=0")
+dat_long <- reshape(dat,direction = "long",varying = c("misconduct=1", "misconduct=0"),v.names = "count",timevar='misconduct',times=1:0)
+```
+
+## Model 1 equation
+$$
+log[\frac{P(x_1,x_2,...,x_p)}{1 - P(x_1,x_2,...,x_p)}] = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_px_p
+$$
