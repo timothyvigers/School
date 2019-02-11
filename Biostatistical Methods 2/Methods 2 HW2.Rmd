@@ -1,5 +1,5 @@
 ---
-title: 'Homework 2'
+title: "Homework 2"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: html_document
@@ -80,10 +80,24 @@ $$
 \hat{p} = \frac{e^{-0.99461+0.0627*3}}{1+e^{-0.99461+0.0627*3}} = 0.309
 $$
 
-## Relative odds using model 2
+## 6. Relative odds using model 2
+$$
+\hat{OR} = \frac{e^{-0.99461+0.0627*3}}{e^{-0.99461+0.0627*1}} = e^{0.0627*(3-1)} = 1.134
+$$
 
-## Code
+$$
+\text{95% CI lower}= e^{0.0627*2-1.96(0.04439*2)} = 0.953\\
+\text{95% CI upper}= e^{0.0627*2+1.96(0.04439*2)} = 1.349
+$$
 
+An increase of two strikes (from 1 to 3) raises the risk of a misconduct violation 1.13-fold (95% CI: 0.953,1.349). 
+
+##7. Which model is better, Model 2 or Model 1?
+### Grouped LL and AIC for model 1
+$$
+LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492
+$$
+This needs to be calculated using R's logLik() function.
 ```{r}
 # Create dataframe
 dat <- as.data.frame(matrix(c(1,619,1797,
@@ -92,6 +106,24 @@ dat <- as.data.frame(matrix(c(1,619,1797,
                             nrow = 3,ncol = 3,byrow = T))
 colnames(dat) <- c("strikes", "y", "n")
 dat$strikes <- as.factor(dat$strikes)
+mod1 <- glm(cbind(y,n) ~ strikes,dat,family=binomial)
+logLik(mod1)
+```
+
+$$
+\text{AIC}_\text{model 1} = 2k - 2 LL = 6 - 2*(-10.870) = 27.74
+$$
+
+Check with R:
+```{r}
+summary(mod1)
+```
+
+Model 1 is better than model 2 based on AIC, because it has the lower AIC value, and the difference is large enough to be considered significant (127.1).
+
+## Code
+
+```{r}
 # Long data
 dat_long <- reshape(dat,direction='long',varying=c('y','n'),
                     v.names='count',timevar='misconduct',times=1:0)
@@ -106,6 +138,7 @@ logLik(ungroup_mod1)
 # LRT 
 ungroup_mod0 <- glm(misconduct ~ 1,dat_longrep,family = binomial)
 anova(ungroup_mod0,ungroup_mod1,test = "LRT")
+1 - pchisq(131.082,2)
 # Check model 2 predictions
 mod2 <- glm(formula = cbind(y,n) ~ as.numeric(strikes), family = binomial,
             data = dat)
