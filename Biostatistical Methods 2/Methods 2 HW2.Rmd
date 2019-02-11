@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
 ```
 
 ## 1. Model 1 equation estimates
@@ -38,6 +39,17 @@ $$
 $$
 
 ## 2. Log-likelihood for Model 1
+```{r echo=FALSE}
+# Create dataframe
+dat <- as.data.frame(matrix(c(1,619,1797,
+                              2,355,416,
+                              3,162,569),
+                            nrow = 3,ncol = 3,byrow = T))
+colnames(dat) <- c("strikes", "y", "n")
+dat$strikes <- as.factor(dat$strikes)
+dat$sum <- dat$y + dat$n
+kable(dat)
+```
 
 $$
 p1 = \frac{619}{2416}\\
@@ -62,10 +74,10 @@ $$
 ## 4. Perform a likelihood ratio test comparing Model 1 with Model 0
 ### Calculate the LRT statistic
 $$
-\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 2}})=2(-2293.492-(-2359.033))=131.082
+\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 0}})=2(-2293.492-(-2359.033))=131.082
 $$
 
-This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that B1 = B2 = 0, and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0). 
+This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that $\beta_1 = \beta_2 = 0$ and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0). 
 
 ## 5. Consider a model for this data where strikes enters as a linear term
 $$
@@ -99,19 +111,12 @@ LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2
 $$
 This needs to be calculated using R's logLik() function.
 ```{r}
-# Create dataframe
-dat <- as.data.frame(matrix(c(1,619,1797,
-                              2,355,416,
-                              3,162,569),
-                            nrow = 3,ncol = 3,byrow = T))
-colnames(dat) <- c("strikes", "y", "n")
-dat$strikes <- as.factor(dat$strikes)
 mod1 <- glm(cbind(y,n) ~ strikes,dat,family=binomial)
 logLik(mod1)
 ```
 
 $$
-\text{AIC}_\text{model 1} = 2k - 2 LL = 6 - 2*(-10.870) = 27.74
+\text{AIC}_\text{model 1} = 2k - 2 LL = 6 - (2*(-10.870)) = 27.74
 $$
 
 Check with R:
@@ -120,6 +125,16 @@ summary(mod1)
 ```
 
 Model 1 is better than model 2 based on AIC, because it has the lower AIC value and the difference is large enough to be considered significant (127.1).
+
+## 8. Multiple covariate model interpretation
+### Exponentiate the coefficient and SE. 
+$$
+\text{odds}=e^{0.0300}=1.030\\
+\text{CI lower} = e^{0.0300-1.96(0.00315)} = e^{0.023826}=1.024\\
+\text{CI upper} = e^{0.0300+1.96(0.00315)} = e^{0.036174}=1.037\\
+$$
+
+There is a significant association between classification score and misconduct violations in the first year of incarceration (p <0.0001). On average, the odds of a violation increase 1.03 times (95% CI: 1.024,1.037) for each 1 unit increase in classification score.
 
 ## Code
 

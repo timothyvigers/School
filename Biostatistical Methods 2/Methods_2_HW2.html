@@ -225,6 +225,36 @@ ln(\text{odds}_\text{strike 3}) = ln(\frac{162}{569}) = -1.256 = \hat{\beta_0} +
 </div>
 <div id="log-likelihood-for-model-1" class="section level2">
 <h2>2. Log-likelihood for Model 1</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">strikes</th>
+<th align="right">y</th>
+<th align="right">n</th>
+<th align="right">sum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="right">619</td>
+<td align="right">1797</td>
+<td align="right">2416</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="right">355</td>
+<td align="right">416</td>
+<td align="right">771</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="right">162</td>
+<td align="right">569</td>
+<td align="right">731</td>
+</tr>
+</tbody>
+</table>
 <p><span class="math display">\[
 p1 = \frac{619}{2416}\\
 p2 = \frac{355}{771}\\
@@ -253,9 +283,9 @@ LL = \text{total number with misconduct}*ln(\hat{p}) + \text{total number withou
 <div id="calculate-the-lrt-statistic" class="section level3">
 <h3>Calculate the LRT statistic</h3>
 <p><span class="math display">\[
-\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 2}})=2(-2293.492-(-2359.033))=131.082
+\text{LRT statistic} = 2(LL_{\text{model 1}} - LL_{\text{model 0}})=2(-2293.492-(-2359.033))=131.082
 \]</span></p>
-<p>This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that B1 = B2 = 0, and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0).</p>
+<p>This is a very high number for a chi square distribution with two degrees of freedom, so we can reject the null hypothesis. In this test, the null hypothesis is that <span class="math inline">\(\beta_1 = \beta_2 = 0\)</span> and our alternative hypothesis is that at least one of the coefficients is not equal to 0. In other words, model 1 is better than a model with just an intercept (model 0).</p>
 </div>
 </div>
 <div id="consider-a-model-for-this-data-where-strikes-enters-as-a-linear-term" class="section level2">
@@ -288,18 +318,11 @@ LL = \text{total number with misconduct}*ln(\hat{p}) + \text{total number withou
 <p><span class="math display">\[
 LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492
 \]</span> This needs to be calculated using R’s logLik() function.</p>
-<pre class="r"><code># Create dataframe
-dat &lt;- as.data.frame(matrix(c(1,619,1797,
-                              2,355,416,
-                              3,162,569),
-                            nrow = 3,ncol = 3,byrow = T))
-colnames(dat) &lt;- c(&quot;strikes&quot;, &quot;y&quot;, &quot;n&quot;)
-dat$strikes &lt;- as.factor(dat$strikes)
-mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
+<pre class="r"><code>mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
 logLik(mod1)</code></pre>
 <pre><code>## 'log Lik.' -10.86998 (df=3)</code></pre>
 <p><span class="math display">\[
-\text{AIC}_\text{model 1} = 2k - 2 LL = 6 - 2*(-10.870) = 27.74
+\text{AIC}_\text{model 1} = 2k - 2 LL = 6 - (2*(-10.870)) = 27.74
 \]</span></p>
 <p>Check with R:</p>
 <pre class="r"><code>summary(mod1)</code></pre>
@@ -326,6 +349,18 @@ logLik(mod1)</code></pre>
 ## 
 ## Number of Fisher Scoring iterations: 2</code></pre>
 <p>Model 1 is better than model 2 based on AIC, because it has the lower AIC value and the difference is large enough to be considered significant (127.1).</p>
+</div>
+</div>
+<div id="multiple-covariate-model-interpretation" class="section level2">
+<h2>8. Multiple covariate model interpretation</h2>
+<div id="exponentiate-the-coefficient-and-se." class="section level3">
+<h3>Exponentiate the coefficient and SE.</h3>
+<p><span class="math display">\[
+\text{odds}=e^{0.0300}=1.030\\
+\text{CI lower} = e^{0.0300-1.96(0.00315)} = e^{0.023826}=1.024\\
+\text{CI upper} = e^{0.0300+1.96(0.00315)} = e^{0.036174}=1.037\\
+\]</span></p>
+<p>There is a significant association between classification score and misconduct violations in the first year of incarceration (p &lt;0.0001). On average, the odds of a violation increase 1.03 times (95% CI: 1.024,1.037) for each 1 unit increase in classification score.</p>
 </div>
 </div>
 <div id="code" class="section level2">
