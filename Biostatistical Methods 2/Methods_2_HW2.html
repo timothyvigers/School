@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-02-10" />
+<meta name="date" content="2019-02-11" />
 
 <title>Homework 2</title>
 
@@ -187,7 +187,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 2</h1>
 <h4 class="author"><em>Tim Vigers</em></h4>
-<h4 class="date"><em>10 February 2019</em></h4>
+<h4 class="date"><em>11 February 2019</em></h4>
 
 </div>
 
@@ -316,8 +316,11 @@ LL = \text{total number with misconduct}*ln(\hat{p}) + \text{total number withou
 <div id="grouped-ll-and-aic-for-model-1" class="section level3">
 <h3>Grouped LL and AIC for model 1</h3>
 <p><span class="math display">\[
-LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492
-\]</span> This needs to be calculated using R’s logLik() function.</p>
+LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492 = -10.870
+\]</span> This needs to be calculated using R’s lchoose() function</p>
+<pre class="r"><code>lchoose(2416,619) + lchoose(771,355) + lchoose(731,162) - 2293.492</code></pre>
+<pre><code>## [1] -10.86956</code></pre>
+<p>Check with logLik() function.</p>
 <pre class="r"><code>mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
 logLik(mod1)</code></pre>
 <pre><code>## 'log Lik.' -10.86998 (df=3)</code></pre>

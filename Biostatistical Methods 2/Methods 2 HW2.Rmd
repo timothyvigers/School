@@ -107,9 +107,14 @@ An increase of two strikes (from 1 to 3) raises the risk of a misconduct violati
 ##7. Which model is better, Model 2 or Model 1?
 ### Grouped LL and AIC for model 1
 $$
-LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492
+LL_{\text{grouped}}=ln\binom{2416}{619}+ln\binom{771}{355}+ln\binom{731}{162} -2293.492 = -10.870
 $$
-This needs to be calculated using R's logLik() function.
+This needs to be calculated using R's lchoose() function
+```{r}
+lchoose(2416,619) + lchoose(771,355) + lchoose(731,162) - 2293.492
+```
+
+Check with logLik() function.
 ```{r}
 mod1 <- glm(cbind(y,n) ~ strikes,dat,family=binomial)
 logLik(mod1)
