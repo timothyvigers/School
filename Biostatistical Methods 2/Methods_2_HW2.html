@@ -325,7 +325,7 @@ logLik(mod1)</code></pre>
 ## AIC: 27.74
 ## 
 ## Number of Fisher Scoring iterations: 2</code></pre>
-<p>Model 1 is better than model 2 based on AIC, because it has the lower AIC value, and the difference is large enough to be considered significant (127.1).</p>
+<p>Model 1 is better than model 2 based on AIC, because it has the lower AIC value and the difference is large enough to be considered significant (127.1).</p>
 </div>
 </div>
 <div id="code" class="section level2">
@@ -335,32 +335,7 @@ dat_long &lt;- reshape(dat,direction='long',varying=c('y','n'),
                     v.names='count',timevar='misconduct',times=1:0)
 # Replicated data
 dat_longrep &lt;- dat_long[rep(1:6,dat_long$count),c('strikes','misconduct')]
-# Check model 1 estimates
-mod1 &lt;- glm(cbind(y,n) ~ strikes,dat,family=binomial)
-summary(mod1)</code></pre>
-<pre><code>## 
-## Call:
-## glm(formula = cbind(y, n) ~ strikes, family = binomial, data = dat)
-## 
-## Deviance Residuals: 
-## [1]  0  0  0
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.06577    0.04660 -22.868   &lt;2e-16 ***
-## strikes2     0.90720    0.08598  10.551   &lt;2e-16 ***
-## strikes3    -0.19052    0.10051  -1.895    0.058 .  
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 1.3108e+02  on 2  degrees of freedom
-## Residual deviance: 6.3061e-14  on 0  degrees of freedom
-## AIC: 27.74
-## 
-## Number of Fisher Scoring iterations: 2</code></pre>
-<pre class="r"><code># Check log-likelihood for model 1 (ungrouped)
+# Check log-likelihood for model 1 (ungrouped)
 ungroup_mod1 &lt;- glm(misconduct ~ strikes,dat_longrep,family = binomial)
 logLik(ungroup_mod1)</code></pre>
 <pre><code>## 'log Lik.' -2293.492 (df=3)</code></pre>
