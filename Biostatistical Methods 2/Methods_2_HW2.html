@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-02-12" />
+<meta name="date" content="2019-02-14" />
 
 <title>Homework 2</title>
 
@@ -187,7 +187,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 2</h1>
 <h4 class="author"><em>Tim Vigers</em></h4>
-<h4 class="date"><em>12 February 2019</em></h4>
+<h4 class="date"><em>14 February 2019</em></h4>
 
 </div>
 
@@ -363,10 +363,10 @@ logLik(mod1)</code></pre>
 \text{CI lower, no max security} = e^{0.0300-1.96(0.00315)} = e^{0.023826}=1.024\\
 \text{CI upper, no max security} = e^{0.0300+1.96(0.00315)} = e^{0.036174}=1.037\\
 \text{OR}_\text{maxsecurity} = e^{\beta_\text{score}+\beta_\text{scoremaxsecurity}}=e^{0.0300-0.0356}=0.994\\
-\text{CI lower, max security} = e^{0.0300-0.0356-1.96(\sqrt(9.923E-6+0.188901+2(-9.92E-6)))} = e^{-0.8574474}=0.424\\
-\text{CI upper, max security} = e^{0.0300-0.0356+1.96(\sqrt(9.923E-6+0.188901+2(-9.92E-6)))} = e^{0.8462474}=2.331\\
+\text{CI lower, max security} = e^{0.0300-0.0356-1.96(\sqrt{(9.923E-6+0.000052+2(-9.92E-6)}))} = e^{-0.8574474}=0.982\\
+\text{CI upper, max security} = e^{0.0300-0.0356+1.96(\sqrt{(9.923E-6+0.0.000052+2(-9.92E-6))})} = e^{0.8462474}=1.007\\
 \]</span></p>
-<p>There is a significant association between classification score and misconduct violations in the first year of incarceration (p &lt;0.0001), and a significant interaction between score and whether or not someone is incarcerated in a maximum security prison (p &lt;0.0001). On average, for someone not incarcerated in a maximum security prison, the odds of a violation increase 1.03 times (95% CI: 1.024,1.037) for each 1 unit increase in classification score. For someone in a maximum security prison, the odds of a violation increase 0.994 times (95% CI: 0.424,2.331) for each 1 unit increase in classification score.</p>
+<p>There is a significant association between classification score and misconduct violations in the first year of incarceration (p &lt;0.0001), and a significant interaction between score and whether or not someone is incarcerated in a maximum security prison (p &lt;0.0001). On average, for someone not incarcerated in a maximum security prison, the odds of a violation increase 1.03 times (95% CI: 1.024,1.037) for each 1 unit increase in classification score. For someone in a maximum security prison, the odds of a violation increase 0.994 times (95% CI: 0.982,1.007) for each 1 unit increase in classification score. Because the CI contains 1, this relationship is not statistically significant.</p>
 </div>
 </div>
 <div id="code" class="section level2">
