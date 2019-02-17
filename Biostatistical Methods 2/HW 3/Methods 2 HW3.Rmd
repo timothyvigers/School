@@ -1,0 +1,18 @@
+---
+title: "Homework 3"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+```{r}
+# Read in
+copd <- read.csv("~/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 3/hw3.txt", sep="")
+# Format factor columns
+copd[,c("copd","gender","smoker")] <- lapply(copd[,c("copd","gender","smoker")], as.factor)
+```
