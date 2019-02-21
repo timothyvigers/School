@@ -209,8 +209,7 @@ wald</code></pre>
 ##   7.308759</code></pre>
 <p><span class="math display">\[
 \text{Wald statistic}=7.309
-\]</span></p>
-<p>Test against chi-squared distribution (1 DF):</p>
+\]</span> Test against chi-squared distribution (1 DF):</p>
 <pre class="r"><code>1 - pchisq(7.309,1)</code></pre>
 <pre><code>## [1] 0.00686101</code></pre>
 <p>Based on the Wald statistic, BMI squared is significantly associated with COPD (p = 0.007).</p>
@@ -228,8 +227,7 @@ LL0</code></pre>
 <pre><code>## 'log Lik.' -510.7325 (df=6)</code></pre>
 <p><span class="math display">\[
 \text{Likelihood ratio statistic}=2(LL1 - LL0)=7.953
-\]</span></p>
-<p>Test against chi-squared distribution (1 DF):</p>
+\]</span> Test against chi-squared distribution (1 DF):</p>
 <pre class="r"><code>1 - pchisq(7.953,1)</code></pre>
 <pre><code>## [1] 0.004800773</code></pre>
 <p>Check with R:</p>
@@ -243,6 +241,45 @@ LL0</code></pre>
 ## 2       828     1021.5  1   7.9529 0.004801 **
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div id="c.-auc-c-index" class="section level3">
+<h3>c. AUC (c index)</h3>
+<p>Compare the predictive accuracy of each model. Model 0 (without BMI squared):</p>
+<pre class="r"><code>copd$prob_mod0 &lt;- predict(mod0,type = &quot;response&quot;)
+roc_mod0 &lt;- pROC::roc(copd ~ prob_mod0, data = copd)
+roc_mod0</code></pre>
+<pre><code>## 
+## Call:
+## roc.formula(formula = copd ~ prob_mod0, data = copd)
+## 
+## Data: prob_mod0 in 352 controls (copd 0) &lt; 482 cases (copd 1).
+## Area under the curve: 0.705</code></pre>
+<p>Model 1 (with BMI squared):</p>
+<pre class="r"><code>copd$prob_mod1 &lt;- predict(mod1,type = &quot;response&quot;)
+roc_mod1 &lt;- pROC::roc(copd ~ prob_mod1, data = copd)
+roc_mod1</code></pre>
+<pre><code>## 
+## Call:
+## roc.formula(formula = copd ~ prob_mod1, data = copd)
+## 
+## Data: prob_mod1 in 352 controls (copd 0) &lt; 482 cases (copd 1).
+## Area under the curve: 0.7121</code></pre>
+<p><span class="math display">\[
+\text{AUC without }\text{BMI}^2=0.705\\
+    \\
+\text{AUC with }\text{BMI}^2=0.712
+\]</span> The difference in predictive power between the two models is not particularly large, but the model with BMI squared is slightly better.</p>
+</div>
+<div id="d.-is-there-evidence-that-copd-has-a-quadratic-relationship-with-bmi" class="section level3">
+<h3>d. Is there evidence that COPD has a quadratic relationship with BMI?</h3>
+<p>Both the Wald statistic and likelihood ratio test suggest that <span class="math inline">\(\text{BMI}^2\)</span> contributes significantly to the model. Also, the model including <span class="math inline">\(\text{BMI}^2\)</span> has slightly higher predictive power than the model without <span class="math inline">\(\text{BMI}^2\)</span>. Therefore, all of the evidence suggests that there is a quadratic relationship between BMI and presence of COPD.</p>
+</div>
+<div id="e.-why-do-you-think-the-bmi-variable-was-centered" class="section level3">
+<h3>e. Why do you think the BMI variable was centered?</h3>
+<p>I would guess that there was an issue with multicollinearity for BMI. Mean-centering a predictor variable can reduce multicollinearity, and does not require categorizing the variable (so you aren’t throwing out as much information).</p>
+</div>
+<div id="f.-calculate-and-interpret-the-estimated-odds-ratio-for-the-effect-of-bmi-on-copd-for-a-patient-with-average-bmi." class="section level3">
+<h3>f. Calculate and interpret the estimated odds ratio for the effect of BMI on COPD for a patient with average BMI.</h3>
 </div>
 </div>
 
