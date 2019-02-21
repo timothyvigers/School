@@ -16,3 +16,11 @@ copd <- read.csv("~/Documents/School/UC Denver/Biostatistics/Biostatistical Meth
 # Format factor columns
 copd[,c("copd","gender","smoker")] <- lapply(copd[,c("copd","gender","smoker")], as.factor)
 ```
+
+```{r}
+# Model 1 with BMI squared
+mod1 <- glm(copd ~ age + gender + smoker + BMI + BMIsquared, data = copd,family = "binomial")
+summary(mod1)
+# Wald statistic
+(coef(mod1)[6]/sqrt(diag(vcov(mod1)))[6])^2
+```
