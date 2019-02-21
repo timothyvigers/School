@@ -17,10 +17,51 @@ copd <- read.csv("~/Documents/School/UC Denver/Biostatistics/Biostatistical Meth
 copd[,c("copd","gender","smoker")] <- lapply(copd[,c("copd","gender","smoker")], as.factor)
 ```
 
+## 1. COPD Models
 ```{r}
 # Model 1 with BMI squared
 mod1 <- glm(copd ~ age + gender + smoker + BMI + BMIsquared, data = copd,family = "binomial")
-summary(mod1)
-# Wald statistic
-(coef(mod1)[6]/sqrt(diag(vcov(mod1)))[6])^2
+```
+
+###a. Determine whether COPD is significantly associated with BMI squared using Wald statistic.
+```{r}
+# Calculate Wald statistic
+wald <- (coef(mod1)[6]/sqrt(diag(vcov(mod1)))[6])^2
+wald
+```
+
+$$
+\text{Wald statistic}=7.309
+$$
+
+Test against chi-squared distribution (1 DF):
+```{r}
+1 - pchisq(7.309,1)
+```
+
+Based on the Wald statistic, BMI squared is significantly associated with COPD (p = 0.007).
+
+###b. Determine whether COPD is significantly associated with BMI squared using LRT.
+```{r}
+# Model without BMI squared
+mod0 <- glm(copd ~ age + gender + smoker + BMI, data = copd,family = "binomial")
+# LL for model 0 and model 1
+LL0 <- logLik(mod0)
+LL1 <- logLik(mod1)
+LL0
+LL1
+```
+
+$$
+\text{Likelihood ratio statistic}=2(LL1 - LL0)=7.953
+$$
+
+Test against chi-squared distribution (1 DF):
+```{r}
+1 - pchisq(7.953,1)
+```
+
+Check with R:
+```{r}
+anova(mod0,mod1, test = "LRT")
 ```
