@@ -85,3 +85,28 @@ Both the Wald statistic and likelihood ratio test suggest that $\text{BMI}^2$ co
 I would guess that there was an issue with multicollinearity for BMI. Mean-centering a predictor variable can reduce multicollinearity, and does not require categorizing the variable (so you aren't throwing out as much information).
 
 ###f. Calculate and interpret the estimated odds ratio for the effect of BMI on COPD for a patient with average BMI.
+
+By inverting a Wald test:
+$$
+\text{95% CI}=(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})
+$$
+
+Because we are interested in an average BMI and BMI is mean-centered for this dataset, we want to use a BMI of 0:
+$$
+(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})=(e^{-0.045133-1.96*(0.015116)},e^{-0.045133+1.96*(0.015116)}) = (e^{-0.075},e^{-0.016})=(0.928,0.984)
+$$
+
+By inverting a LRT, solve the equation:
+$$
+2\text{ log}(\frac{L(\hat\beta_0,\hat\beta_1)}{L(\tilde\beta_0|\beta_1=\beta_1^{*})})=3.841
+$$
+
+This is tough to solve by hand, so use R's confint() function:
+```{r}
+confint(mod1)
+```
+
+Check the Wald interval as well, using confint.default():
+```{r}
+confint.default(mod1)
+```
