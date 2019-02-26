@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-02-25" />
+<meta name="date" content="2019-02-26" />
 
 <title>Homework 3</title>
 
@@ -187,7 +187,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 3</h1>
 <h4 class="author"><em>Tim Vigers</em></h4>
-<h4 class="date"><em>25 February 2019</em></h4>
+<h4 class="date"><em>26 February 2019</em></h4>
 
 </div>
 
@@ -209,7 +209,8 @@ wald</code></pre>
 ##   7.308759</code></pre>
 <p><span class="math display">\[
 \text{Wald statistic}=7.309
-\]</span> Test against chi-squared distribution (1 DF):</p>
+\]</span></p>
+<p>Test against chi-squared distribution (1 DF):</p>
 <pre class="r"><code>1 - pchisq(7.309,1)</code></pre>
 <pre><code>## [1] 0.00686101</code></pre>
 <p>Based on the Wald statistic, BMI squared is significantly associated with COPD (p = 0.007).</p>
@@ -227,7 +228,8 @@ LL0</code></pre>
 <pre><code>## 'log Lik.' -510.7325 (df=6)</code></pre>
 <p><span class="math display">\[
 \text{Likelihood ratio statistic}=2(LL1 - LL0)=7.953
-\]</span> Test against chi-squared distribution (1 DF):</p>
+\]</span></p>
+<p>Test against chi-squared distribution (1 DF):</p>
 <pre class="r"><code>1 - pchisq(7.953,1)</code></pre>
 <pre><code>## [1] 0.004800773</code></pre>
 <p>Check LRT with R:</p>
@@ -266,9 +268,9 @@ roc_mod1</code></pre>
 ## Area under the curve: 0.7121</code></pre>
 <p><span class="math display">\[
 \text{AUC without }\text{BMI}^2=0.705\\
-    \\
 \text{AUC with }\text{BMI}^2=0.712
-\]</span> The difference in predictive power between the two models is not particularly large, but the model with BMI squared is slightly better.</p>
+\]</span></p>
+<p>The difference in predictive power between the two models is not particularly large, but the model with BMI squared is slightly better.</p>
 </div>
 <div id="d.-is-there-evidence-that-copd-has-a-quadratic-relationship-with-bmi" class="section level3">
 <h3>d. Is there evidence that COPD has a quadratic relationship with BMI?</h3>
@@ -281,7 +283,7 @@ roc_mod1</code></pre>
 <div id="f.-calculate-and-interpret-the-estimated-odds-ratio-for-the-effect-of-bmi-on-copd-for-a-patient-with-average-bmi." class="section level3">
 <h3>f. Calculate and interpret the estimated odds ratio for the effect of BMI on COPD for a patient with average BMI.</h3>
 <p>By inverting a Wald test: <span class="math display">\[
-\text{95% CI}=(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})=(e^{-0.045-1.96*0.015},e^{-0.045+1.96*0.015})=(0.928,0.985)
+\text{95% CI}=(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})=(e^{-0.045-1.96*0.015},e^{-0.045+1.96*0.015})=(e^{-0.074},e^{-0.016})=(0.928,0.985)
 \]</span> Check with R:</p>
 <pre class="r"><code>confint.default(mod1)</code></pre>
 <pre><code>##                    2.5 %       97.5 %
@@ -291,7 +293,8 @@ roc_mod1</code></pre>
 ## smoker1     -0.642877714  0.045112409
 ## BMI         -0.074759058 -0.015506197
 ## BMIsquared   0.001104102  0.006925159</code></pre>
-<p>By inverting a LRT, solve the equation: <span class="math display">\[
+<p>Not exactly the same, but probably different due to rounding error.</p>
+<p>By find a CI by inverting a LRT, solve the equation: <span class="math display">\[
 2\text{ log}(\frac{L(\hat\beta_0,\hat\beta_1)}{L(\tilde\beta_0|\beta_1=\beta_1^{*})})=3.841
 \]</span></p>
 <p>This is tough to solve by hand, so use R’s confint() function:</p>
@@ -304,6 +307,28 @@ roc_mod1</code></pre>
 ## smoker1     -0.642388194  0.046217286
 ## BMI         -0.075154570 -0.015821937
 ## BMIsquared   0.001194604  0.007039182</code></pre>
+<p>The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).</p>
+<p>The confidence intervals are exactly the same when rounding to three digits. Because neither one contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.</p>
+</div>
+</div>
+<div id="rickert-et-al." class="section level2">
+<h2>2. Rickert et al.</h2>
+<div id="a.-interpretation" class="section level3">
+<h3>a. Interpretation</h3>
+<p>In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold, with a confidence interval of anywhere from 1.17 to 13.9 fold.</p>
+</div>
+<div id="b.-parameter-estimates" class="section level3">
+<h3>b. Parameter estimates</h3>
+<p>Because the estimates are provided on the OR scale, for each parameter except the intercept we just need to take the log of the OR: <span class="math display">\[
+\text{logitP}(Y_i=1)=\hat{\beta}_0+\hat{\beta}_\text{group}+\hat{\beta}_\text{gender}+\hat{\beta}_\text{SES}+\hat{\beta}_\text{partners}=\\
+\hat{\beta}_0+\text{log}(4.04)+\text{log}(1.38)+\text{log}(5.82)+\text{log}(3.22)
+\]</span></p>
+<p>So, <span class="math display">\[
+\hat{\beta}_\text{group}=1.396\\
+\hat{\beta}_\text{gender}=0.322\\
+\hat{\beta}_\text{SES}=1.761\\
+\hat{\beta}_\text{partners}=1.169
+\]</span></p>
 </div>
 </div>
 

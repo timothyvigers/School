@@ -17,20 +17,24 @@ copd <- read.csv("~/Documents/School/UC Denver/Biostatistics/Biostatistical Meth
 # Format factor columns
 copd[,c("copd","gender","smoker")] <- lapply(copd[,c("copd","gender","smoker")], as.factor)
 ```
+
 ## 1. COPD Models
 ```{r}
 # Model 1 with BMI squared
 mod1 <- glm(copd ~ age + gender + smoker + BMI + BMIsquared, data = copd,family = "binomial")
 ```
+
 ###a. Determine whether COPD is significantly associated with BMI squared using Wald statistic.
 ```{r}
 # Calculate Wald statistic
 wald <- (coef(mod1)[6]/sqrt(diag(vcov(mod1)))[6])^2
 wald
 ```
+
 $$
 \text{Wald statistic}=7.309
 $$
+
 Test against chi-squared distribution (1 DF):
 ```{r}
 1 - pchisq(7.309,1)
@@ -47,17 +51,21 @@ LL1 <- logLik(mod1)
 LL0
 LL1
 ```
+
 $$
 \text{Likelihood ratio statistic}=2(LL1 - LL0)=7.953
 $$
+
 Test against chi-squared distribution (1 DF):
 ```{r}
 1 - pchisq(7.953,1)
 ```
+
 Check LRT with R:
 ```{r}
 anova(mod0,mod1, test = "LRT")
 ```
+
 ###c. AUC (c index)
 Compare the predictive accuracy of each model. Model 0 (without BMI squared):
 ```{r}
@@ -65,17 +73,19 @@ copd$prob_mod0 <- predict(mod0,type = "response")
 roc_mod0 <- pROC::roc(copd ~ prob_mod0, data = copd)
 roc_mod0
 ```
+
 Model 1 (with BMI squared):
 ```{r}
 copd$prob_mod1 <- predict(mod1,type = "response")
 roc_mod1 <- pROC::roc(copd ~ prob_mod1, data = copd)
 roc_mod1
 ```
+
 $$
 \text{AUC without }\text{BMI}^2=0.705\\
-    \\
 \text{AUC with }\text{BMI}^2=0.712
 $$
+
 The difference in predictive power between the two models is not particularly large, but the model with BMI squared is slightly better.
 
 ###d. Is there evidence that COPD has a quadratic relationship with BMI?
@@ -105,5 +115,27 @@ This is tough to solve by hand, so use R's confint() function:
 ```{r}
 confint(mod1)
 ```
+The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).
 
-The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, 
+The confidence intervals are exactly the same when rounding to three digits. Because neither one contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.
+
+## 2. Rickert et al.
+### a. Interpretation
+In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold, with a confidence interval of anywhere from 1.17 to 13.9 fold.
+
+###b. Parameter estimates
+Because the estimates are provided on the OR scale, for each parameter except the intercept we just need to take the log of the OR:
+$$
+\text{logitP}(Y_i=1)=\hat{\beta}_0+\hat{\beta}_\text{group}+\hat{\beta}_\text{gender}+\hat{\beta}_\text{SES}+\hat{\beta}_\text{partners}=\\
+\hat{\beta}_0+\text{log}(4.04)+\text{log}(1.38)+\text{log}(5.82)+\text{log}(3.22)
+$$
+
+So, 
+$$
+\hat{\beta}_\text{group}=1.396\\
+\hat{\beta}_\text{gender}=0.322\\
+\hat{\beta}_\text{SES}=1.761\\
+\hat{\beta}_\text{partners}=1.169
+$$
+
+In order to find $\hat{\beta}_0$ we would need to know the proportion of adolescents in the study who purchased condoms.
