@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-02-24" />
+<meta name="date" content="2019-02-25" />
 
 <title>Homework 3</title>
 
@@ -187,7 +187,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 3</h1>
 <h4 class="author"><em>Tim Vigers</em></h4>
-<h4 class="date"><em>24 February 2019</em></h4>
+<h4 class="date"><em>25 February 2019</em></h4>
 
 </div>
 
@@ -230,7 +230,7 @@ LL0</code></pre>
 \]</span> Test against chi-squared distribution (1 DF):</p>
 <pre class="r"><code>1 - pchisq(7.953,1)</code></pre>
 <pre><code>## [1] 0.004800773</code></pre>
-<p>Check with R:</p>
+<p>Check LRT with R:</p>
 <pre class="r"><code>anova(mod0,mod1, test = &quot;LRT&quot;)</code></pre>
 <pre><code>## Analysis of Deviance Table
 ## 
@@ -281,11 +281,16 @@ roc_mod1</code></pre>
 <div id="f.-calculate-and-interpret-the-estimated-odds-ratio-for-the-effect-of-bmi-on-copd-for-a-patient-with-average-bmi." class="section level3">
 <h3>f. Calculate and interpret the estimated odds ratio for the effect of BMI on COPD for a patient with average BMI.</h3>
 <p>By inverting a Wald test: <span class="math display">\[
-\text{95% CI}=(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})
-\]</span></p>
-<p>Because we are interested in an average BMI and BMI is mean-centered for this dataset, we want to use a BMI of 0: <span class="math display">\[
-(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})=(e^{-0.045133-1.96*(0.015116)},e^{-0.045133+1.96*(0.015116)}) = (e^{-0.075},e^{-0.016})=(0.928,0.984)
-\]</span></p>
+\text{95% CI}=(e^{\hat\beta_\text{BMI}-1.96*SE(\hat\beta_\text{BMI})},e^{\hat\beta_\text{BMI}+1.96*SE(\hat\beta_\text{BMI})})=(e^{-0.045-1.96*0.015},e^{-0.045+1.96*0.015})=(0.928,0.985)
+\]</span> Check with R:</p>
+<pre class="r"><code>confint.default(mod1)</code></pre>
+<pre><code>##                    2.5 %       97.5 %
+## (Intercept) -5.642667879 -3.077391381
+## age          0.058209737  0.097568453
+## gender1     -0.515840010  0.079700013
+## smoker1     -0.642877714  0.045112409
+## BMI         -0.074759058 -0.015506197
+## BMIsquared   0.001104102  0.006925159</code></pre>
 <p>By inverting a LRT, solve the equation: <span class="math display">\[
 2\text{ log}(\frac{L(\hat\beta_0,\hat\beta_1)}{L(\tilde\beta_0|\beta_1=\beta_1^{*})})=3.841
 \]</span></p>
@@ -299,15 +304,6 @@ roc_mod1</code></pre>
 ## smoker1     -0.642388194  0.046217286
 ## BMI         -0.075154570 -0.015821937
 ## BMIsquared   0.001194604  0.007039182</code></pre>
-<p>Check the Wald interval as well, using confint.default():</p>
-<pre class="r"><code>confint.default(mod1)</code></pre>
-<pre><code>##                    2.5 %       97.5 %
-## (Intercept) -5.642667879 -3.077391381
-## age          0.058209737  0.097568453
-## gender1     -0.515840010  0.079700013
-## smoker1     -0.642877714  0.045112409
-## BMI         -0.074759058 -0.015506197
-## BMIsquared   0.001104102  0.006925159</code></pre>
 </div>
 </div>
 
