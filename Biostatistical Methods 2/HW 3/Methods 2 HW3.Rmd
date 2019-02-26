@@ -194,4 +194,4 @@ $$
 SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-1.38}{1.96}=0.597
 $$
 
-These estimates for $SE(\hat\beta_\text{gender})$ are the same (within rounding error), which suggests that the estimate for gender was mistakenly reported on the log odds scale. So, assuming this is actually what happened, the true OR values is $e^{1.38} \approx 3.97$
+These estimates for $SE(\hat\beta_\text{gender})$ are the same (within rounding error), which suggests that the estimate for gender was mistakenly reported on the log odds scale. So, assuming this is actually what happened, the true OR value is $e^{1.38} \approx 3.97$
