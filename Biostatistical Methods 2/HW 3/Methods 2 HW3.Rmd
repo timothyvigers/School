@@ -117,11 +117,11 @@ confint(mod1)
 ```
 The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).
 
-The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.
+The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant. Also, the distributions of both the Wald and likelihood ratio test statistics are asymptotically equal (both chi square), and this large sample size allows us to assume that asymptotic theory holds.
 
 ## 2. Rickert et al.
 ### a. Interpretation
-In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold, with a confidence interval of anywhere from 1.17 to 13.9 fold.
+In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold when adjusting for gender, SES, and total number of partners. The confidence interval means that we can be 95% certain the odds change anywhere from 1.17 to 13.9 fold.
 
 ###b. Parameter estimates
 Because the estimates are provided on the OR scale, for each parameter except the intercept we just need to take the log of the OR:

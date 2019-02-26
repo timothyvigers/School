@@ -308,14 +308,14 @@ roc_mod1</code></pre>
 ## BMI         -0.075154570 -0.015821937
 ## BMIsquared   0.001194604  0.007039182</code></pre>
 <p>The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).</p>
-<p>The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.</p>
+<p>The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant. Also, the distributions of both the Wald and likelihood ratio test statistics are asymptotically equal (both chi square), and this large sample size allows us to assume that asymptotic theory holds.</p>
 </div>
 </div>
 <div id="rickert-et-al." class="section level2">
 <h2>2. Rickert et al.</h2>
 <div id="a.-interpretation" class="section level3">
 <h3>a. Interpretation</h3>
-<p>In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold, with a confidence interval of anywhere from 1.17 to 13.9 fold.</p>
+<p>In this study, group is the treatment variable, and refers to no education program (0) or the program being investigated (1). On average, participating in the education program increases the odds of an adolescent purchasing condoms 4.04 fold when adjusting for gender, SES, and total number of partners. The confidence interval means that we can be 95% certain the odds change anywhere from 1.17 to 13.9 fold.</p>
 </div>
 <div id="b.-parameter-estimates" class="section level3">
 <h3>b. Parameter estimates</h3>
