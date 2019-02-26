@@ -308,7 +308,7 @@ roc_mod1</code></pre>
 ## BMI         -0.075154570 -0.015821937
 ## BMIsquared   0.001194604  0.007039182</code></pre>
 <p>The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).</p>
-<p>The confidence intervals are exactly the same when rounding to three digits. Because neither one contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.</p>
+<p>The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.</p>
 </div>
 </div>
 <div id="rickert-et-al." class="section level2">
@@ -332,11 +332,11 @@ roc_mod1</code></pre>
 </div>
 <div id="c.-hatbeta_0" class="section level3">
 <h3>c. <span class="math inline">\(\hat{\beta}_0\)</span></h3>
-<p>In order to find <span class="math inline">\(\hat{\beta}_0\)</span> we would need to know how many (or odds ratio for) female, low SES, adolescents who have had 0 sexual partners and didn’t receive the education program bought condoms and how many didn’t.</p>
+<p>In order to find <span class="math inline">\(\hat{\beta}_0\)</span> we would need to know how many female, low SES, adolescents who have had 0 sexual partners and didn’t receive the education program bought condoms, and how many didn’t buy them.</p>
 </div>
 <div id="d.-sehatbeta_1" class="section level3">
 <h3>d. SE(<span class="math inline">\(\hat{\beta}_1\)</span>)</h3>
-<p>To find the standard error, we rearrange the following equation (it’s only necessary to solve the lower or upper bound, since SE is constant): <span class="math display">\[
+<p>To find the standard error, we rearrange the following equation. It’s only necessary to solve the lower or upper bound, since SE is constant: <span class="math display">\[
 \text{95% CI}=(e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})},e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})})
 \]</span></p>
 <p>So: <span class="math display">\[
@@ -349,10 +349,32 @@ SE(\hat\beta_\text{group}) = \frac{\text{log}(1.17)-\hat\beta_\text{group}}{-1.9
 \text{log}(13.9)=\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})\\
 SE(\hat\beta_\text{group}) = \frac{\text{log}(13.9)-\hat\beta_\text{group}}{1.96}=0.630
 \]</span></p>
-<p>These are close enough that the discrepancy is most likely rounding error, so it’s safe to say <span class="math inline">\(SE(\hat\beta_\text{group}) =0.63\)</span>.</p>
+<p>These are close enough that the discrepancy is most likely rounding error, so it’s safe to say <span class="math inline">\(SE(\hat\beta_\text{group}) \approx0.63\)</span>.</p>
 </div>
-<div id="e." class="section level3">
-<h3>e.</h3>
+<div id="e.-check-or-for-gender" class="section level3">
+<h3>e. Check OR for gender</h3>
+<p>We can check this interval and estimate using the same techniques as above. First calculate SE based on the lower bound: <span class="math display">\[
+1.23 = e^{\hat\beta_\text{gender}-1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(1.23)=\hat\beta_\text{gender}-1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(1.23)-\hat\beta_\text{gender}}{-1.96}=0.059
+\]</span></p>
+<p>And then the upper bound: <span class="math display">\[
+12.88 = e^{\hat\beta_\text{gender}+1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(12.88)=\hat\beta_\text{gender}+1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-\hat\beta_\text{gender}}{1.96}=1.136
+\]</span></p>
+<p>In this case the estimates of SE are way off, which means something is wrong either the interval or the estimate. If we assume that the interval is correct, we can see if 1.38 is in fact the log odds ratio by plugging it in for <span class="math inline">\(\hat\beta_\text{gender}\)</span>.</p>
+<p>Lower: <span class="math display">\[
+1.23 = e^{1.38-1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(1.23)=1.38-1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(1.23)-1.38}{-1.96}=0.598
+\]</span></p>
+<p>Upper: <span class="math display">\[
+12.88 = e^{1.38+1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(12.88)=1.38+1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-1.38}{1.96}=0.597
+\]</span></p>
+<p>These estimates for <span class="math inline">\(SE(\hat\beta_\text{gender})\)</span> are the same (within rounding error), which suggests that the estimate for gender was mistakenly reported on the log odds scale. So, assuming this is actually what happened, the true OR values is <span class="math inline">\(e^{1.38} \approx 3.97\)</span></p>
 </div>
 </div>
 

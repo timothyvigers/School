@@ -117,7 +117,7 @@ confint(mod1)
 ```
 The interpretation for the Wald statistic CI is that for every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.985) fold on average (p = 0.003). For the LRT-based confidence interval, the interpretation is similar: For every 1 unit increase in BMI, the odds of developing COPD change 0.956 (95% CI: 0.928,0.984) fold on average (p = 0.003).
 
-The confidence intervals are exactly the same when rounding to three digits. Because neither one contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.
+The confidence intervals are exactly the same when rounding to three digits. Because neither interval contains 0 (or 1 after exponentiation), they are both saying that the effect of BMI is significant.
 
 ## 2. Rickert et al.
 ### a. Interpretation
@@ -139,10 +139,10 @@ $$
 $$
 
 ###c. $\hat{\beta}_0$
-In order to find $\hat{\beta}_0$ we would need to know how many (or odds ratio for) female, low SES, adolescents who have had 0 sexual partners and didn't receive the education program bought condoms and how many didn't. 
+In order to find $\hat{\beta}_0$ we would need to know how many female, low SES, adolescents who have had 0 sexual partners and didn't receive the education program bought condoms, and how many didn't buy them. 
 
 ###d. SE($\hat{\beta}_1$)
-To find the standard error, we rearrange the following equation (it's only necessary to solve the lower or upper bound, since SE is constant):
+To find the standard error, we rearrange the following equation. It's only necessary to solve the lower or upper bound, since SE is constant:
 $$
 \text{95% CI}=(e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})},e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})})
 $$
@@ -161,7 +161,7 @@ $$
 SE(\hat\beta_\text{group}) = \frac{\text{log}(13.9)-\hat\beta_\text{group}}{1.96}=0.630
 $$
 
-These are close enough that the discrepancy is most likely rounding error, so it's safe to say $SE(\hat\beta_\text{group}) =0.63$.
+These are close enough that the discrepancy is most likely rounding error, so it's safe to say $SE(\hat\beta_\text{group}) \approx0.63$.
 
 ###e. Check OR for gender
 We can check this interval and estimate using the same techniques as above. First calculate SE based on the lower bound:
@@ -178,4 +178,20 @@ $$
 SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-\hat\beta_\text{gender}}{1.96}=1.136
 $$
 
-In this case the estimates of SE are way off, which means something is wrong either the interval or the estimate. 
+In this case the estimates of SE are way off, which means something is wrong either the interval or the estimate. If we assume that the interval is correct, we can see if 1.38 is in fact the log odds ratio by plugging it in for $\hat\beta_\text{gender}$.
+
+Lower:
+$$
+1.23 = e^{1.38-1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(1.23)=1.38-1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(1.23)-1.38}{-1.96}=0.598
+$$
+
+Upper:
+$$
+12.88 = e^{1.38+1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(12.88)=1.38+1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-1.38}{1.96}=0.597
+$$
+
+These estimates for $SE(\hat\beta_\text{gender})$ are the same (within rounding error), which suggests that the estimate for gender was mistakenly reported on the log odds scale. So, assuming this is actually what happened, the true OR values is $e^{1.38} \approx 3.97$
