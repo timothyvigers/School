@@ -163,4 +163,19 @@ $$
 
 These are close enough that the discrepancy is most likely rounding error, so it's safe to say $SE(\hat\beta_\text{group}) =0.63$.
 
-###e. 
+###e. Check OR for gender
+We can check this interval and estimate using the same techniques as above. First calculate SE based on the lower bound:
+$$
+1.23 = e^{\hat\beta_\text{gender}-1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(1.23)=\hat\beta_\text{gender}-1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(1.23)-\hat\beta_\text{gender}}{-1.96}=0.059
+$$
+
+And then the upper bound:
+$$
+12.88 = e^{\hat\beta_\text{gender}+1.96*SE(\hat\beta_\text{gender})}\\
+\text{log}(12.88)=\hat\beta_\text{gender}+1.96*SE(\hat\beta_\text{gender})\\
+SE(\hat\beta_\text{gender}) = \frac{\text{log}(12.88)-\hat\beta_\text{gender}}{1.96}=1.136
+$$
+
+In this case the estimates of SE are way off, which means something is wrong either the interval or the estimate. 
