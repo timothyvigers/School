@@ -138,4 +138,29 @@ $$
 \hat{\beta}_\text{partners}=1.169
 $$
 
-In order to find $\hat{\beta}_0$ we would need to know the proportion of adolescents in the study who purchased condoms.
+###c. $\hat{\beta}_0$
+In order to find $\hat{\beta}_0$ we would need to know how many (or odds ratio for) female, low SES, adolescents who have had 0 sexual partners and didn't receive the education program bought condoms and how many didn't. 
+
+###d. SE($\hat{\beta}_1$)
+To find the standard error, we rearrange the following equation (it's only necessary to solve the lower or upper bound, since SE is constant):
+$$
+\text{95% CI}=(e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})},e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})})
+$$
+
+So:
+$$
+1.17 = e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})}\\
+\text{log}(1.17)=\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})\\
+SE(\hat\beta_\text{group}) = \frac{\text{log}(1.17)-\hat\beta_\text{group}}{-1.96}=0.632
+$$
+
+Probably worth checking with the upper bound as well though:
+$$
+13.9 = e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})}\\
+\text{log}(13.9)=\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})\\
+SE(\hat\beta_\text{group}) = \frac{\text{log}(13.9)-\hat\beta_\text{group}}{1.96}=0.630
+$$
+
+These are close enough that the discrepancy is most likely rounding error, so it's safe to say $SE(\hat\beta_\text{group}) =0.63$.
+
+###e. 

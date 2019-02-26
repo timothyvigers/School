@@ -330,6 +330,30 @@ roc_mod1</code></pre>
 \hat{\beta}_\text{partners}=1.169
 \]</span></p>
 </div>
+<div id="c.-hatbeta_0" class="section level3">
+<h3>c. <span class="math inline">\(\hat{\beta}_0\)</span></h3>
+<p>In order to find <span class="math inline">\(\hat{\beta}_0\)</span> we would need to know how many (or odds ratio for) female, low SES, adolescents who have had 0 sexual partners and didn’t receive the education program bought condoms and how many didn’t.</p>
+</div>
+<div id="d.-sehatbeta_1" class="section level3">
+<h3>d. SE(<span class="math inline">\(\hat{\beta}_1\)</span>)</h3>
+<p>To find the standard error, we rearrange the following equation (it’s only necessary to solve the lower or upper bound, since SE is constant): <span class="math display">\[
+\text{95% CI}=(e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})},e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})})
+\]</span></p>
+<p>So: <span class="math display">\[
+1.17 = e^{\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})}\\
+\text{log}(1.17)=\hat\beta_\text{group}-1.96*SE(\hat\beta_\text{group})\\
+SE(\hat\beta_\text{group}) = \frac{\text{log}(1.17)-\hat\beta_\text{group}}{-1.96}=0.632
+\]</span></p>
+<p>Probably worth checking with the upper bound as well though: <span class="math display">\[
+13.9 = e^{\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})}\\
+\text{log}(13.9)=\hat\beta_\text{group}+1.96*SE(\hat\beta_\text{group})\\
+SE(\hat\beta_\text{group}) = \frac{\text{log}(13.9)-\hat\beta_\text{group}}{1.96}=0.630
+\]</span></p>
+<p>These are close enough that the discrepancy is most likely rounding error, so it’s safe to say <span class="math inline">\(SE(\hat\beta_\text{group}) =0.63\)</span>.</p>
+</div>
+<div id="e." class="section level3">
+<h3>e.</h3>
+</div>
 </div>
 
 
