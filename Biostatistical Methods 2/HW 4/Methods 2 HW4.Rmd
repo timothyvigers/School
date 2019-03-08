@@ -7,5 +7,47 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
 ```
 
+## 1. Simulated outcome
+### a. Data-generating model
+
+$$
+\hat{Y} = 0.132 + 0.617X_i + \epsilon_i\\
+i=1,2,...,20\\
+\epsilon \text{~} N(0,\sigma^2)
+$$
+
+### b. 
+
+### c. ANOVA table
+
+```{r}
+# Make table outline, define variables(p = number of covariates)
+p <- 1
+n <- 20
+t <- 1.4727
+f <- t^2
+mse <- 0.876588
+anova <- as.data.frame(matrix(nrow = 2,ncol = 5),
+                       row.names = c("Model","Error"))
+colnames(anova) <- c("Df","Sum Sq","Mean Sq","F value","Pr(>F)")
+# Fill in model
+anova["Model",1] <- p
+anova["Model",2] <- f*mse*p
+anova["Model",3] <- f*mse
+anova["Model",4] <- f
+anova["Model",5] <- 1-pf(t^2,1,18)
+# Fill in residuals
+anova["Error",1] <- n - 1 - p
+anova["Error",2] <- mse*(n-p-1)
+anova["Error",3] <- mse
+anova["Error",4] <- NA
+anova["Error",5] <- NA
+```
+
+```{r}
+# Print (round to 3 digits)
+kable(anova,digits = 3)
+```
