@@ -1,0 +1,45 @@
+---
+title: "Theory 2 Homework 6"
+author: "Tim Vigers"
+date: "3/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+nu<-4			# prior mean
+tau2<-1			# prior variance
+tau<-sqrt(tau2)		# prior sd
+xbar<-2			# sample mean
+sig2<-1			# sample variance (known)
+sig<-sqrt(sig2)		# sample sd
+# prior N(nu, tau^2)  nu=4, tau^2=1
+# compute x limits  mean +- 4SD
+xmin<-nu-4*tau
+xmax<-nu+4*tau
+xx<-seq(xmin,xmax,by=.01)
+# compute prior for all xx
+prior<-dnorm(xx,mean=nu,sd=sqrt(tau2))
+rnu<-round(nu,2)
+rtau2<-round(tau2,2)
+# different ns
+n1 <- 5
+n2 <- 100
+# posterior distribution n = 5
+postmean5 <- (xbar*n1*tau2 + nu*sig2) / (n1*tau2 + sig2)
+postvar5 <- (sig2*tau2) / (n1*tau2+sig2)
+post5 <- dnorm(xx,mean=postmean5,sd=sqrt(postvar5))
+# posterior distribution n = 100
+postmean100 <- (xbar*n2*tau2 + nu*sig2) / (n2*tau2 + sig2)
+postvar100 <- (sig2*tau2) / (n2*tau2+sig2)
+post100 <- dnorm(xx,mean=postmean100,sd=sqrt(postvar100))
+# plot on same graph
+maintxt<-paste("Three Distributions")
+plot(xx,prior,type="l",lty=1,xlab="x",ylab="pdf",main=maintxt,ylim = c(0,4))
+lines(xx,post5,col = "red")
+lines(xx,post100,col = "green")
+legend("right",legend=c("Prior","n = 5","n = 100"),col=c("black","red","green"),bg="white",lwd=2)
+```
