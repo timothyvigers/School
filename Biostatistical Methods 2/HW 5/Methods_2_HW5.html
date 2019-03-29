@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-03-28" />
+<meta name="date" content="2019-03-29" />
 
 <title>Homework 5</title>
 
@@ -192,7 +192,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 5</h1>
 <h4 class="author">Tim Vigers</h4>
-<h4 class="date">28 March 2019</h4>
+<h4 class="date">29 March 2019</h4>
 
 </div>
 
@@ -277,16 +277,14 @@ mean((sm$residuals^2))</code></pre>
 <pre><code>## [1] 0.01727635</code></pre>
 <div id="a.-model-equation-1" class="section level3">
 <h3>a. Model equation</h3>
-</div>
-</div>
-<div id="remove-error-term-when-in-expected-value-form" class="section level1">
-<h1>Remove error term when in expected value form?</h1>
 <p><span class="math display">\[
 Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i}+ \epsilon =0.096 + 0.988 Y_{pre_i}+ \epsilon \text{ ~ N}(0,0.017)
 \]</span></p>
+</div>
 <div id="b.-interpretation-1" class="section level3">
 <h3>b. Interpretation</h3>
 <p>Pre-bronchodilator FEV1 is significantly associated with post-bronchodilator FEV1 (p &lt; 2e-16).</p>
+</div>
 </div>
 <div id="model-3-hybrid-model" class="section level2">
 <h2>Model 3: Hybrid Model</h2>
@@ -333,20 +331,21 @@ Y_{post_i}- Y_{pre_i} = \gamma_0 + \gamma_1 Y_{pre_i} + \epsilon =\\
 <div id="show-algebraically-that-model-1-is-nested-within-model-2" class="section level2">
 <h2>Show algebraically that Model 1 is nested within Model 2</h2>
 <p><span class="math display">\[
-\text{Model 1: }E[\Delta_i] = E[Y_{post_i}-Y_{pre_i}] = E[Y_{post_i}]-E[Y_{pre_i}]=\beta_0\\
-\text{Model 2: }E[Y_{post_i}] = \alpha_0 + \alpha_1 Y_{pre_i}\\
-\text{Therefore: Model 1 = Model 2}-E[Y_{pre_i}]
+\text{Model 1: }Y_{post_i}-Y_{pre_i} =\beta_0+ \epsilon\\
+\text{Model 2: }Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i}+ \epsilon\\
+\text{Therefore: Model 1 = Model 2}-\alpha_1 Y_{pre_i}
 \]</span></p>
-<p>This shows that model 2 is similar to model 1, but allows for variation in baseline FEV1. So the change-score model assumes that baseline values won’t be significantly associated with the second time point values and just tests the difference between the two, while the baseline-as-covariate model tests whether there is an association.</p>
+<p>This shows that model 2 is similar to model 1, but allows for variation in baseline FEV1. So the change-score model assumes within subject correlation, while the baseline-as-covariate model tests whether there is an association between the two time points.</p>
 </div>
 <div id="show-algebraically-that-models-2-and-3-are-equivalent" class="section level2">
 <h2>Show algebraically that Models 2 and 3 are equivalent</h2>
 <p><span class="math display">\[
-\text{Model 2: }E[Y_{post_i}] = \alpha_0 + \alpha_1 Y_{pre_i}\\
-\text{Model 3: }E[Y_{post_i}-Y_{pre_i}] = E[Y_{post_i}]-E[Y_{pre_i}] =\gamma_0 + \gamma_1 Y_{pre_i}\\
-E[Y_{post_i}] = \gamma_0 + \gamma_1 Y_{pre_i} + E[Y_{pre_i}]
+\text{Model 2: }Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i} +\epsilon\\
+\text{Model 3: }Y_{post_i}-Y_{pre_i} =\gamma_0 + \gamma_1 Y_{pre_i}+ \epsilon\\
+\alpha_0 + \alpha_1 Y_{pre_i} +\epsilon = \gamma_0 + \gamma_1 Y_{pre_i} + Y_{pre_i}+ \epsilon\\
+\alpha_0 + \alpha_1 Y_{pre_i} +\epsilon = \gamma_0 + Y_{pre_i}(\gamma_1 + 1)+ \epsilon
 \]</span></p>
-<p>This shows that the models are telling you the same thing, but that <span class="math inline">\(\gamma_1\)</span> is slightly different from <span class="math inline">\(\alpha_1\)</span> because of the <span class="math inline">\(E[Y_{pre_i}]\)</span> term. You can see this in the model summaries too, since they have the same intercept (<span class="math inline">\(\alpha_0 = \gamma_0\)</span>). However, in model 2 <span class="math inline">\(\alpha_1\)</span> tells you that for every unit increase in baseline FEV1, post-bronchodilator FEV1 increases by 0.9876 while <span class="math inline">\(\gamma_1\)</span> says that for the same change in baseline, the change in FEV1 decreases by 0.012. This is the same information, just parameterized in different ways.</p>
+<p>Therefore the two models are the same if <span class="math inline">\(\alpha_1 = \gamma_1 + 1\)</span> (because <span class="math inline">\(\alpha_0 = \gamma_0\)</span>).</p>
 </div>
 <div id="model-4-long-format" class="section level2">
 <h2>Model 4: Long Format</h2>
@@ -356,16 +355,28 @@ E[Y_{post_i}] = \gamma_0 + \gamma_1 Y_{pre_i} + E[Y_{pre_i}]
 </div>
 <div id="b.-1" class="section level3">
 <h3>b.</h3>
-<p><span class="math inline">\(\hat\beta_1\)</span> in this model is equivalent to <span class="math inline">\(\hat\beta_0\)</span> in model, which was the average difference between the timepoints. This makes sense because in model 4, <span class="math inline">\(\hat\beta_1\)</span> is the average change in FEV1 when going from the first time point to the second, so they are giving you the same information.</p>
+<p><span class="math inline">\(\hat\beta_1\)</span> in this model is equivalent to <span class="math inline">\(\hat\beta_0\)</span> in model 1, which was the average difference between the timepoints. This makes sense because in model 4, <span class="math inline">\(\hat\beta_1\)</span> is the average change in FEV1 when going from the first time point to the second, so they are giving you the same information.</p>
 </div>
 <div id="c.-1" class="section level3">
 <h3>c.</h3>
 <p>The standard error for <span class="math inline">\(\hat\beta_1\)</span> in model 4 is higher, because the equation for this model essentially has an additional error term. Instead of adding <span class="math inline">\(\epsilon_i\)</span> where i = subjects 1,…,n, you’re adding <span class="math inline">\(\epsilon_{ij}\)</span> where indexes time one or time 2. This raises the model MSE and increases the SE calculation for the covariates.</p>
+<p>In other words, model 1 accounts for within-subject correlation which allows for tighter covariate estimates. Model 4 doesn’t account for this correlation, which results in a higher standard error.</p>
 </div>
 <div id="d.-simple-test" class="section level3">
 <h3>d. Simple test</h3>
-<p>A repeated measures ANOVA would produce the same results in this case.</p>
-</div>
+<p>A regular (un-paired t-test) would produce the same results in this case.</p>
+<pre class="r"><code>t.test(hw5$pre_FEV1,hw5$post_FEV1)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  hw5$pre_FEV1 and hw5$post_FEV1
+## t = -0.42675, df = 98, p-value = 0.6705
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -0.428395  0.276755
+## sample estimates:
+## mean of x mean of y 
+##   1.64796   1.72378</code></pre>
 </div>
 </div>
 

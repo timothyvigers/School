@@ -54,8 +54,6 @@ mean((sm$residuals^2))
 
 ### a. Model equation
 
-# Remove error term when in expected value form?
-
 $$
 Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i}+ \epsilon =0.096 + 0.988 Y_{pre_i}+ \epsilon \text{ ~ N}(0,0.017)
 $$
@@ -92,22 +90,23 @@ The difference between pre- and post-bronchodilator FEV1 is significantly differ
 ## Show algebraically that Model 1 is nested within Model 2
 
 $$
-\text{Model 1: }E[\Delta_i] = E[Y_{post_i}-Y_{pre_i}] = E[Y_{post_i}]-E[Y_{pre_i}]=\beta_0\\
-\text{Model 2: }E[Y_{post_i}] = \alpha_0 + \alpha_1 Y_{pre_i}\\
-\text{Therefore: Model 1 = Model 2}-E[Y_{pre_i}]
+\text{Model 1: }Y_{post_i}-Y_{pre_i} =\beta_0+ \epsilon\\
+\text{Model 2: }Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i}+ \epsilon\\
+\text{Therefore: Model 1 = Model 2}-\alpha_1 Y_{pre_i}
 $$
 
-This shows that model 2 is similar to model 1, but allows for variation in baseline FEV1. So the change-score model assumes that baseline values won't be significantly associated with the second time point values and just tests the difference between the two, while the baseline-as-covariate model tests whether there is an association. 
+This shows that model 2 is similar to model 1, but allows for variation in baseline FEV1. So the change-score model assumes within subject correlation, while the baseline-as-covariate model tests whether there is an association between the two time points. 
 
 ## Show algebraically that Models 2 and 3 are equivalent
 
 $$
-\text{Model 2: }E[Y_{post_i}] = \alpha_0 + \alpha_1 Y_{pre_i}\\
-\text{Model 3: }E[Y_{post_i}-Y_{pre_i}] = E[Y_{post_i}]-E[Y_{pre_i}] =\gamma_0 + \gamma_1 Y_{pre_i}\\
-E[Y_{post_i}] = \gamma_0 + \gamma_1 Y_{pre_i} + E[Y_{pre_i}]
+\text{Model 2: }Y_{post_i} = \alpha_0 + \alpha_1 Y_{pre_i} +\epsilon\\
+\text{Model 3: }Y_{post_i}-Y_{pre_i} =\gamma_0 + \gamma_1 Y_{pre_i}+ \epsilon\\
+\alpha_0 + \alpha_1 Y_{pre_i} +\epsilon = \gamma_0 + \gamma_1 Y_{pre_i} + Y_{pre_i}+ \epsilon\\
+\alpha_0 + \alpha_1 Y_{pre_i} +\epsilon = \gamma_0 + Y_{pre_i}(\gamma_1 + 1)+ \epsilon
 $$
 
-This shows that the models are telling you the same thing, but that $\gamma_1$ is slightly different from $\alpha_1$ because of the $E[Y_{pre_i}]$ term. You can see this in the model summaries too, since they have the same intercept ($\alpha_0 = \gamma_0$). However, in model 2 $\alpha_1$ tells you that for every unit increase in baseline FEV1, post-bronchodilator FEV1 increases by 0.9876 while $\gamma_1$ says that for the same change in baseline, the change in FEV1 decreases by 0.012. This is the same information, just parameterized in different ways.
+Therefore the two models are the same if $\alpha_1 = \gamma_1 + 1$ (because $\alpha_0 = \gamma_0$).
 
 ## Model 4: Long Format
 
@@ -117,12 +116,18 @@ The intercept in this model is the average pre-bronchodilator FEV1.
 
 ### b. 
 
-$\hat\beta_1$ in this model is equivalent to $\hat\beta_0$ in model, which was the average difference between the timepoints. This makes sense because in model 4, $\hat\beta_1$ is the average change in FEV1 when going from the first time point to the second, so they are giving you the same information. 
+$\hat\beta_1$ in this model is equivalent to $\hat\beta_0$ in model 1, which was the average difference between the timepoints. This makes sense because in model 4, $\hat\beta_1$ is the average change in FEV1 when going from the first time point to the second, so they are giving you the same information. 
 
 ### c. 
 
 The standard error for $\hat\beta_1$ in model 4 is higher, because the equation for this  model essentially has an additional error term. Instead of adding $\epsilon_i$ where i = subjects 1,...,n, you're adding $\epsilon_{ij}$ where indexes time one or time 2. This raises the model MSE and increases the SE calculation for the covariates. 
 
+In other words, model 1 accounts for within-subject correlation which allows for tighter covariate estimates. Model 4 doesn't account for this correlation, which results in a higher standard error.
+
 ### d. Simple test
 
-A repeated measures ANOVA would produce the same results in this case. 
+A regular (un-paired t-test) would produce the same results in this case. 
+
+```{r}
+t.test(hw5$pre_FEV1,hw5$post_FEV1)
+```
