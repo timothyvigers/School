@@ -200,86 +200,55 @@ $(document).ready(function () {
 <pre class="r"><code># Read in data
 inv1 &lt;- read.csv(&quot;/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 6/file2_FEV1.csv&quot;)
 inv1$ID &lt;- as.factor(inv1$ID)
+inv1$trt &lt;- as.factor(inv1$trt)
 inv2 &lt;- read.csv(&quot;/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 6/file1_FEV1.csv&quot;)
+inv2$ID &lt;- as.factor(inv2$ID)
 inv3 &lt;- inv1</code></pre>
 <pre class="r"><code># Models
 inv1_mod &lt;- lm(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi,data=inv1)
 inv2_mod &lt;- lm(delta_FEV1~pre_FEV1+pack_years+current_smoker+emphysema+race+height+bmi,data=inv2)
-#inv3_ri_rs &lt;- lmer(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+trt+(1+trt|ID),data=inv3)
+# Mixed effects (_4 indicates lme4)
+inv3_ri_rs &lt;- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+trt,random =~1+trt|ID,data=inv3)
+
 inv3_ri_4 &lt;- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1|ID),data=inv3)
 inv3_ri &lt;- lme(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi,random = ~1|ID,data=inv3)</code></pre>
-<pre class="r"><code>summary(inv3_ri_4)</code></pre>
-<pre><code>## Linear mixed model fit by REML ['lmerMod']
-## Formula: FEV1 ~ trt + pack_years + current_smoker + emphysema + race +  
-##     height + bmi + (1 | ID)
-##    Data: inv3
-## 
-## REML criterion at convergence: 1122
-## 
-## Scaled residuals: 
-##     Min      1Q  Median      3Q     Max 
-## -4.1116 -0.3888 -0.0113  0.3988  4.1739 
-## 
-## Random effects:
-##  Groups   Name        Variance Std.Dev.
-##  ID       (Intercept) 0.42450  0.6515  
-##  Residual             0.01154  0.1074  
-## Number of obs: 2000, groups:  ID, 1000
-## 
-## Fixed effects:
-##                  Estimate Std. Error t value
-## (Intercept)    -3.9743211  0.3768524 -10.546
-## trt             0.0942540  0.0048052  19.615
-## pack_years     -0.0059403  0.0008909  -6.668
-## current_smoker  0.1262452  0.0477035   2.646
-## emphysema      -0.0453423  0.0021789 -20.810
-## race           -0.2282765  0.0543777  -4.198
-## height          0.0413288  0.0021392  19.319
-## bmi            -0.0139981  0.0036610  -3.824
-## 
-## Correlation of Fixed Effects:
-##             (Intr) trt    pck_yr crrnt_ emphys race   height
-## trt         -0.006                                          
-## pack_years  -0.016  0.000                                   
-## currnt_smkr -0.040  0.000 -0.075                            
-## emphysema   -0.079  0.000 -0.210  0.324                     
-## race         0.032  0.000  0.245 -0.301 -0.012              
-## height      -0.948  0.000 -0.055 -0.062 -0.056 -0.064       
-## bmi         -0.282  0.000 -0.126  0.187  0.324 -0.048 -0.002</code></pre>
-<pre class="r"><code>summary(inv3_ri)</code></pre>
+<pre class="r"><code>summary(inv3_ri_rs)</code></pre>
 <pre><code>## Linear mixed-effects model fit by REML
 ##  Data: inv3 
-##        AIC      BIC    logLik
-##   1141.962 1197.931 -560.9811
+##        AIC      BIC   logLik
+##   1145.788 1212.951 -560.894
 ## 
 ## Random effects:
-##  Formula: ~1 | ID
-##         (Intercept)  Residual
-## StdDev:   0.6515349 0.1074469
+##  Formula: ~1 + trt | ID
+##  Structure: General positive-definite, Log-Cholesky parametrization
+##             StdDev    Corr  
+## (Intercept) 0.6524809 (Intr)
+## trt1        0.0718308 -0.026
+## Residual    0.0946840       
 ## 
-## Fixed effects: FEV1 ~ trt + pack_years + current_smoker + emphysema + race +      height + bmi 
+## Fixed effects: FEV1 ~ pack_years + current_smoker + emphysema + race + height +      bmi + trt 
 ##                    Value Std.Error  DF    t-value p-value
-## (Intercept)    -3.974321 0.3768524 999 -10.546096  0.0000
-## trt             0.094254 0.0048052 999  19.615117  0.0000
-## pack_years     -0.005940 0.0008909 993  -6.667509  0.0000
-## current_smoker  0.126245 0.0477035 993   2.646455  0.0083
-## emphysema      -0.045342 0.0021789 993 -20.809520  0.0000
-## race           -0.228276 0.0543777 993  -4.197983  0.0000
-## height          0.041329 0.0021392 993  19.319463  0.0000
-## bmi            -0.013998 0.0036610 993  -3.823579  0.0001
+## (Intercept)    -3.947704 0.3768167 999 -10.476456  0.0000
+## pack_years     -0.005942 0.0008908 993  -6.669675  0.0000
+## current_smoker  0.125289 0.0476992 993   2.626646  0.0088
+## emphysema      -0.045327 0.0021787 993 -20.804389  0.0000
+## race           -0.225331 0.0543728 993  -4.144197  0.0000
+## height          0.041178 0.0021390 993  19.250583  0.0000
+## bmi            -0.014046 0.0036607 993  -3.837025  0.0001
+## trt1            0.094254 0.0048052 999  19.615069  0.0000
 ##  Correlation: 
-##                (Intr) trt    pck_yr crrnt_ emphys race   height
-## trt            -0.006                                          
-## pack_years     -0.016  0.000                                   
-## current_smoker -0.040  0.000 -0.075                            
-## emphysema      -0.079  0.000 -0.210  0.324                     
-## race            0.032  0.000  0.245 -0.301 -0.012              
-## height         -0.948  0.000 -0.055 -0.062 -0.056 -0.064       
-## bmi            -0.282  0.000 -0.126  0.187  0.324 -0.048 -0.002
+##                (Intr) pck_yr crrnt_ emphys race   height bmi   
+## pack_years     -0.016                                          
+## current_smoker -0.040 -0.075                                   
+## emphysema      -0.079 -0.210  0.324                            
+## race            0.032  0.245 -0.301 -0.012                     
+## height         -0.948 -0.055 -0.062 -0.056 -0.064              
+## bmi            -0.282 -0.126  0.187  0.324 -0.048 -0.002       
+## trt1           -0.006  0.000  0.000  0.000  0.000  0.000  0.000
 ## 
 ## Standardized Within-Group Residuals:
-##         Min          Q1         Med          Q3         Max 
-## -4.11159918 -0.38875462 -0.01132907  0.39884863  4.17392605 
+##          Min           Q1          Med           Q3          Max 
+## -3.621280426 -0.343125984 -0.009100855  0.350117563  3.687789379 
 ## 
 ## Number of Observations: 2000
 ## Number of Groups: 1000</code></pre>
