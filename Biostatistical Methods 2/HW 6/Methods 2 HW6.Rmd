@@ -1,0 +1,40 @@
+---
+title: "Homework 6"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(lme4)
+library(nlme)
+```
+
+```{r}
+# Read in data
+inv1 <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 6/file2_FEV1.csv")
+inv1$ID <- as.factor(inv1$ID)
+inv1$trt <- as.factor(inv1$trt)
+inv2 <- read.csv("/Users/timvigers/Documents/School/UC Denver/Biostatistics/Biostatistical Methods 2/Homeworks/Homework 6/file1_FEV1.csv")
+inv3 <- inv1
+```
+ 
+```{r}
+# Models
+inv1_mod <- lm(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi,data=inv1)
+inv2_mod <- lm(delta_FEV1~pre_FEV1+pack_years+current_smoker+emphysema+race+height+bmi,data=inv2)
+
+inv3_ri_rs_4 <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)
+
+inv3_ri_rs <- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+trt,random =~1+trt|ID,data=inv3)
+
+inv3_ri_4 <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1|ID),data=inv3)
+inv3_ri <- lme(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi,random = ~1|ID,data=inv3)
+```
+
+```{r}
+summary(inv3_ri_4)
+summary(inv3_ri)
+```
