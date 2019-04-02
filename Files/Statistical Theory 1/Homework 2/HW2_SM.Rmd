@@ -1,0 +1,129 @@
+---
+title: 'Stats Theory 1: HW 2'
+author: "Mayla Boguslav"
+date: "8/13/2018"
+output: html_document
+---
+
+## Intro to R information
+Create a new R markdown file: File -> New File -> R Markdown
+
+Note: basic math can be done in R as well. Example:
+
+```{r basicmath}
+(5 + 6) / (7 * 3)
+```
+If you need help with a function, type in help("function")
+
+Learning objectives: sum(dbinom), curve, embedding latex into R, pi, exp, assigning variables
+
+Reviewing: dbinom, choose
+
+
+## (C+B 1.44)
+Standardized tests provide an interesting application of probability theory. Suppose first that a test consists of 20 multiple-choice questions, each with 4 possible answers. If the student guesses on each question, then the taking of the exam can be modeled as a sequence of 20 independent events. Find the probability that the student gets at least 10 questions correct, given that he is guessing.
+
+```{r 1}
+sum(dbinom(size=20, prob = 0.25, x = c(10:20)))
+```
+
+## (C+B 1.47)
+Prove that the following functions are cdfs:
+
+pi = $\pi$ (embedded latex in the file for equations)
+
+A.
+$$\frac{1}{2} + \frac{1}{\pi}\tan^{-1}(x), \ x \in (-\infty, \infty)$$
+
+Curve function: curve(expr, from = NULL, to = NULL, n = 101, add = FALSE, type = "l", xname = "x", xlab= xname, ylab = NULL,log = NULL, xlim = NULL, ...)
+
+Note: pay attention to axes!
+
+```{r 4a}
+curve(1/2 + 1/pi * atan(x), -100, 100, type="l")
+```
+
+B.
+$$(1+e^{-x})^{-1}, x\in (-\infty, \infty)$$
+```{r 4b}
+curve((1+exp(-x))^(-1), -100, 100, type="l")
+```
+
+C.
+
+exp = $e$
+
+$$e^{-e^{-x}}, x\in(-\infty,\infty)$$
+```{r 4c}
+curve(exp(-exp(-x)), -100, 100, type="l")
+```
+
+D. 
+$$1-e^{-x}, x\in (0,\infty)$$
+```{r 4d}
+curve(1-exp(-x), 0, 100, type="l")
+```
+
+E.
+$$F_Y(y) = \begin{cases}  \frac{1-\epsilon}{1+e^{-y}} , & \mbox{if } y <0 \\ \epsilon+\frac{(1-\epsilon)}{1+e^{-y}} , & \mbox{if } y \geq 0  \end{cases}$$
+```{r 4e}
+#epsilon <- 0.0001 #assigned variable (assumed to be very small)
+epsilon<-.1
+##the sequences for where each equation applies
+x1 <- seq(-10,10,1)
+x2 <- seq(-10,0,0.01)
+x3 <- seq(0, 10, 0.01)
+
+##the plots themselves for each sequence
+plot(x1, 0*x1,type="p", ylim=c(-.1,1.1), col="blue", ylab="CDF" )
+lines(x2,(1-epsilon) / (1+exp(-x2)))
+lines(x3,epsilon + (1-epsilon) / (1+exp(-x3)))
+
+
+```
+
+## Mice Cancer Question
+In a cancer study, 10 mice of strain A and 15 of strain B were treated. Each mouse had a probability $\theta$ of developing cancer, independently of other mice, and altogether 8 mice developed cancer. What is the probability that exactly 4 of the mice who developed cancer were of strain B?
+
+```{r 7}
+(choose(10,4) * choose(15,4)) / choose(25,8)
+```
+
+
+##1 (C+B 1.51)
+An appliance store receives a shipment of 30 microwave ovens, 5 of which are (unknown to the manager) defective. The store manager selects 4 ovens at random, without replacement, and tests to see if they are defective. Let X = number of defectives found. Calculate the pmf and cdf of X and plot the cdf.
+
+Note: Make sure to fill in the open and closed circles on the graph before you turn it in, being clear on what is included and not.
+
+```{r 8}
+for(i in 0:4) print((choose(5,i) * choose(25, 4-i)) / choose(30,4))
+
+#makeshift way to make a step function. 
+xdata <- c(-2:6)
+y1 <- c(0,0,0,NA,NA, NA,NA,NA,NA)
+y2 <- c(NA,NA, 0.4616, 0.4616,NA,NA,NA,NA,NA)
+y3 <- c(NA,NA,NA,0.8812, 0.8812,NA,NA,NA,NA)
+y4 <- c(NA,NA,NA,NA,0.9907, 0.9907,NA,NA,NA)
+y5 <- c(NA,NA,NA,NA,NA,0.9998, 0.9998,NA,NA)
+y6 <- c(NA,NA,NA,NA,NA,NA,1,1,1)
+
+plot(xdata, y1, type="l",ylab="CDF")
+lines(xdata, y2)
+lines(xdata, y3)
+lines(xdata, y4)
+lines(xdata, y5)
+lines(xdata, y6)
+```
+
+
+## (C+B 1.53)
+A certain river floods every year. Suppose that the low-water mark is set at 1 and the high-water mark Y has distribution function
+
+$$F_Y(y) = 1-\frac{1}{y^2}, \ 1 \leq y < \infty$$
+```{r 9}
+curve(1-1/(x^2), 1, 100)
+```
+
+
+
+

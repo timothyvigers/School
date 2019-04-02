@@ -1,0 +1,148 @@
+---
+title: "Lecture 3: MLE (logistic regression)"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(numDeriv)
+```
+
+## MLE for Bernoulli variables
+Let's look at the example from class where we observe 3 diseased individuals out of a sample of 10.
+
+```{r disease_lliktab}
+pvec <- c(0,.1,.2,.29,.3,.33,.4,1)
+# grouped
+llvec1 <- dbinom(3,10,pvec,log=TRUE)
+# ungrouped
+llvec2 <- sapply(pvec,function(p) sum(dbinom(c(rep(1,3),rep(0,7)),1,p,log=TRUE)))
+
+data.frame(p=pvec,grouped.loglik=llvec1,ungrouped.loglik=llvec2)
+```
+
+The grouped and ungrouped log-likelihoods only differ from each other by a constant dependent on the data.
+
+```{r}
+llvec1-llvec2
+lchoose(10,3)
+```
+
+```{r disease_llikplot}
+pvec <- seq(.01,.8,length.out=101)
+
+llvec <- dbinom(3,10,pvec,log=TRUE)
+
+plot(pvec,exp(llvec),type='l', main='grouped-data likelihood function')
+plot(pvec,llvec,type='l', main='grouped-data log-likelihood function')
+```
+
+What if we had observed the same proportion in a larger sample? Say 30 diseased individuals out of 100.
+
+```{r disease_sampsize}
+
+llvec.smallsamp <- dbinom(3,10,pvec,log=TRUE)
+llvec.largesamp <- dbinom(30,100,pvec,log=TRUE)
+
+plot(pvec,llvec.smallsamp,type='l',xlab='p',ylab='log-likelihood')
+# plot(pvec,llvec.largesamp,type='l')
+lines(pvec,llvec.largesamp,lty=2)
+
+legend(x='bottomright',inset=.025,lty=1:2,legend=c('y=3, n=10','y=30, n=100'))
+```
+
+The log-likelihood function is becoming more peaked as sample size increases. This means that the variance of the MLE is decreasing for larger samples. The variance is the inverse of the information, a measure of the curvature of the log-likelihood function.
+
+```{r binary_info}
+# the information in a single binary observation with probability p is 1/(p*(1-p))
+curve(1/(x*(1-x)),ylim=c(0,20),xlab='p',ylab='information')
+```
+
+The information contained a single random variable is much higher when its mean is close to 0 or 1 than when it is close to 1/2.
+
+## Smoking and lung cancer
+
+This example will again look at the smoking data set from the previous lecture.
+
+```{r smoking_setup,include=FALSE}
+
+smoke <- data.frame(y=c(281,228),
+                    n=c(491,507),
+                    passive=c(1,0))
+
+smoke.logitmod <- glm(cbind(y,n-y) ~ # format for outcome is two columns: number of successes, number of failures
+              passive, # the covariate
+            data=smoke, # gives the data set we are using to define variables in the model
+            family=binomial) # tells R to use logistic regression for a binary outcome
+
+V.smoke <- vcov(smoke.logitmod) # covariance matrix of parameter estimates
+se.passive <- sqrt(diag(V.smoke))[2] # standard error on log-odds scale
+```
+
+```{r, echo=FALSE}
+smoke
+```
+
+R uses Fisher scoring to fit the logistic regression model, which is fairly specific to the generalized linear model framework. Now let's look at another way to fit this model that can be applied much more generally. It is based on directly coding the log-likelihood function for this model.
+
+```{r smoking_llik}
+logit.llikfun <- function(theta,y,n,xmat) { # first argument has to be parameter vector
+  eta <- cbind(1,xmat) %*% theta # linear predictor
+  prob <- plogis(eta) # here is where the logistic function appears
+  sum(dbinom(x=y,size=n,prob=prob,log=TRUE)) # sum up the individual log probability mass values
+}
+
+# check the value at the solution found by glm()
+logLik(smoke.logitmod)
+# using our new function
+logit.llikfun(coef(smoke.logitmod),
+              y=smoke$y,
+              n=smoke$n,
+              xmat=as.matrix(smoke$passive,ncol=1))
+
+# if we want to use this function to fit a model, we need to specify starting values
+start.beta <- c(0,0)
+
+mod1 <- optim(start.beta, # starting values
+              logit.llikfun, # function to optimize
+              hessian=TRUE, # so we can get standard errors
+              # arguments to the log-likelihood function
+              y=smoke$y,
+              n=smoke$n,
+              xmat=as.matrix(smoke$passive,ncol=1),
+              method='BFGS', # optimization method (quasi-Newton)
+              control=list(fnscale=-1) # tells optim() to maximize instead of minimize
+              )
+```
+
+We can compare the estimates from this model with those from ```glm()```.
+
+```{r smoking_compare}
+# compare with glm()
+# estimates
+coef(smoke.logitmod)
+mod1$par
+
+# covariance matrix
+V.smoke
+solve(-mod1$hessian)
+```
+
+Being able to calculate the log-likelihood directly can be helpful. For example, we can visualize the likelihood surface this way.
+
+```{r smoking_llsurf}
+beta0vec <- seq(-.5,.5,length.out=51)
+beta1vec <- seq(0,1,length.out=51)
+llsurf <- array(dim=c(length(beta0vec),length(beta1vec)))
+
+for(i0 in seq_along(beta0vec)) {
+  for(i1 in seq_along(beta1vec)) {
+    llsurf[i0,i1] <- logit.llikfun(c(beta0vec[i0],beta1vec[i1]),
+              y=smoke$y,
+              n=smoke$n,
+              xmat=as.matrix(smoke$passive,ncol=1))
+  }
+}
+
+contour(beta0vec,beta1vec,llsurf)
+```

@@ -1,0 +1,153 @@
+---
+title: "Reproducible analysis case study"
+author: "Pam Russell"
+date: "2/21/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # Include code in output
+```
+
+
+## Overview
+
+In this document, we demonstrate an end-to-end reproducible analysis using R Markdown and a public dataset.
+
+
+## Data
+
+The [City of Denver Open Data Catalog](https://www.denvergov.org/opendata) provides hundreds of free datasets on city operations. Here we explore the Food Stores dataset.
+
+
+## Data download
+
+```{r data_download}
+# Directory to store data in
+data_dir <- "data"
+
+# Create data directory if it doesn't exist
+if(!dir.exists(data_dir)) {
+  dir.create(data_dir)
+}
+
+# Files to save
+data_file <- paste(data_dir, "food_stores.csv", sep = "/")
+metadata_file <- paste(data_dir, "food_stores.xml", sep = "/")
+
+# Downloads a file if it doesn't exist already
+download <- function(url, outfile) {
+  if(!file.exists(outfile)) {
+    download.file(url, outfile)
+  }
+}
+
+# Download the data
+url_data <- "https://www.denvergov.org/media/gis/DataCatalog/food_stores/csv/food_stores.csv"
+url_metadata <- "https://www.denvergov.org/media/gis/DataCatalog/food_stores/metadata/food_stores.xml"
+download(url_data, data_file)
+download(url_metadata, metadata_file)
+```
+
+
+## Data fingerprint
+
+```{r data_fingerprint}
+library(tools)
+md5 <- md5sum(data_file)
+md5
+file.info(data_file)
+```
+
+
+## Load the data into R
+
+```{r load_data}
+# Look at data and notice missing data can be blank or "NA"
+data <- read.csv(data_file, header = TRUE, na.strings = c("NA", ""))
+```
+
+
+## Exploratory analysis
+
+How many food stores are in the dataset?
+
+```{r}
+nrow(data)
+```
+
+Let's plot a histogram of store types. As this is exploratory analysis, plots don't need to be pretty.
+
+```{r store_types}
+suppressPackageStartupMessages(library(dplyr)) # Load dplyr without annoying messages
+library(ggplot2)
+ggplot(data, aes(x = STORE_TYPE)) + 
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + # Rotate axis labels for readability
+  ggtitle("Food store types in Denver") +
+  xlab("Store type") +
+  ylab("Number of stores")
+```
+
+Is there a relationship between store size and neighborhood? Let's make a boxplot of number of employees per store by neighborhood.
+
+```{r store_size}
+ggplot(data, aes(NBHD_NAME, NUMBER_EMP)) + geom_boxplot()
+```
+
+Let's restrict this to the neighborhoods with the most overall stores.
+
+```{r store_size_2}
+top_nbhd <-
+  data %>%
+  group_by(NBHD_NAME) %>%
+  summarize(Num_stores = n()) %>%
+  arrange(-Num_stores) %>%
+  top_n(20)
+ggplot(data %>% filter(NBHD_NAME %in% top_nbhd$NBHD_NAME), 
+       aes(NBHD_NAME, NUMBER_EMP)) + 
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+## Data processing
+
+Let's decide to just keep the top neighborhoods.
+
+```{r}
+data <- data %>% filter(NBHD_NAME %in% top_nbhd$NBHD_NAME)
+```
+
+
+## Main analysis
+
+Which type of store does greater sales volume: convenience stores or dollar stores?
+
+```{r}
+conv_store_volume <- data %>% filter(STORE_TYPE == "Convenience Store") %>% select(SALES_VOL)
+dollar_store_volume <- data %>% filter(STORE_TYPE == "Dollar Store") %>% select(SALES_VOL)
+t.test(conv_store_volume, dollar_store_volume)
+```
+
+It seems that dollar stores do significantly greater sales volume than convenience stores.
+
+
+## Randomness
+
+This analysis doesn't use randomness, but here is how we would make random algorithms reproducible.
+
+```{r randomness}
+set.seed(1234)
+# Do some work that uses random number generator
+set.seed(45)
+# More work that uses random number generator
+```
+
+
+## Software environment
+
+```{r environment}
+sessionInfo()
+```
+

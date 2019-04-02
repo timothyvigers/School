@@ -1,0 +1,154 @@
+---
+title: "Lecture 2: Intro to Logistic Regression"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(aplore3)
+```
+
+
+We will analyze the association between passive smoking and cancer.
+
+First, we create the data set.
+
+```{r smoking_data}
+
+smoke <- data.frame(y=c(281,228),
+                    n=c(491,507),
+                    passive=c(1,0))
+
+smoke$n.minus.y <- smoke$n-smoke$y
+
+# use reshape() to get the data in a form for lm()
+smoke.long <- reshape(smoke,direction='long',
+                      varying=c('y','n.minus.y'),v.names='count',
+                      timevar='cancer',times=1:0,
+                      drop='n')
+```
+
+## Linear regression with binary outcome
+
+As in the lecture notes, we can think about modeling the ```cancer``` outcome as linear even though it can only take two values, ```0``` and ```1```.
+
+```{r smoking_linear}
+smoke.linmod <- lm(cancer ~ passive, weights=count, data=smoke.long)
+anova(smoke.linmod)
+summary(smoke.linmod)
+```
+
+Why does this give us different values for significance tests than SAS? It's because R doesn't make adjustment for the degrees of freedom when you use the ```weights=``` statement in ```lm()```. Notice that we do get the same estimates for the coefficient values and sums of squares though. 
+
+If we want to have correct standard errors and degrees of freedom, we need to manually adjust the data set.
+```{r smoking_replicate}
+# we replicate each row of the data set "count" number of times 
+smoke.longrep <- smoke.long[rep(1:4,smoke.long$count),c('passive','cancer')] # drops the now meaningless count variable and id
+
+smoke.linmodrep <- lm(cancer ~ passive, data=smoke.longrep)
+anova(smoke.linmodrep)
+summary(smoke.linmodrep)
+```
+
+These values match up with the values we get from SAS.
+
+To look at the predicted values we use the ```predict()``` function.
+
+```{r smoking_linear_pred}
+predict(smoke.linmod, newdata=list(passive=0:1))
+```
+The first number is the predicted mean of the outcome variable ```cancer``` for subjects with ```passive=0```, the second is the mean with ```passive=1```. Since the coefficient estimates with R are the same as with SAS, these values are also the same.
+
+## Logistic regression 
+
+```{r smoking_logit}
+
+smoke.logitmod <- glm(cbind(y,n-y) ~ # format for outcome is two columns: number of successes, number of failures
+              passive, # the covariate
+            data=smoke, # gives the data set we are using to define variables in the model
+            family=binomial) # tells R to use logistic regression for a binary outcome
+summary(smoke.logitmod)
+```
+
+So there is a significant positive association between passive smoking and lung cancer.
+
+We can get closer to how SAS treats this data by using the replicated data set.
+
+```{r smoking_logitrep}
+smoke.logitmodrep <- glm(cancer ~ # now we just name the column with the binary outcome
+              passive, # the covariate
+            data=smoke.longrep, # gives the data set we are using to define variables in the model
+            family=binomial) # tells R to use logistic regression for a binary outcome
+summary(smoke.logitmodrep)
+```
+
+We can look at odds ratios from either of these model estimates: they are the same coefficient and standard error estimates, but they differ in their log-likelihood values.
+
+```{r smoking_oddsratios}
+# odds ratio 
+exp(coef(smoke.logitmod)[2])
+# and we can get a confidence interval as well using standard errors on the log-odds scale
+V.smoke <- vcov(smoke.logitmod) 
+V.smoke # covariance matrix of parameter estimates
+se.passive <- sqrt(diag(V.smoke))[2] # standard error on log-odds scale
+
+alpha <- .05 # significance level
+# exponentiate the endpoints on log scale to get the confidence interval on the odds ratio scale
+exp(coef(smoke.logitmod)[2]+c(-1,1)*qnorm(1-alpha/2)*se.passive)
+```
+
+There is a quicker way to get the confidence intervals, however. We can use the built-in ```confint()``` function, but we have to make sure to use the ```default``` version to get the Wald intervals.
+
+```{r smoking_confint}
+ci.tab <- confint.default(smoke.logitmod)
+ci.tab
+exp(ci.tab[2,])
+```
+
+## Logistic regression with a continuous predictor
+
+We want to look at the effect of age on coronary heart disease.
+
+```{r cts_data, message=FALSE}
+head(chdage)
+
+# look at the association between age group and CHD risk
+agechd.tab <- aggregate(I(chd=='Yes') ~ agegrp,data=chdage,FUN=mean)
+agechd.tab
+
+barplot(agechd.tab[,2],names.arg=agechd.tab[,1],ylim=c(0,1),
+        xlab='age group',ylab='empirical probability of CHD')
+
+chdfit <- glm(I(chd=='Yes') ~ age, family=binomial,data=chdage)
+
+summary(chdfit)
+```
+
+It's not really meaningful to interpret the intercept estimate here because it refers to someone with age 0, so we can center age at the mean to address this.
+
+```{r chd_ctr}
+# mean age in this sample is
+mean(chdage$age)
+# create the centered age variable
+chdage$agectr <- chdage$age-mean(chdage$age)
+chdfit.agectr <- glm(I(chd=='Yes') ~ agectr, family=binomial,data=chdage)
+summary(chdfit.agectr)
+```
+
+Note that only the intercept estimate changes with centering, not the slope estimate. Now we can interpret the intercept as the log odds of CHD for someone with average age.
+
+Let's think about using this model to predict someone's probabilty of CHD. We can use either the centered-age model or the uncentered-age model.
+
+```{r chd_predict}
+agevec <- seq(min(chdage$age),max(chdage$age),length.out=101)
+
+pvec <- predict(chdfit,newdata=list(age=agevec),type='response') 
+# so we get predictions on the probability scale
+# plot on the scale where covariate effect is linear
+plot(agevec,qlogis(pvec),type='l',xlab='age',
+     ylab='Predicted log odds of CHD')
+# now on probability scale
+plot(agevec,pvec,type='l', ylim=c(0,1),xlab='age',
+     ylab='Predicted probability of CHD')
+
+```
