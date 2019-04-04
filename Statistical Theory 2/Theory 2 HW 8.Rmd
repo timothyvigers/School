@@ -11,12 +11,30 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### C&B 8.10
 
+$$
+\text{The posterior distribution is gamma ~ }(y + \alpha, \frac{\beta}{(n\beta + 1)})\\
+P(H_0\text{ true | }y=\sum x_i)=\int_{0}^{\lambda_0}\pi(\lambda\text{ | }y=\sum x_i)d\lambda=
+$$
+
 ```{r}
-# The posterior distribution of lambda|y is gamma (y + alpha, beta/(beta + 1))
 alpha <- 5/2
 beta <- 2
 n <- 15
 sumxi <- 10
+pgamma(1,shape = alpha+sumxi,scale = (beta/(n*beta + 1)))
+```
+
+$$
+\text{gamma ~ }(r,\lambda)\rightarrow \chi^2(\nu)  \\
+r = \frac{\nu}{2}, \lambda=2\\
+\text{If }\alpha=\frac{5}{2}, \beta=2\\
+\text{Prior is }\chi^2_5\\
+x*\frac{2}{\beta}\text{ ~ } \Gamma(\alpha,\beta)=\chi^2_{2\alpha}\\
+\text{Therefore: }(\frac{n\beta+1}{\beta})*2\lambda\text{ ~ }\Gamma(y+ \alpha,2)=\chi^2_{2y+2\alpha}
+$$
+
+```{r}
+pchisq(2*1*(n*beta + 1) / 2,(2*sumxi+2*alpha))
 ```
 
 ### Problem 4 (Bernoulli)
@@ -36,7 +54,7 @@ lrt<-(n*p0/y)^y*((1-p0)/(1-(y/n)))^(n-y)
 		if(1) {
 			points(175,.4,pch=10)
 			lines(c(175,175),c(min(lrt),.4),lty=2)
-			text(175,.43,"Y=75 (observed)",cex=.7)
+			text(175,.43,"Y=175 (observed)",cex=.7)
 		}
 
 		if(0) {
