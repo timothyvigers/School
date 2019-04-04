@@ -46,11 +46,11 @@ y <- 0:n
 sumxi <- 175
 # Plot PDF of Y
 pdf <- dbinom(y,n,p)
-plot(y,pdf,main="PDF of Y for p=0.4")
+plot(y,pdf,main="PDF of Y for p=0.4",type = "l")
 # Plot LRT vs. Y
 p0 <- 0.5
 lrt<-(n*p0/y)^y*((1-p0)/(1-(y/n)))^(n-y)
-		plot(y,lrt,main="Likelihood Ratio Test Statistic by Number Successes",pch="*")
+		plot(y,lrt,main="Likelihood Ratio Test Statistic by Number Successes",type = "l")
 		if(1) {
 			points(175,.4,pch=10)
 			lines(c(175,175),c(min(lrt),.4),lty=2)
