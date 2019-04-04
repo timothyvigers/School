@@ -9,16 +9,38 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### C&B 8.10
+
 ```{r}
-# C&B 8.10
+# The posterior distribution of lambda|y is gamma (y + alpha, beta/(beta + 1))
 alpha <- 5/2
 beta <- 2
 n <- 15
 sumxi <- 10
 ```
 
+### Problem 4 (Bernoulli)
+
 ```{r}
-# Problem 4 (Bernoulli)
 p <- 0.4
 n <- 500
+y <- 0:n
+sumxi <- 175
+# Plot PDF of Y
+pdf <- dbinom(y,n,p)
+plot(y,pdf,main="PDF of Y for p=0.4")
+# Plot LRT vs. Y
+p0 <- 0.5
+lrt<-(n*p0/y)^y*((1-p0)/(1-(y/n)))^(n-y)
+		plot(y,lrt,main="Likelihood Ratio Test Statistic by Number Successes",pch="*")
+		if(1) {
+			points(175,.4,pch=10)
+			lines(c(175,175),c(min(lrt),.4),lty=2)
+			text(175,.43,"Y=75 (observed)",cex=.7)
+		}
+
+		if(0) {
+			text(125,1,"LRT(100) = 1, \nphat(100) = 0.5 = p0",cex=.7)
+			lines(c(100,100),c(min(lrt),1),lty=2)
+		}
 ```
