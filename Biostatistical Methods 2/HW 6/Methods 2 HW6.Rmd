@@ -174,10 +174,9 @@ $$
 \end{pmatrix}=\begin{pmatrix}
 \sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} & \sigma^2_0+2\sigma^2_{0s} \\
 \sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
-\end{pmatrix}\\
-(\sigma^2_0+\sigma^2_{0s})(\sigma^2_{0s}+2\sigma^2_s)-(\sigma^2_0+2\sigma^2_{0s})(\sigma^2_{0s}+\sigma^2_s) = \sigma^2_0\sigma^2_s - (\sigma^2_{0s})^2\\
+\end{pmatrix}
 $$
 
-So
+The random intercept and random slope model did not converge because this matrix is not positive definite. 
 
 # Is that correct?
