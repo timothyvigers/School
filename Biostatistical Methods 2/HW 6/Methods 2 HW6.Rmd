@@ -174,7 +174,10 @@ $$
 \end{pmatrix}=\begin{pmatrix}
 \sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} & \sigma^2_0+2\sigma^2_{0s} \\
 \sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
-\end{pmatrix}
+\end{pmatrix}\\
+(\sigma^2_0+\sigma^2_{0s})(\sigma^2_{0s}+2\sigma^2_s)-(\sigma^2_0+2\sigma^2_{0s})(\sigma^2_{0s}+\sigma^2_s) = \sigma^2_0\sigma^2_s - (\sigma^2_{0s})^2\\
 $$
 
-# Why didn't it converge?
+So
+
+# Is that correct?
