@@ -407,6 +407,9 @@ G= \begin{pmatrix}
 \begin{pmatrix}
 1 &amp; 1 \\
 0 &amp; 1
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} &amp; 0 \\
+0 &amp; \sigma^2_{\epsilon}
 \end{pmatrix}=
 \begin{pmatrix}
 \sigma^2_0 &amp; \sigma^2_{0s} \\
@@ -415,11 +418,26 @@ G= \begin{pmatrix}
 \begin{pmatrix}
 1 &amp; 1 \\
 1 &amp; 2
-\end{pmatrix
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} &amp; 0 \\
+0 &amp; \sigma^2_{\epsilon}
+\end{pmatrix}\\
+=\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s} &amp; \sigma^2_0+2\sigma^2_{0s} \\
+\sigma^2_{0s}+\sigma^2_s &amp; \sigma^2_{0s}+2\sigma^2_s
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} &amp; 0 \\
+0 &amp; \sigma^2_{\epsilon}
+\end{pmatrix}=\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} &amp; \sigma^2_0+2\sigma^2_{0s} \\
+\sigma^2_{0s}+\sigma^2_s &amp; \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
+\end{pmatrix}
 \]</span></p>
-<pre class="r"><code>zi &lt;- matrix(c(1,0,1,1),ncol = 2,byrow = T)</code></pre>
 </div>
 </div>
+</div>
+<div id="why-didnt-it-converge" class="section level1">
+<h1>Why didn’t it converge?</h1>
 </div>
 
 
