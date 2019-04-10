@@ -150,6 +150,9 @@ $$
 \begin{pmatrix}
 1 & 1 \\
 0 & 1
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} & 0 \\
+0 & \sigma^2_{\epsilon}
 \end{pmatrix}=
 \begin{pmatrix}
 \sigma^2_0 & \sigma^2_{0s} \\
@@ -158,9 +161,20 @@ $$
 \begin{pmatrix}
 1 & 1 \\
 1 & 2
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} & 0 \\
+0 & \sigma^2_{\epsilon}
+\end{pmatrix}\\
+=\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s} & \sigma^2_0+2\sigma^2_{0s} \\
+\sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_{\epsilon} & 0 \\
+0 & \sigma^2_{\epsilon}
+\end{pmatrix}=\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} & \sigma^2_0+2\sigma^2_{0s} \\
+\sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
 \end{pmatrix}
 $$
 
-```{r}
-zi <- matrix(c(1,0,1,1),ncol = 2,byrow = T)
-```
+# Why didn't it converge?
