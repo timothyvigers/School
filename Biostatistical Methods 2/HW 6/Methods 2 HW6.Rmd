@@ -13,12 +13,13 @@ library(nlme)
 ```
 
 ```{r}
+# Categorical variables 
+cat_vars <- c("ID","current_smoker","race")
 # Read in data
 inv1 <- read.csv("/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/file2_FEV1.csv")
-inv1$ID <- as.factor(inv1$ID)
-inv1$trt <- as.factor(inv1$trt)
+inv1[,c(cat_vars,"trt")] <- lapply(inv1[,c(cat_vars,"trt")], as.factor)
 inv2 <- read.csv("/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/file1_FEV1.csv")
-inv2$ID <- as.factor(inv2$ID)
+inv2[,cat_vars] <- lapply(inv2[,cat_vars], as.factor)
 inv3 <- inv1
 ```
  
@@ -35,7 +36,7 @@ inv3_ri_lmer <- lmer(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+tr
 
 # Random intercept and random slope
 inv3_ris_nlme <- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+trt,random = ~1+trt|ID,data=inv3)
-# inv3_ris_lmer <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)
+#inv3_ris_lmer <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)
 ```
 
 ## Check that nlme and lme4 match for random intercept model:
@@ -49,12 +50,117 @@ summary(inv3_ri_lmer)$coefficients
 
 ![](/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/RI.png)
 
-### Check that nlme matches SAS for random intercept and random slope model:
+### Check random intercept and random slope model:
+
+lme() fits a model, but lmer() throws an error:
+
+Error: number of observations (=2000) <= number of random effects (=2000) for term (1 + trt | ID); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+
+The estimates from SAS match those from lme(), but have 0 DF and therefore no p values for several variables:
+
+![](/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/RI and RS.png)
 
 ```{r}
 summary(inv3_ris_nlme)$tTable
 ```
 
-![](/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/RI and RS.png)
+All of this suggests that the random slope model should not be used.
 
-### 2. Investigator 2 vs. investigators 1 and 3
+### All model results
+
+Investigator 1 used a linear model to examine the effect of bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI on FEV1. According to this model, emphysema is significantly associated with pre- and post-bronchodilator FEV1 (p < 0.001).
+
+```{r echo=FALSE}
+summary(inv1_mod)
+```
+
+Investigator 2 also used a linear regression, but modeled the change from pre to post bronchodilator FEV1, adjusting for baseline FEV1, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p = 0.03).
+
+```{r echo=FALSE}
+summary(inv2_mod)
+```
+
+Investigator 3 first used a random intercept and random slope model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001).
+
+```{r echo=FALSE}
+summary(inv3_ris_nlme)$tTable
+```
+
+Investigator 3 then used a random intercept model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001).
+
+```{r echo=FALSE}
+summary(inv3_ri_nlme)$tTable
+```
+
+## 2. Investigator 2 vs. investigators 1 and 3
+### a. 
+
+The model fit by investigator 2 is really asking whether the change in FEV1 is associated with emphysema after adjusting for the base set of confounders, and also after adjusting for baseline FEV1. Investigators 1 and 3 are asking whether both pre- and post-bronchodilator FEV1 are associated with emphysema after adjusting for the base set of confounders, including treatment with a bronchodilator.
+
+###b. 
+
+The goal of the analysis is to determine if pre- and post-bronchodilator FEV1 are jointly associated with emphysema after adjusting for the base set of confounders. So, investigators 1 and 3 are answering the question correctly.
+
+## 3. Investigator 3
+###a. 
+
+Investigator 3 should choose the random intercept only model, since the random slope model throws an error when using the lme4 package. The error says that the random effects are unidentifiable, and I think this essentially means that there aren't enough data points to support a random slope model. Also, the SAS output for the model including a random slope doesn't look right, and doesn't provide any p values with which to make inference. 
+
+### b. 
+
+You can't compare investigator 3's models using the LRT because they have different covariance structures. 
+
+# Ask about this
+
+##4. Best model
+
+I think the random intercept model run by investigator 3 is the best, because it answers the scientific question while accounting for within subject correlation. Investigator 1's model answers the correct question, but does not consider the fact that measurements within each subject will be correlated. Finally, investigator 2's model doesn't answer the correct question. 
+
+##5. Matrices
+
+###a. 
+
+$$
+Z_i = \begin{pmatrix}
+1 & 0 \\
+1 & 1
+\end{pmatrix}
+$$
+
+###b. 
+
+$$
+G= \begin{pmatrix}
+\sigma^2_0 & \sigma^2_{0s} \\
+\sigma^2_{0s} & \sigma^2_s
+\end{pmatrix}
+$$
+
+###c. 
+
+$$
+\text{Var}(Y_i)= \begin{pmatrix}
+1 & 0 \\
+1 & 1
+\end{pmatrix}
+\begin{pmatrix}
+\sigma^2_0 & \sigma^2_{0s} \\
+\sigma^2_{0s} & \sigma^2_s
+\end{pmatrix}
+\begin{pmatrix}
+1 & 1 \\
+0 & 1
+\end{pmatrix}=
+\begin{pmatrix}
+\sigma^2_0 & \sigma^2_{0s} \\
+\sigma^2_{0s} & \sigma^2_s
+\end{pmatrix}
+\begin{pmatrix}
+1 & 1 \\
+1 & 2
+\end{pmatrix}
+$$
+
+```{r}
+zi <- matrix(c(1,0,1,1),ncol = 2,byrow = T)
+```

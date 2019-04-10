@@ -41,14 +41,19 @@ input
 if _ERROR_ then call symputx('_EFIERR_',1);  /* set ERROR detection macro variable */
 run;
 
-PROC MIXED DATA=inv3; 
-CLASS id; 
-MODEL FEV1 = pack_years current_smoker emphysema race height bmi trt / SOLUTION; 
-RANDOM INT trt /TYPE=UN SUBJECT=ID G GCORR; 
-RUN;
+/* Random intercept only */
 
 PROC MIXED DATA=inv3; 
 CLASS id; 
-MODEL FEV1 = pack_years current_smoker emphysema race height bmi trt / SOLUTION; 
-RANDOM INT /TYPE=UN SUBJECT=ID G GCORR; 
+MODEL FEV1 = pack_years current_smoker emphysema race height bmi trt /s; 
+RANDOM INT /TYPE=UN SUBJECT=ID; 
 RUN;
+
+/* Random intercept and random slope */
+
+PROC MIXED DATA=inv3; 
+CLASS id; 
+MODEL FEV1 = pack_years current_smoker emphysema race height bmi trt /s; 
+RANDOM INT trt /TYPE=UN SUBJECT=ID G GCORR; 
+RUN;
+
