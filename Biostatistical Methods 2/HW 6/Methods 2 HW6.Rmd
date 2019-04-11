@@ -112,7 +112,7 @@ Also, $\chi^2_2$ wouldn't be the correct distribution under the null hypothesis.
 
 >"The use of likelihood ratio methods for constructing tests for nonzero variance components is a nonstandard problem in the use of maximum likelihood because the null hypothesis, that such a component is zero, places the true value of the variance parameters on the boundary of the parameter space defined by the alternative hypothesis. This has an effect on the large-sample behavior of likelihood ratio tests so that the limiting distribution of -2 times the logarithm of the likelihood ratio (denoted -2 ln $\lambda_N$) cannot be treated as that of a $\chi^2$ random variable."
 
-Under $H_0$, the variance of the random slope is 0 which is the lowest possible variance (since variance can't be negative). And because this is on the boundary of the sample space, the asymptotic behavior of the LRT statistic is a little weird, and can't be treated as $\chi^2$.
+Under $H_0$, the variance of the random effects is 0 which is the lowest possible variance (since variance can't be negative). And because this is on the boundary of the sample space, the asymptotic behavior of the LRT statistic is a little weird, and can't be treated as $\chi^2$. Also, you generally assume covariance between intercept and slope, so you can't do the same tests as you would with a linear regression that tests $\beta=0$. 
 
 ##4. Best model
 

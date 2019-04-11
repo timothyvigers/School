@@ -366,7 +366,7 @@ inv3_ris_nlme &lt;- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi
 <blockquote>
 <p>“The use of likelihood ratio methods for constructing tests for nonzero variance components is a nonstandard problem in the use of maximum likelihood because the null hypothesis, that such a component is zero, places the true value of the variance parameters on the boundary of the parameter space defined by the alternative hypothesis. This has an effect on the large-sample behavior of likelihood ratio tests so that the limiting distribution of -2 times the logarithm of the likelihood ratio (denoted -2 ln <span class="math inline">\(\lambda_N\)</span>) cannot be treated as that of a <span class="math inline">\(\chi^2\)</span> random variable.”</p>
 </blockquote>
-<p>Under <span class="math inline">\(H_0\)</span>, the variance of the random slope is 0 which is the lowest possible variance (since variance can’t be negative). And because this is on the boundary of the sample space, the asymptotic behavior of the LRT statistic is a little weird, and can’t be treated as <span class="math inline">\(\chi^2\)</span>.</p>
+<p>Under <span class="math inline">\(H_0\)</span>, the variance of the random effects is 0 which is the lowest possible variance (since variance can’t be negative). And because this is on the boundary of the sample space, the asymptotic behavior of the LRT statistic is a little weird, and can’t be treated as <span class="math inline">\(\chi^2\)</span>. Also, you generally assume covariance between intercept and slope, so you can’t do the same tests as you would with a linear regression that tests <span class="math inline">\(\beta=0\)</span>.</p>
 </div>
 </div>
 <div id="best-model" class="section level2">
