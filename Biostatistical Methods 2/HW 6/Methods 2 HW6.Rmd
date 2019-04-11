@@ -39,7 +39,7 @@ inv3_ris_nlme <- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+tr
 #inv3_ris_lmer <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)
 ```
 
-## Check that nlme and lme4 match for random intercept model:
+### Check that nlme and lme4 match for random intercept model:
 
 ```{r}
 summary(inv3_ri_nlme)$tTable
@@ -108,13 +108,11 @@ Investigator 3 should choose the random intercept only model, since the random s
 
 ### b. 
 
-You can't compare investigator 3's models using the LRT because they have different covariance structures. 
-
-# Ask about this
+First of all, you can't (or shouldn't) compare models when one of them doesn't converge. Also, $\chi^2_2$ wouldn't be the correct distribution under the null hypothesis.
 
 ##4. Best model
 
-I think the random intercept model run by investigator 3 is the best, because it answers the scientific question while accounting for within subject correlation. Investigator 1's model answers the correct question, but does not consider the fact that measurements within each subject will be correlated. Finally, investigator 2's model doesn't answer the correct question. 
+I think the random intercept model run by investigator 3 is the best, because it answers the scientific question while accounting for within subject correlation (and the model actually converged). Investigator 1's model answers the correct question, but does not consider the fact that measurements within each subject will be correlated, so the standard errors and p values are probably too small. Finally, investigator 2's model doesn't even answer the correct question. 
 
 ##5. Matrices
 
@@ -153,30 +151,30 @@ $$
 \end{pmatrix}+\begin{pmatrix}
 \sigma^2_{\epsilon} & 0 \\
 0 & \sigma^2_{\epsilon}
-\end{pmatrix}=
+\end{pmatrix}=\\
 \begin{pmatrix}
 \sigma^2_0 & \sigma^2_{0s} \\
-\sigma^2_{0s} & \sigma^2_s
-\end{pmatrix}
-\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s} & \sigma^2_{0s}+\sigma^2_s
+\end{pmatrix}\begin{pmatrix}
 1 & 1 \\
-1 & 2
+0 & 1
 \end{pmatrix}+\begin{pmatrix}
 \sigma^2_{\epsilon} & 0 \\
 0 & \sigma^2_{\epsilon}
-\end{pmatrix}\\
-=\begin{pmatrix}
-\sigma^2_0+\sigma^2_{0s} & \sigma^2_0+2\sigma^2_{0s} \\
-\sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s
-\end{pmatrix}+\begin{pmatrix}
+\end{pmatrix}=\\
+\begin{pmatrix}
+\sigma^2_0 & \sigma^2_0+\sigma^2_{0s} \\
+\sigma^2_0+\sigma^2_{0s} & \sigma^2_0+2\sigma^2_{0s}+\sigma^2_s
+\end{pmatrix}+
+\begin{pmatrix}
 \sigma^2_{\epsilon} & 0 \\
 0 & \sigma^2_{\epsilon}
-\end{pmatrix}=\begin{pmatrix}
-\sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} & \sigma^2_0+2\sigma^2_{0s} \\
-\sigma^2_{0s}+\sigma^2_s & \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
+\end{pmatrix}=\\
+\begin{pmatrix}
+\sigma^2_0+\sigma^2_{\epsilon} & \sigma^2_0+\sigma^2_{0s} \\
+\sigma^2_0+\sigma^2_{0s} & \sigma^2_0+2\sigma^2_{0s}+\sigma^2_s+\sigma^2_{\epsilon}
 \end{pmatrix}
 $$
 
-The random intercept and random slope model did not converge because this matrix is not positive definite. 
 
-# Is that correct?
+This matrix has 4 different parameters that need to be estimated ($\sigma^2_0$,$\sigma^2_s$,$\sigma^2_{0s}$, and $\sigma^2_{\epsilon}$), but because there are only two timepoints, there isn't enough data to support a random intercept and slope model. There are only two repeated measurements, so from this data we can only estimate 3 covariance parameters.

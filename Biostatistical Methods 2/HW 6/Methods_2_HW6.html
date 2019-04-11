@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-04-10" />
+<meta name="date" content="2019-04-11" />
 
 <title>Homework 6</title>
 
@@ -192,7 +192,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 6</h1>
 <h4 class="author">Tim Vigers</h4>
-<h4 class="date">10 April 2019</h4>
+<h4 class="date">11 April 2019</h4>
 
 </div>
 
@@ -218,9 +218,8 @@ inv3_ri_lmer &lt;- lmer(FEV1~pack_years+current_smoker+emphysema+race+height+bmi
 # Random intercept and random slope
 inv3_ris_nlme &lt;- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+trt,random = ~1+trt|ID,data=inv3)
 #inv3_ris_lmer &lt;- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)</code></pre>
-</div>
-<div id="check-that-nlme-and-lme4-match-for-random-intercept-model" class="section level2">
-<h2>Check that nlme and lme4 match for random intercept model:</h2>
+<div id="check-that-nlme-and-lme4-match-for-random-intercept-model" class="section level3">
+<h3>Check that nlme and lme4 match for random intercept model:</h3>
 <pre class="r"><code>summary(inv3_ri_nlme)$tTable</code></pre>
 <pre><code>##                        Value    Std.Error  DF    t-value      p-value
 ## (Intercept)     -3.974321111 0.3768523646 999 -10.546096 9.976179e-25
@@ -241,6 +240,7 @@ inv3_ris_nlme &lt;- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi
 ## height           0.041328790 0.0021392312  19.319460
 ## bmi             -0.013998050 0.0036609818  -3.823578
 ## trt1             0.094254000 0.0048051706  19.615121</code></pre>
+</div>
 <div id="compare-to-sas" class="section level3">
 <h3>Compare to SAS:</h3>
 <div class="figure">
@@ -364,14 +364,12 @@ inv3_ris_nlme &lt;- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi
 </div>
 <div id="b.-1" class="section level3">
 <h3>b.</h3>
-<p>You can’t compare investigator 3’s models using the LRT because they have different covariance structures.</p>
+<p>First of all, you can’t (or shouldn’t) compare models when one of them doesn’t converge. Also, <span class="math inline">\(\chi^2_2\)</span> wouldn’t be the correct distribution under the null hypothesis.</p>
 </div>
 </div>
-<div id="ask-about-this" class="section level1">
-<h1>Ask about this</h1>
 <div id="best-model" class="section level2">
 <h2>4. Best model</h2>
-<p>I think the random intercept model run by investigator 3 is the best, because it answers the scientific question while accounting for within subject correlation. Investigator 1’s model answers the correct question, but does not consider the fact that measurements within each subject will be correlated. Finally, investigator 2’s model doesn’t answer the correct question.</p>
+<p>I think the random intercept model run by investigator 3 is the best, because it answers the scientific question while accounting for within subject correlation (and the model actually converged). Investigator 1’s model answers the correct question, but does not consider the fact that measurements within each subject will be correlated, so the standard errors and p values are probably too small. Finally, investigator 2’s model doesn’t even answer the correct question.</p>
 </div>
 <div id="matrices" class="section level2">
 <h2>5. Matrices</h2>
@@ -410,35 +408,32 @@ G= \begin{pmatrix}
 \end{pmatrix}+\begin{pmatrix}
 \sigma^2_{\epsilon} &amp; 0 \\
 0 &amp; \sigma^2_{\epsilon}
-\end{pmatrix}=
+\end{pmatrix}=\\
 \begin{pmatrix}
 \sigma^2_0 &amp; \sigma^2_{0s} \\
-\sigma^2_{0s} &amp; \sigma^2_s
-\end{pmatrix}
-\begin{pmatrix}
+\sigma^2_0+\sigma^2_{0s} &amp; \sigma^2_{0s}+\sigma^2_s
+\end{pmatrix}\begin{pmatrix}
 1 &amp; 1 \\
-1 &amp; 2
+0 &amp; 1
 \end{pmatrix}+\begin{pmatrix}
 \sigma^2_{\epsilon} &amp; 0 \\
 0 &amp; \sigma^2_{\epsilon}
-\end{pmatrix}\\
-=\begin{pmatrix}
-\sigma^2_0+\sigma^2_{0s} &amp; \sigma^2_0+2\sigma^2_{0s} \\
-\sigma^2_{0s}+\sigma^2_s &amp; \sigma^2_{0s}+2\sigma^2_s
-\end{pmatrix}+\begin{pmatrix}
+\end{pmatrix}=\\
+\begin{pmatrix}
+\sigma^2_0 &amp; \sigma^2_0+\sigma^2_{0s} \\
+\sigma^2_0+\sigma^2_{0s} &amp; \sigma^2_0+2\sigma^2_{0s}+\sigma^2_s
+\end{pmatrix}+
+\begin{pmatrix}
 \sigma^2_{\epsilon} &amp; 0 \\
 0 &amp; \sigma^2_{\epsilon}
-\end{pmatrix}=\begin{pmatrix}
-\sigma^2_0+\sigma^2_{0s}+\sigma^2_{\epsilon} &amp; \sigma^2_0+2\sigma^2_{0s} \\
-\sigma^2_{0s}+\sigma^2_s &amp; \sigma^2_{0s}+2\sigma^2_s+\sigma^2_{\epsilon}
+\end{pmatrix}=\\
+\begin{pmatrix}
+\sigma^2_0+\sigma^2_{\epsilon} &amp; \sigma^2_0+\sigma^2_{0s} \\
+\sigma^2_0+\sigma^2_{0s} &amp; \sigma^2_0+2\sigma^2_{0s}+\sigma^2_s+\sigma^2_{\epsilon}
 \end{pmatrix}
 \]</span></p>
-<p>The random intercept and random slope model did not converge because this matrix is not positive definite.</p>
+<p>This matrix has 4 different parameters that need to be estimated (<span class="math inline">\(\sigma^2_0\)</span>,<span class="math inline">\(\sigma^2_s\)</span>,<span class="math inline">\(\sigma^2_{0s}\)</span>, and <span class="math inline">\(\sigma^2_{\epsilon}\)</span>), but because there are only two timepoints, there isn’t enough data to support a random intercept and slope model. There are only two repeated measurements, so from this data we can only estimate 3 covariance parameters.</p>
 </div>
-</div>
-</div>
-<div id="is-that-correct" class="section level1">
-<h1>Is that correct?</h1>
 </div>
 
 
