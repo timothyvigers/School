@@ -39,14 +39,12 @@ inv3_ris_nlme <- lme(FEV1~pack_years+current_smoker+emphysema+race+height+bmi+tr
 #inv3_ris_lmer <- lmer(FEV1~trt+pack_years+current_smoker+emphysema+race+height+bmi+(1+trt|ID),data=inv3)
 ```
 
-### Check that nlme and lme4 match for random intercept model:
+### Check that nlme, lme4, and SAS match for random intercept model:
 
 ```{r}
 summary(inv3_ri_nlme)$tTable
 summary(inv3_ri_lmer)$coefficients
 ```
-
-### Compare to SAS:
 
 ![](/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/RI.png)
 
@@ -56,7 +54,7 @@ lme() fits a model, but lmer() throws an error:
 
 Error: number of observations (=2000) <= number of random effects (=2000) for term (1 + trt | ID); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
 
-The estimates from SAS match those from lme(), but have 0 DF and therefore no p values for several variables:
+The estimates from SAS match those from lme(), but have 0 DF (and therefore no p values) for several variables:
 
 ![](/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 6/RI and RS.png)
 
@@ -80,13 +78,13 @@ Investigator 2 also used a linear regression, but modeled the change from pre to
 summary(inv2_mod)
 ```
 
-Investigator 3 first used a random intercept and random slope model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001).
+Investigator 3 first used a random intercept and random slope model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001), but I wouldn't trust this model.
 
 ```{r echo=FALSE}
 summary(inv3_ris_nlme)$tTable
 ```
 
-Investigator 3 then used a random intercept model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001).
+Investigator 3 then used a random intercept only model on FEV1 adjusting for bronchodilator use, pack-years of smoking history, current smoking status, emphysema, race, height and BMI. According to this model, emphysema is significantly associated with change in FEV1 (p < 0.001).
 
 ```{r echo=FALSE}
 summary(inv3_ri_nlme)$tTable
@@ -108,7 +106,13 @@ Investigator 3 should choose the random intercept only model, since the random s
 
 ### b. 
 
-First of all, you can't (or shouldn't) compare models when one of them doesn't converge. Also, $\chi^2_2$ wouldn't be the correct distribution under the null hypothesis.
+First of all, you can't (or shouldn't) compare models when one of them doesn't converge. 
+
+Also, $\chi^2_2$ wouldn't be the correct distribution under the null hypothesis. According to Stram & Lee (1994):
+
+>"The use of likelihood ratio methods for constructing tests for nonzero variance components is a nonstandard problem in the use of maximum likelihood because the null hypothesis, that such a component is zero, places the true value of the variance parameters on the boundary of the parameter space defined by the alternative hypothesis. This has an effect on the large-sample behavior of likelihood ratio tests so that the limiting distribution of -2 times the logarithm of the likelihood ratio (denoted -2 ln $\lambda_N$) cannot be treated as that of a $\chi^2$ random variable."
+
+Under $H_0$, the variance of the random slope is 0 which is the lowest possible variance (since variance can't be negative). And because this is on the boundary of the sample space, the asymptotic behavior of the LRT statistic is a little weird, and can't be treated as $\chi^2$.
 
 ##4. Best model
 
