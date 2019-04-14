@@ -1,0 +1,100 @@
+---
+title: Propensity Score R Code
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message = FALSE)
+```
+
+##Data/Environment Setup
+```{r}
+#Load Libraries
+library(tableone)
+library(MatchIt)
+library(dplyr)
+library(ggplot2)
+
+#Load in data
+data <- read.csv("http://web.hku.hk/~bcowling/data/propensity.csv", header=TRUE)
+
+```
+
+##Estimate Propensity Scores
+```{r}
+#Fit logistic regression model regressing on treatment/covariates. 
+pre.ps <- glm(trt ~ age + risk + severity, family="binomial", 
+              data=data)
+#Solve for probabilities using predict function
+data$ps<-predict(pre.ps, type="response")
+
+
+```
+##Applying Propensity Score Method
+###Matching
+```{r}
+#Match by propensity scores
+#Using nearest neighbor method (see documentation for details)
+#caliper indicates how close scores need to be to be matched
+match_dat<-match.data(matchit(trt ~ ps, data=data, caliper=.2, 
+                              ratio=1, replace=F, method = "nearest"))
+
+
+```
+
+###Stratification
+```{r}
+#Define groups based on propensity score quintiles
+data$ps_grp <- cut(data$ps, breaks=quantile(data$ps, prob=0:5*0.2),
+ labels=c("Q1","Q2","Q3","Q4","Q5"), include.lowest = TRUE)
+
+```
+
+###Inverse Probability of Treatment Weighting
+```{r}
+#Create weights for each row of data
+weight<-data$trt/data$ps+(1-data$trt)/(1-data$ps)
+
+```
+
+###Covariate Adjustment Using Propensity Score
+```{r}
+#Run logistic regression adjusting for propensity score
+mod1<-glm(death ~ trt+ps, family="binomial", 
+              data=data)
+```
+
+
+##Check Balance Diagnosistics
+Example uses matched data but process is similar for IPTW and stratification. With IPTW use weighted sample to compare covariates. With stratification, check balance of covariates for each strata.
+
+```{r}
+#Make table comparing smd non matched vs matched samples
+tab_before<-CreateTableOne(vars=c("age", "risk", "severity", "male"), 
+                           strata = "trt", data=data, test=FALSE, smd = TRUE)
+
+tab_match<-CreateTableOne(vars=c("age", "risk", "severity", "male"), 
+                          strata = "trt", data=match_dat, test=FALSE, smd = TRUE)
+
+print(tab_before, smd=TRUE)
+print(tab_match, smd = TRUE)
+
+#Set up data for plots
+match_dat$matched<-"Matched Sample"
+data$matched<-"Original Sample"
+comb_data<-bind_rows(match_dat, data)
+comb_data$trt<-as.factor(comb_data$trt)
+levels(comb_data$trt)<-c("Control", "Treatment")
+comb_data$matched<-factor(comb_data$matched, levels=c("Original Sample", "Matched Sample"))
+
+#Age density plots
+ggplot(data = comb_data, aes(x=age, fill=trt, group=trt))+ 
+  geom_density(alpha=0.25)+facet_wrap(~matched)+ylab("Density")+xlab("Age")+
+  guides(fill=guide_legend(title="Treatment"))
+
+#Risk barplots
+ggplot(data=comb_data, aes(x=risk, fill=trt, group=trt))+
+  geom_bar(position = "dodge")+facet_wrap(~matched)+ylab("Count")+xlab("Risk Level")+
+  guides(fill=guide_legend(title="Treatment"))
+
+```
