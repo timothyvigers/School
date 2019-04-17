@@ -27,8 +27,6 @@ pre.ps <- glm(trt ~ age + risk + severity, family="binomial",
               data=data)
 #Solve for probabilities using predict function
 data$ps<-predict(pre.ps, type="response")
-
-
 ```
 ##Applying Propensity Score Method
 ###Matching
