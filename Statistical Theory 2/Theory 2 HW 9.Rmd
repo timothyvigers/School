@@ -1,0 +1,32 @@
+---
+title: "Homework 9"
+author: "Tim Vigers"
+date: "4/18/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(32)
+n <- 100
+x <- rnorm(n,mean = 1,sd=sqrt(2))
+
+sighat <- mean(x)
+ahat <- sum((x - mean(x))^2) / n*mean(x)
+ahatnull <- 1
+sighatnull <- (-ahatnull+sqrt((ahatnull^2 + 4*(sum(x^2)/n)))) / 2
+sighat
+ahat
+sighatnull
+ahatnull
+
+lrt <- 
+  (ahat*sighat/sighatnull)^(n/2)*exp((n/2)-(sum((x-sighatnull)^2)/(2*sighatnull)))
+lrt
+lrt < 0.1465
+```
+
+LRT statistic is much smaller than c, so we can reject the null.
