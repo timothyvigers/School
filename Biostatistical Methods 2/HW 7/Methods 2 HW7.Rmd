@@ -7,9 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(nlme)
+library(knitr)
 ```
 
-## 1. 
+## 1. Linear mixed model
+
 ### a. Provide an interpretation for each parameter in the fixed effects model.
 
 $$
@@ -19,7 +22,8 @@ $$
 \beta_3=\text{The interaction effect of time and treatment}
 $$
 
-### b. 
+### b. Is time being treated as continuous or categorical in this model?
+
 Time is being treated as continuous, because there is one term for time, rather than a term for each timepoint. 
 
 ### c. Random intercept model
@@ -41,3 +45,28 @@ $$
 0 & \dots&\sigma^2_e
 \end{pmatrix}_{r\times r}
 $$
+
+## 2. Dog data
+
+```{r}
+# Read in data
+dogs <- read.csv("/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 7/dogdata_long.csv")
+# Format columns
+dogs$minutes <- as.factor(dogs$minutes)
+# Models
+mod <- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
+mean_mod <- lme(GBV ~ trt * minutes-1, random = ~1|id,data = dogs)
+# Print fixed effects
+kable(summary(mod)$tTable)
+kable(summary(mean_mod)$tTable)
+```
+
+### a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?
+
+Each dog is being measured multiple times, so the random intercept for dogs will help account for correlation between these measurements. 
+
+### b. Is there a mean difference between the two drug groups (Cholechystokynin and Clanobutin) for at least one time point?
+
+```{r}
+
+```
