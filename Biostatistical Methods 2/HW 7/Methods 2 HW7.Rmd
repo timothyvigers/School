@@ -15,11 +15,29 @@ knitr::opts_chunk$set(echo = TRUE)
 $$
 \beta_0=\text{Average gall bladder volume for a dog in the control group at time 0}\\
 \beta_1=\text{The average effect of a "1 unit increase" in time, holding everything else constant}\\
-\beta_2=\text{The average effect of treatment at time 0}\\
+\beta_2=\text{The average effect of treatment, holding everything else constant}\\
 \beta_3=\text{The interaction effect of time and treatment}
 $$
 
 ### b. 
 Time is being treated as continuous, because there is one term for time, rather than a term for each timepoint. 
 
-### c.
+### c. Random intercept model
+$$
+\textbf{R}_i = \begin{pmatrix}
+\sigma^2_I + \sigma^2_e & \sigma^2_I & &&0\\
+\sigma^2_I & \sigma^2_I + \sigma^2_e \\
+ & & \ddots \\
+ & & & \sigma^2_I + \sigma^2_e & \sigma^2_I \\
+ 0& & & \sigma^2_I & \sigma^2_I + \sigma^2_e
+\end{pmatrix}_{n(r)\times n(r)}
+$$
+
+### d. Model without random intercept
+$$
+\textbf{R}_i = \begin{pmatrix}
+\sigma^2_e & \dots& 0\\
+\vdots & \ddots& \vdots\\
+0 & \dots&\sigma^2_e
+\end{pmatrix}_{r\times r}
+$$
