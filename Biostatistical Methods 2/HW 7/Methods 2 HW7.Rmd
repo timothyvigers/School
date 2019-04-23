@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(nlme)
 library(knitr)
+library(emmeans)
 ```
 
 ## 1. Linear mixed model
@@ -53,10 +54,7 @@ dogs <- read.csv("/Users/timvigers/Documents/School/Biostatistical Methods 2/Hom
 dogs$minutes <- as.factor(dogs$minutes)
 # Models
 mod <- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
-mean_mod <- lme(GBV ~ trt * minutes-1, random = ~1|id,data = dogs)
-# Print fixed effects
-kable(summary(mod)$tTable)
-kable(summary(mean_mod)$tTable)
+emmeans(mod)
 ```
 
 ### a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?
