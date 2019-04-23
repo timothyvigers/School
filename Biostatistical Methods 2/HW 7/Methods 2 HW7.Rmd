@@ -17,8 +17,8 @@ library(knitr)
 
 $$
 \beta_0=\text{Average gall bladder volume for a dog in the control group at time 0}\\
-\beta_1=\text{The average effect of a "1 unit increase" in time, holding everything else constant}\\
-\beta_2=\text{The average effect of treatment, holding everything else constant}\\
+\beta_1=\text{The average effect of a "1 unit increase" in time in the control group, holding everything else constant}\\
+\beta_2=\text{The average effect of treatment at time 0, holding everything else constant}\\
 \beta_3=\text{The interaction effect of time and treatment}
 $$
 
@@ -29,21 +29,19 @@ Time is being treated as continuous, because there is one term for time, rather 
 ### c. Random intercept model
 $$
 \textbf{R}_i = \begin{pmatrix}
-\sigma^2_I + \sigma^2_e & \sigma^2_I & &&0\\
-\sigma^2_I & \sigma^2_I + \sigma^2_e \\
- & & \ddots \\
- & & & \sigma^2_I + \sigma^2_e & \sigma^2_I \\
- 0& & & \sigma^2_I & \sigma^2_I + \sigma^2_e
-\end{pmatrix}_{n(r)\times n(r)}
+\sigma^2_e & \dots&0\\
+\vdots & \ddots& \vdots \\
+0&\dots& \sigma^2_e
+\end{pmatrix}_{r_i\times r_i}
 $$
 
 ### d. Model without random intercept
 $$
 \textbf{R}_i = \begin{pmatrix}
-\sigma^2_e & \dots& 0\\
-\vdots & \ddots& \vdots\\
-0 & \dots&\sigma^2_e
-\end{pmatrix}_{r\times r}
+\sigma^2_I + \sigma^2_e&\dots&\sigma^2_I\\
+\vdots & \ddots& \vdots \\
+\sigma^2_I&\dots& \sigma^2_I + \sigma^2_e
+\end{pmatrix}_{r_i\times r_i}
 $$
 
 ## 2. Dog data
@@ -67,6 +65,16 @@ Each dog is being measured multiple times, so the random intercept for dogs will
 
 ### b. Is there a mean difference between the two drug groups (Cholechystokynin and Clanobutin) for at least one time point?
 
-```{r}
+$$
+\beta = (\mu_{1|0},\mu_{2|0},\mu_{1|30},\mu_{2|30},\mu_{1|60},\mu_{2|60},\mu_{1|90},\mu_{2|90},\mu_{1|120},\mu_{2|120},)
+$$
 
+```{r}
+# Contrast at minute 0
+c <- as.matrix(rbind(c(-1,1,0,-1,0,0,0,0,1,0,0,0,0,0,0,0,0,0), 
+           c(-1,1,0,0,-1,0,0,0,0,1,0,0,0,0,0,0,0,0),
+           c(-1,1,0,0,0,-1,0,0,0,0,1,0,0,0,0,0,0,0), 
+           c(-1,1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0,0),
+           c(-1,1,0,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0)))
+c %*% as.matrix(coef(mean_mod))
 ```
