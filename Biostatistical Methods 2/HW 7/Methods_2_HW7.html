@@ -197,42 +197,368 @@ $(document).ready(function () {
 </div>
 
 
-<div id="section" class="section level2">
-<h2>1.</h2>
+<div id="linear-mixed-model" class="section level2">
+<h2>1. Linear mixed model</h2>
 <div id="a.-provide-an-interpretation-for-each-parameter-in-the-fixed-effects-model." class="section level3">
 <h3>a. Provide an interpretation for each parameter in the fixed effects model.</h3>
 <p><span class="math display">\[
 \beta_0=\text{Average gall bladder volume for a dog in the control group at time 0}\\
-\beta_1=\text{The average effect of a &quot;1 unit increase&quot; in time, holding everything else constant}\\
-\beta_2=\text{The average effect of treatment, holding everything else constant}\\
+\beta_1=\text{The average effect of a &quot;1 unit increase&quot; in time in the control group, holding everything else constant}\\
+\beta_2=\text{The average effect of treatment at time 0, holding everything else constant}\\
 \beta_3=\text{The interaction effect of time and treatment}
 \]</span></p>
 </div>
-<div id="b." class="section level3">
-<h3>b.</h3>
+<div id="b.-is-time-being-treated-as-continuous-or-categorical-in-this-model" class="section level3">
+<h3>b. Is time being treated as continuous or categorical in this model?</h3>
 <p>Time is being treated as continuous, because there is one term for time, rather than a term for each timepoint.</p>
 </div>
 <div id="c.-random-intercept-model" class="section level3">
 <h3>c. Random intercept model</h3>
 <p><span class="math display">\[
 \textbf{R}_i = \begin{pmatrix}
-\sigma^2_I + \sigma^2_e &amp; \sigma^2_I &amp; &amp;&amp;0\\
-\sigma^2_I &amp; \sigma^2_I + \sigma^2_e \\
- &amp; &amp; \ddots \\
- &amp; &amp; &amp; \sigma^2_I + \sigma^2_e &amp; \sigma^2_I \\
- 0&amp; &amp; &amp; \sigma^2_I &amp; \sigma^2_I + \sigma^2_e
-\end{pmatrix}_{n(r)\times n(r)}
+\sigma^2_e &amp; \dots&amp;0\\
+\vdots &amp; \ddots&amp; \vdots \\
+0&amp;\dots&amp; \sigma^2_e
+\end{pmatrix}_{r_i\times r_i}
 \]</span></p>
 </div>
 <div id="d.-model-without-random-intercept" class="section level3">
 <h3>d. Model without random intercept</h3>
 <p><span class="math display">\[
 \textbf{R}_i = \begin{pmatrix}
-\sigma^2_e &amp; \dots&amp; 0\\
-\vdots &amp; \ddots&amp; \vdots\\
-0 &amp; \dots&amp;\sigma^2_e
-\end{pmatrix}_{r\times r}
+\sigma^2_I + \sigma^2_e&amp;\dots&amp;\sigma^2_I\\
+\vdots &amp; \ddots&amp; \vdots \\
+\sigma^2_I&amp;\dots&amp; \sigma^2_I + \sigma^2_e
+\end{pmatrix}_{r_i\times r_i}
 \]</span></p>
+</div>
+</div>
+<div id="dog-data" class="section level2">
+<h2>2. Dog data</h2>
+<pre class="r"><code># Read in data
+dogs &lt;- read.csv(&quot;/Users/timvigers/Documents/School/Biostatistical Methods 2/Homeworks/Homework 7/dogdata_long.csv&quot;)
+# Format columns
+dogs$minutes &lt;- as.factor(dogs$minutes)
+# Models
+mod &lt;- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
+mean_mod &lt;- lme(GBV ~ trt * minutes-1, random = ~1|id,data = dogs)
+# Print fixed effects
+kable(summary(mod)$tTable)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Value</th>
+<th align="right">Std.Error</th>
+<th align="right">DF</th>
+<th align="right">t-value</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">19.7050000</td>
+<td align="right">2.8087380</td>
+<td align="right">60</td>
+<td align="right">7.0156064</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin</td>
+<td align="right">-3.8850000</td>
+<td align="right">3.9721553</td>
+<td align="right">15</td>
+<td align="right">-0.9780584</td>
+<td align="right">0.3435571</td>
+</tr>
+<tr class="odd">
+<td>trtControl</td>
+<td align="right">-3.0333333</td>
+<td align="right">3.9721553</td>
+<td align="right">15</td>
+<td align="right">-0.7636492</td>
+<td align="right">0.4569204</td>
+</tr>
+<tr class="even">
+<td>minutes30</td>
+<td align="right">-6.0583333</td>
+<td align="right">0.4794934</td>
+<td align="right">60</td>
+<td align="right">-12.6348617</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td>minutes60</td>
+<td align="right">-4.4633333</td>
+<td align="right">0.4794934</td>
+<td align="right">60</td>
+<td align="right">-9.3084345</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>minutes90</td>
+<td align="right">-2.1416667</td>
+<td align="right">0.4794934</td>
+<td align="right">60</td>
+<td align="right">-4.4665192</td>
+<td align="right">0.0000358</td>
+</tr>
+<tr class="odd">
+<td>minutes120</td>
+<td align="right">-0.5566667</td>
+<td align="right">0.4794934</td>
+<td align="right">60</td>
+<td align="right">-1.1609474</td>
+<td align="right">0.2502614</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes30</td>
+<td align="right">2.8983333</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">4.2741589</td>
+<td align="right">0.0000697</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes30</td>
+<td align="right">5.6900000</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">8.3910169</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes60</td>
+<td align="right">2.5333333</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">3.7358950</td>
+<td align="right">0.0004189</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes60</td>
+<td align="right">4.5033333</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">6.6410450</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes90</td>
+<td align="right">1.1916667</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">1.7573454</td>
+<td align="right">0.0839601</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes90</td>
+<td align="right">1.9850000</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">2.9272704</td>
+<td align="right">0.0048248</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes120</td>
+<td align="right">-0.1350000</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">-0.1990839</td>
+<td align="right">0.8428702</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes120</td>
+<td align="right">0.6333333</td>
+<td align="right">0.6781061</td>
+<td align="right">60</td>
+<td align="right">0.9339738</td>
+<td align="right">0.3540610</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(summary(mean_mod)$tTable)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Value</th>
+<th align="right">Std.Error</th>
+<th align="right">DF</th>
+<th align="right">t-value</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>trtCholechystokynin</td>
+<td align="right">19.7050000</td>
+<td align="right">2.8087380</td>
+<td align="right">15</td>
+<td align="right">7.0156064</td>
+<td align="right">0.0000042</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin</td>
+<td align="right">15.8200000</td>
+<td align="right">2.8087380</td>
+<td align="right">15</td>
+<td align="right">5.6324229</td>
+<td align="right">0.0000477</td>
+</tr>
+<tr class="odd">
+<td>trtControl</td>
+<td align="right">16.6716667</td>
+<td align="right">2.8087380</td>
+<td align="right">15</td>
+<td align="right">5.9356433</td>
+<td align="right">0.0000273</td>
+</tr>
+<tr class="even">
+<td>minutes30</td>
+<td align="right">-6.0583333</td>
+<td align="right">0.4794934</td>
+<td align="right">61</td>
+<td align="right">-12.6348617</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td>minutes60</td>
+<td align="right">-4.4633333</td>
+<td align="right">0.4794934</td>
+<td align="right">61</td>
+<td align="right">-9.3084345</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>minutes90</td>
+<td align="right">-2.1416667</td>
+<td align="right">0.4794934</td>
+<td align="right">61</td>
+<td align="right">-4.4665192</td>
+<td align="right">0.0000350</td>
+</tr>
+<tr class="odd">
+<td>minutes120</td>
+<td align="right">-0.5566667</td>
+<td align="right">0.4794934</td>
+<td align="right">61</td>
+<td align="right">-1.1609474</td>
+<td align="right">0.2501864</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes30</td>
+<td align="right">2.8983333</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">4.2741589</td>
+<td align="right">0.0000685</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes30</td>
+<td align="right">5.6900000</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">8.3910169</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes60</td>
+<td align="right">2.5333333</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">3.7358950</td>
+<td align="right">0.0004141</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes60</td>
+<td align="right">4.5033333</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">6.6410450</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes90</td>
+<td align="right">1.1916667</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">1.7573454</td>
+<td align="right">0.0838765</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes90</td>
+<td align="right">1.9850000</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">2.9272704</td>
+<td align="right">0.0047998</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes120</td>
+<td align="right">-0.1350000</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">-0.1990839</td>
+<td align="right">0.8428592</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes120</td>
+<td align="right">0.6333333</td>
+<td align="right">0.6781061</td>
+<td align="right">61</td>
+<td align="right">0.9339738</td>
+<td align="right">0.3539999</td>
+</tr>
+</tbody>
+</table>
+<div id="a.-why-might-adding-a-random-intercept-for-dogs-relative-to-the-same-model-but-without-the-random-term-help-the-model" class="section level3">
+<h3>a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?</h3>
+<p>Each dog is being measured multiple times, so the random intercept for dogs will help account for correlation between these measurements.</p>
+</div>
+<div id="b.-is-there-a-mean-difference-between-the-two-drug-groups-cholechystokynin-and-clanobutin-for-at-least-one-time-point" class="section level3">
+<h3>b. Is there a mean difference between the two drug groups (Cholechystokynin and Clanobutin) for at least one time point?</h3>
+<p><span class="math display">\[
+\beta = (\mu_{1|0},\mu_{2|0},\mu_{1|30},\mu_{2|30},\mu_{1|60},\mu_{2|60},\mu_{1|90},\mu_{2|90},\mu_{1|120},\mu_{2|120},)
+\]</span></p>
+<pre class="r"><code># Contrast at minute 0
+c &lt;- as.matrix(rbind(c(-1,1,0,-1,0,0,0,0,1,0,0,0,0,0,0,0,0,0), 
+           c(-1,1,0,0,-1,0,0,0,0,1,0,0,0,0,0,0,0,0),
+           c(-1,1,0,0,0,-1,0,0,0,0,1,0,0,0,0,0,0,0), 
+           c(-1,1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0,0),
+           c(-1,1,0,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0)))
+c %*% as.matrix(coef(mean_mod))</code></pre>
+<pre><code>##      trtCholechystokynin trtClanobutin trtControl minutes30 minutes60
+## [1,]                   0             0          0         0         0
+## [2,]                   0             0          0         0         0
+## [3,]                   0             0          0         0         0
+## [4,]                   0             0          0         0         0
+## [5,]                   0             0          0         0         0
+##      minutes90 minutes120 trtClanobutin:minutes30 trtControl:minutes30
+## [1,]         0          0                       0                    0
+## [2,]         0          0                       0                    0
+## [3,]         0          0                       0                    0
+## [4,]         0          0                       0                    0
+## [5,]         0          0                       0                    0
+##      trtClanobutin:minutes60 trtControl:minutes60 trtClanobutin:minutes90
+## [1,]                       0                    0                       0
+## [2,]                       0                    0                       0
+## [3,]                       0                    0                       0
+## [4,]                       0                    0                       0
+## [5,]                       0                    0                       0
+##      trtControl:minutes90 trtClanobutin:minutes120 trtControl:minutes120
+## [1,]                    0                        0                     0
+## [2,]                    0                        0                     0
+## [3,]                    0                        0                     0
+## [4,]                    0                        0                     0
+## [5,]                    0                        0                     0
+##      (Intercept)
+## [1,] -20.2308349
+## [2,]  13.5452738
+## [3,]   2.3364235
+## [4,]  -0.6401069
+## [5,]   4.7436376</code></pre>
 </div>
 </div>
 
