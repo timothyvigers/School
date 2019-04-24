@@ -54,7 +54,7 @@ dogs <- read.csv("/Users/timvigers/Documents/School/Biostatistical Methods 2/Hom
 dogs$minutes <- as.factor(dogs$minutes)
 # Models
 mod <- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
-mean_mod <- lme(GBV ~ trt * minutes-1, random = ~1|id,data = dogs)
+mean_mod <- lme(GBV ~ trt:minutes-1, random = ~1|id,data = dogs)
 ```
 
 ### a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?
@@ -64,19 +64,18 @@ Each dog is being measured multiple times, so the random intercept for dogs will
 ### b. Is there a mean difference between the two drug groups (Cholechystokynin and Clanobutin) for at least one time point?
 
 $$
-H_0:(\mu_{1|0}=\mu_{2|0},\mu_{1|30}=\mu_{2|30},\mu_{1|60}=\mu_{2|60},\mu_{1|90}=\mu_{2|90},\mu_{1|120}=\mu_{2|120},)
+H_0:(\mu_{1|0}=\mu_{2|0}=\mu_{1|30}=\mu_{2|30}=\mu_{1|60}=\mu_{2|60}=\mu_{1|90}=\mu_{2|90}=\mu_{1|120}=\mu_{2|120})
 $$
 
 ```{r}
 # Contrast at minute 0
-cmat <- rbind(c(-1,0,0,0,0,1,0,0,0,0,0,0,0,0,0),
-              c(0,-1,0,0,0,0,1,0,0,0,0,0,0,0,0),
-              c(0,0,-1,0,0,0,0,1,0,0,0,0,0,0,0),
-              c(0,0,0,-1,0,0,0,0,1,0,0,0,0,0,0),
-              c(0,0,0,0,-1,0,0,0,0,1,0,0,0,0,0))
+cmat <- rbind(c(-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
+              c(0,0,0,-1,1,0,0,0,0,0,0,0,0,0,0),
+              c(0,0,0,0,0,0,-1,1,0,0,0,0,0,0,0),
+              c(0,0,0,0,0,0,0,0,0,-1,1,0,0,0,0),
+              c(0,0,0,0,0,0,0,0,0,0,0,0,-1,1,0))
 numerator <- cmat %*% summary(mean_mod)$tTable[,1]
-denominator <- sqrt(diag(cmat %*% vcov(mean_mod) %*% t(cmat)))
-f1 <- (numerator/denominator)^2
+f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator
 f1
-pf(f1,1,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
+pf(f1,1,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE) # Lecture 17 pg. 35
 ```
