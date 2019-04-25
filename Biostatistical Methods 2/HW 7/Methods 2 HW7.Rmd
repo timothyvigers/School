@@ -64,7 +64,7 @@ Each dog is being measured multiple times, so the random intercept for dogs will
 ### b. Is there a mean difference between the two drug groups (Cholechystokynin and Clanobutin) for at least one time point?
 
 $$
-H_0:(\mu_{1|0}=\mu_{2|0}=\mu_{1|30}=\mu_{2|30}=\mu_{1|60}=\mu_{2|60}=\mu_{1|90}=\mu_{2|90}=\mu_{1|120}=\mu_{2|120})
+H_0:(\mu_{1|0}=\mu_{2|0},\mu_{1|30}=\mu_{2|30},\mu_{1|60}=\mu_{2|60},\mu_{1|90}=\mu_{2|90},\mu_{1|120}=\mu_{2|120})
 $$
 
 ```{r}
@@ -75,7 +75,27 @@ cmat <- rbind(c(-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
               c(0,0,0,0,0,0,0,0,0,-1,1,0,0,0,0),
               c(0,0,0,0,0,0,0,0,0,0,0,0,-1,1,0))
 numerator <- cmat %*% summary(mean_mod)$tTable[,1]
-f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator
+f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 5 # Divide by row in contrast matrix
 f1
-pf(f1,1,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE) # Lecture 17 pg. 35
+pf(f1,5,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
+```
+
+There is a mean difference between the two drugs for at least one timepoint (F = 6.9, p <0.0001).
+
+### c. Does the difference between the two drug groups change over time?
+
+$$
+H_0:(\mu_{1|0}-\mu_{2|0}=\mu_{1|30}-\mu_{2|30}=\mu_{1|60}-\mu_{2|60}=\mu_{1|90}-\mu_{2|90}=\mu_{1|120}-\mu_{2|120})
+$$
+
+```{r}
+# Contrast at minute 0
+cmat <- rbind(c(-1,1,0,1,-1,0,0,0,0,0,0,0,0,0,0),
+              c(0,0,0,-1,1,0,1,-1,0,0,0,0,0,0,0),
+              c(0,0,0,0,0,0,-1,1,0,1,-1,0,0,0,0),
+              c(0,0,0,0,0,0,0,0,0,-1,1,0,1,-1,0))
+numerator <- cmat %*% summary(mean_mod)$tTable[,1]
+f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 4 # Divide by row in contrast matrix
+f1
+pf(f1,5,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
 ```

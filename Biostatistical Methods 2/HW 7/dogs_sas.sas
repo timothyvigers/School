@@ -52,3 +52,13 @@ CONTRAST "Chol. vs Can."
      sas_trt*time_cat 0 0 0 -1 0 0 0 0 1 0 0 0 0 0 0,
      sas_trt*time_cat 0 0 0 0 -1 0 0 0 0 1 0 0 0 0 0/E;
 run;
+
+proc mixed data=dogs;
+class id sas_trt time_cat;
+model gbv = sas_trt*time_cat / s;
+random intercept / subject = id;
+CONTRAST "CH. vs CL" sas_trt*time_cat 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0 0,
+      sas_trt*time_cat 0 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0,
+      sas_trt*time_cat 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 0,
+      sas_trt*time_cat 0 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 / E;
+run;
