@@ -241,7 +241,142 @@ dogs &lt;- read.csv(&quot;/Users/timvigers/Documents/School/Biostatistical Metho
 dogs$minutes &lt;- as.factor(dogs$minutes)
 # Models
 mod &lt;- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
-mean_mod &lt;- lme(GBV ~ trt:minutes-1, random = ~1|id,data = dogs)</code></pre>
+mean_mod &lt;- lme(GBV ~ trt:minutes-1, random = ~1|id,data = dogs)
+kable(summary(mean_mod)$tTable)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Value</th>
+<th align="right">Std.Error</th>
+<th align="right">DF</th>
+<th align="right">t-value</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>trtCholechystokynin:minutes0</td>
+<td align="right">19.70500</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">7.015606</td>
+<td align="right">0.00e+00</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes0</td>
+<td align="right">15.82000</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.632423</td>
+<td align="right">5.00e-07</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes0</td>
+<td align="right">16.67167</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.935643</td>
+<td align="right">2.00e-07</td>
+</tr>
+<tr class="even">
+<td>trtCholechystokynin:minutes30</td>
+<td align="right">13.64667</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">4.858647</td>
+<td align="right">9.30e-06</td>
+</tr>
+<tr class="odd">
+<td>trtClanobutin:minutes30</td>
+<td align="right">12.66000</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">4.507363</td>
+<td align="right">3.24e-05</td>
+</tr>
+<tr class="even">
+<td>trtControl:minutes30</td>
+<td align="right">16.30333</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.804505</td>
+<td align="right">3.00e-07</td>
+</tr>
+<tr class="odd">
+<td>trtCholechystokynin:minutes60</td>
+<td align="right">15.24167</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.426518</td>
+<td align="right">1.20e-06</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes60</td>
+<td align="right">13.89000</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">4.945282</td>
+<td align="right">6.80e-06</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes60</td>
+<td align="right">16.71167</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.949885</td>
+<td align="right">2.00e-07</td>
+</tr>
+<tr class="even">
+<td>trtCholechystokynin:minutes90</td>
+<td align="right">17.56333</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">6.253105</td>
+<td align="right">1.00e-07</td>
+</tr>
+<tr class="odd">
+<td>trtClanobutin:minutes90</td>
+<td align="right">14.87000</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.294193</td>
+<td align="right">1.90e-06</td>
+</tr>
+<tr class="even">
+<td>trtControl:minutes90</td>
+<td align="right">16.51500</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.879865</td>
+<td align="right">2.00e-07</td>
+</tr>
+<tr class="odd">
+<td>trtCholechystokynin:minutes120</td>
+<td align="right">19.14833</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">6.817415</td>
+<td align="right">0.00e+00</td>
+</tr>
+<tr class="even">
+<td>trtClanobutin:minutes120</td>
+<td align="right">15.12833</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.386168</td>
+<td align="right">1.40e-06</td>
+</tr>
+<tr class="odd">
+<td>trtControl:minutes120</td>
+<td align="right">16.74833</td>
+<td align="right">2.808738</td>
+<td align="right">58</td>
+<td align="right">5.962939</td>
+<td align="right">2.00e-07</td>
+</tr>
+</tbody>
+</table>
 <div id="a.-why-might-adding-a-random-intercept-for-dogs-relative-to-the-same-model-but-without-the-random-term-help-the-model" class="section level3">
 <h3>a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?</h3>
 <p>Each dog is being measured multiple times, so the random intercept for dogs will help account for correlation between these measurements.</p>
@@ -329,6 +464,8 @@ plot</code></pre>
 </div>
 <div id="f.-time-as-continuous" class="section level3">
 <h3>f. Time as continuous</h3>
+<p>When treating time as a continuous variable, there could be an issue with correlation between GBV and time and you would need to account for the collinearity (perhaps by “centering” the time variable with time 60 as the reference time instead of time 0). This issue would increase when modeling higher order time variables, like <span class="math inline">\(\text{time}^2\)</span> or <span class="math inline">\(\text{time}^3\)</span>.</p>
+<p>Also, if there’s no data at the timepoint the investigator is interested in, then predictions about that timepoint will most likely not be accurate.</p>
 </div>
 </div>
 

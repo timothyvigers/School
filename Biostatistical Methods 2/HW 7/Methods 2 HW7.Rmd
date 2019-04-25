@@ -55,6 +55,7 @@ dogs$minutes <- as.factor(dogs$minutes)
 # Models
 mod <- lme(GBV ~ trt * minutes, random = ~1|id,data = dogs)
 mean_mod <- lme(GBV ~ trt:minutes-1, random = ~1|id,data = dogs)
+kable(summary(mean_mod)$tTable)
 ```
 
 ### a. Why might adding a random intercept for dogs (relative to the same model but without the random term) help the model?
@@ -138,3 +139,7 @@ The aim of this study was to determine the effect of Cholechystokynin and Clanob
 I would include all of this information and the coefficients of the means model in my report to an investigator, along with the graph above.  
 
 ### f. Time as continuous
+
+When treating time as a continuous variable, there could be an issue with correlation between GBV and time and you would need to account for the collinearity (perhaps by "centering" the time variable with time 60 as the reference time instead of time 0). This issue would increase when modeling higher order time variables, like $\text{time}^2$ or $\text{time}^3$. 
+
+Also, if there's no data at the timepoint the investigator is interested in, then predictions about that timepoint will most likely not be accurate. 
