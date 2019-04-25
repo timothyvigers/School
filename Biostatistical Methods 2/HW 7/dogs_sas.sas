@@ -54,11 +54,38 @@ CONTRAST "Chol. vs Can."
 run;
 
 proc mixed data=dogs;
-class id sas_trt time_cat;
-model gbv = sas_trt*time_cat / s;
+class id sas_trt minutes;
+model gbv = sas_trt*minutes / s;
 random intercept / subject = id;
-CONTRAST "CH. vs CL" sas_trt*time_cat 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0 0,
-      sas_trt*time_cat 0 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0,
-      sas_trt*time_cat 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 0,
-      sas_trt*time_cat 0 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 / E;
+CONTRAST "CH. vs CL" sas_trt*minutes 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0 0,
+      sas_trt*minutes 0 1 -1 0 0 0 -1 1 0 0 0 0 0 0 0,
+      sas_trt*minutes 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 0,
+      sas_trt*minutes 0 0 0 1 -1 0  0 0 -1 1 0 0 0 0 0 / E;
 run;
+
+proc mixed data=dogs;
+class id sas_trt minutes;
+model gbv = sas_trt*minutes / s;
+random intercept / subject = id;
+ESTIMATE "CH0 vs CH60" sas_trt*minutes 1 0 -1 0 0 0 0 0 0 0 0 0 0 0 0/ E;
+run;
+
+PROC SORT DATA=dogs;
+BY sas_trt minutes;
+RUN;
+
+PROC UNIVARIATE DATA=dogs NOPRINT;
+BY sas_trt minutes;
+VAR GBV;
+OUTPUT OUT =DogSummary MEAN=meanGBV STD=SDgbv MIN=minGBV MAX=maxGBV;
+RUN;
+
+**TIME PLOT**;
+SYMBOL1 VALUE = CIRCLE COLOR=BLUE INTERPOL=JOIN;
+SYMBOL2 VALUE=STAR COLOR=RED INTERPOL=JOIN;
+SYMBOL3 VALUE=DIAMOND COLOR=GREEN INTERPOL=JOIN;
+PROC SGPLOT DATA=DogSummary;
+YAXIS label = 'Mean GBV';
+XAXIS label ='Time (minutes)';
+SERIES X=minutes Y= meanGBV/ GROUP= sas_trt ;
+RUN;

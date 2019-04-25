@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(nlme)
 library(knitr)
-library(emmeans)
+library(ggplot2)
 ```
 
 ## 1. Linear mixed model
@@ -68,14 +68,14 @@ H_0:(\mu_{1|0}=\mu_{2|0},\mu_{1|30}=\mu_{2|30},\mu_{1|60}=\mu_{2|60},\mu_{1|90}=
 $$
 
 ```{r}
-# Contrast at minute 0
+# Contrast
 cmat <- rbind(c(-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0),
               c(0,0,0,-1,1,0,0,0,0,0,0,0,0,0,0),
               c(0,0,0,0,0,0,-1,1,0,0,0,0,0,0,0),
               c(0,0,0,0,0,0,0,0,0,-1,1,0,0,0,0),
               c(0,0,0,0,0,0,0,0,0,0,0,0,-1,1,0))
 numerator <- cmat %*% summary(mean_mod)$tTable[,1]
-f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 5 # Divide by row in contrast matrix
+f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 5 # Divide by # rows in contrast matrix
 f1
 pf(f1,5,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
 ```
@@ -89,13 +89,52 @@ H_0:(\mu_{1|0}-\mu_{2|0}=\mu_{1|30}-\mu_{2|30}=\mu_{1|60}-\mu_{2|60}=\mu_{1|90}-
 $$
 
 ```{r}
-# Contrast at minute 0
+# Contrast
 cmat <- rbind(c(-1,1,0,1,-1,0,0,0,0,0,0,0,0,0,0),
               c(0,0,0,-1,1,0,1,-1,0,0,0,0,0,0,0),
               c(0,0,0,0,0,0,-1,1,0,1,-1,0,0,0,0),
               c(0,0,0,0,0,0,0,0,0,-1,1,0,1,-1,0))
 numerator <- cmat %*% summary(mean_mod)$tTable[,1]
-f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 4 # Divide by row in contrast matrix
+f1 <- t(numerator) %*% solve(cmat %*% vcov(mean_mod) %*% t(cmat)) %*% numerator / 4 # Divide by # rows in contrast matrix
 f1
-pf(f1,5,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
+pf(f1,4,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
 ```
+
+The mean difference between the two drugs changes over time (F = 8.52, p <0.0001).
+
+### d. Estimate and 95% confidence interval for the mean change in GBV from baseline to 60 minutes after for the Cholechystokynin group. 
+
+```{r}
+# Contrast
+cmat <- c(-1,0,0,0,0,0,1,0,0,0,0,0,0,0,0)
+numerator <- cmat %*% summary(mean_mod)$tTable[,1]
+numerator
+se <- sqrt(diag(cmat %*% vcov(mean_mod) %*% as.matrix(cmat)))
+ci <- c(numerator - 1.96*se,numerator + 1.96*se)
+ci
+f1 <- 
+  numerator %*% solve(cmat %*% vcov(mean_mod) %*% as.matrix(cmat)) %*% t(numerator) 
+f1
+pf(f1,1,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
+t1 <- sqrt(f1)
+t1
+pt(t1,((nrow(dogs)-1)-(nrow(summary(mean_mod)$tTable)-1)-(length(unique(dogs$id))-1)),lower.tail=FALSE)
+```
+
+On average GBV decreased from baseline to the 60 minute timepoint for the Cholechystokynin group by 4.463 (95% CI: -5.403, -3.523). This difference was statistically significant (p < 0.0001). 
+
+### e. Summary
+
+```{r}
+# Plot
+plot <- ggplot(dogs,aes(x=minutes,y=GBV,group=as.factor(trt)))+
+  stat_summary(fun.y=mean, geom="line",aes(color = as.factor(trt)))+
+  theme(legend.title=element_blank())
+plot
+```
+
+The aim of this study was to determine the effect of Cholechystokynin and Clanobutin on gall bladder volume over time. We found that there was a significant difference (p < 0.0001) between Cholechystokynin and Clanobutin for at least one of the timepoints measured (0, 30, 60, 90, and 120 minutes), and this difference changed over time (p< 0.0001). We also tested the average difference in GBV between time 0 and time 60 for those on Cholechystokynin. On average GBV decreased by 4.463 (95% CI: -5.403, -3.523) and this change was statistically significant (p < 0.0001).
+
+I would include all of this information and the coefficients of the means model in my report to an investigator, along with the graph above.  
+
+### f. Time as continuous
