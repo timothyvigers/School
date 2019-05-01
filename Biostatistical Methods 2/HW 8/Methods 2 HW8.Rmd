@@ -9,3 +9,51 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### 1. Model covariance matrix for subject i
+
+$$
+G_i = \begin{pmatrix}
+\sigma^2_I & \sigma^2_{IS}\\
+\sigma^2_{IS} & \sigma^2_S
+\end{pmatrix}\\
+Z_i = \begin{pmatrix}
+1 & 0\\
+1 & 1\\
+1 & 2
+\end{pmatrix}\\
+Z_i^t = \begin{pmatrix}
+1 & 1&1\\
+0 & 1&2\\
+\end{pmatrix}\\
+R_i = \begin{pmatrix}
+\sigma^2_e & 0 & 0\\
+0 & \sigma^2_e & 0\\
+0 & 0 & \sigma^2_e
+\end{pmatrix}\\
+V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
+1 & 0\\
+1 & 1\\
+1 & 2
+\end{pmatrix}\begin{pmatrix}
+\sigma^2_I & \sigma^2_{IS}\\
+\sigma^2_{IS} & \sigma^2_S
+\end{pmatrix}\begin{pmatrix}
+1 & 1&1\\
+0 & 1&2\\
+\end{pmatrix}+\begin{pmatrix}
+\sigma^2_e & 0 & 0\\
+0 & \sigma^2_e & 0\\
+0 & 0 & \sigma^2_e
+\end{pmatrix}\\
+= \begin{pmatrix}
+\sigma^2_I+\sigma^2_e & \sigma^2_{IS} + \sigma^2_I & 2\sigma^2_{IS} + \sigma^2_I\\
+\sigma^2_{IS} + \sigma^2_I & 2\sigma^2_{IS}+\sigma^2_I+\sigma^2_S+\sigma^2_e & 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S\\
+2\sigma^2_{IS}+\sigma^2_I & 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S & 4\sigma^2_{IS}+\sigma^2_I+4\sigma^2_S+\sigma^2_e
+\end{pmatrix}
+$$
+
+### 2. R code
+
+```{r}
+
+```
