@@ -53,7 +53,11 @@ V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
 $$
 
 ### 2. R code
+$$
+\text{mod <- lme(y ~ time,data=dat,correlation=corSymm(form=~1|id),
+           weights=varIdent(form=~1|time))}
+$$
 
-```{r}
+### 3. I it possible for this structure to have covariance that decays as time between responses increases?
 
-```
+There are no constraints on an unstructured matrix, which means that the variance and covariance at each timepoint can be anything (estimated from the data). So, because each timepoint can be different, it would allow for covariance decay as time between measurements varies. This requires estimating more parameters which uses up some degrees of freedom, but results in the best possible model fit. 
