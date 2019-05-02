@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-05-01" />
+<meta name="date" content="2019-05-02" />
 
 <title>Homework 8</title>
 
@@ -377,7 +377,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Homework 8</h1>
 <h4 class="author">Tim Vigers</h4>
-<h4 class="date">01 May 2019</h4>
+<h4 class="date">02 May 2019</h4>
 
 </div>
 
@@ -427,10 +427,11 @@ V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
 </div>
 <div id="r-code" class="section level3">
 <h3>2. R code</h3>
-<p><span class="math display">\[
-\text{mod &lt;- lme(y ~ time,data=dat,correlation=corSymm(form=~1|id),
-           weights=varIdent(form=~1|time))}
-\]</span></p>
+<pre class="r"><code>mod &lt;- lme(y ~ time,data=dat,correlation=corSymm(form=~1|id),weights=varIdent(form=~1|time))</code></pre>
+</div>
+<div id="i-it-possible-for-this-structure-to-have-covariance-that-decays-as-time-between-responses-increases" class="section level3">
+<h3>3. I it possible for this structure to have covariance that decays as time between responses increases?</h3>
+<p>There are no constraints on an unstructured matrix, which means that the variance and covariance at each timepoint can be anything (estimated from the data). So, because each timepoint can be different, it would allow for covariance decay as time between measurements varies. This requires estimating more parameters which uses up some degrees of freedom, but results in the best possible model fit. Once you’ve done this, you can look at the calculated covariance matrix and see if it might fit with another structure, such as autoregressive which can also account for decay across timepoints.</p>
 </div>
 
 
