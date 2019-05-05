@@ -54,9 +54,15 @@ $$
 
 ### 2. R code
 ```{r eval=FALSE}
-mod <- lme(y ~ time,data=dat,correlation=corSymm(form=~1|id),weights=varIdent(form=~1|time))
+mod1 <- lme(y ~ time, random=~time|id,data=dat)
 ```
 
-### 3. I it possible for this structure to have covariance that decays as time between responses increases?
+### 3. Is it possible for this structure to have covariance that decays as time between responses increases?
 
-There are no constraints on an unstructured matrix, which means that the variance and covariance at each timepoint can be anything (estimated from the data). So, because each timepoint can be different, it would allow for covariance decay as time between measurements varies. This requires estimating more parameters which uses up some degrees of freedom, but results in the best possible model fit. Once you've done this, you can look at the calculated covariance matrix and see if it might fit with another structure, such as autoregressive which can also account for decay across timepoints. 
+In order to show this, you compare the covariance for times 0 and 1, and for times 0 and 2. If there's more correlation between time 0 and 1 than there is between time 0 and 2, then cov(0,1) > cov(0,2). This turns out to be fairly easy to rearrange, and shows that there can be decay as time between measurements increases, as long as $\sigma^2_{IS}<0$
+
+$$
+\sigma^2_{IS}+ \sigma^2_I > 2\sigma^2_{IS} + \sigma^2_I\\
+\sigma^2_{IS}>2\sigma^2_{IS}\\
+0 > \sigma^2_{IS}
+$$
