@@ -381,24 +381,143 @@ $(document).ready(function () {
 </div>
 
 
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## Loading required package: survival</code></pre>
-<pre><code>## Loading required package: Formula</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
-<pre><code>## Registered S3 methods overwritten by 'ggplot2':
-##   method         from 
-##   [.quosures     rlang
-##   c.quosures     rlang
-##   print.quosures rlang</code></pre>
-<pre><code>## 
-## Attaching package: 'Hmisc'</code></pre>
-<pre><code>## The following objects are masked from 'package:dplyr':
-## 
-##     src, summarize</code></pre>
-<pre><code>## The following objects are masked from 'package:base':
-## 
-##     format.pval, units</code></pre>
 <p>This analysis started out with 293 responses in total. Of these, 5 were excluded because the participant did not agree to the terms and conditions. Of the remaining 288 participants, 266 answered that they had been hiking with a pack weighing 10 lbs or more in past 3 years. An additional participant was excluded for indicating that they are over 89 years of age. Out of the remaining 265 participants, 240 responded to the question about back pain in the past 3 years, so this was group was used as the final analysis cohort.</p>
+<div id="table-2-participants-with-pain-while-day-hiking" class="section level3">
+<h3>Table 2: Participants with pain while day hiking</h3>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">Overall</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td align="left">47</td>
+</tr>
+<tr class="even">
+<td>choose_from_picture.factor (%)</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td>Neck- 1</td>
+<td align="left">11 (23.4)</td>
+</tr>
+<tr class="even">
+<td>Mid back/shoulder blade-2</td>
+<td align="left">14 (29.8)</td>
+</tr>
+<tr class="odd">
+<td>Low back-3</td>
+<td align="left">20 (42.6)</td>
+</tr>
+<tr class="even">
+<td>I do not experience back pain while day hiking with a pack</td>
+<td align="left">2 ( 4.3)</td>
+</tr>
+<tr class="odd">
+<td>back_pain_frequency.factor (%)</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td>Never</td>
+<td align="left">3 ( 6.5)</td>
+</tr>
+<tr class="odd">
+<td>Rarely</td>
+<td align="left">19 (41.3)</td>
+</tr>
+<tr class="even">
+<td>Frequently</td>
+<td align="left">23 (50.0)</td>
+</tr>
+<tr class="odd">
+<td>Always</td>
+<td align="left">1 ( 2.2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="table-3-fitting-statistics-stratified-by-pain-while-day-hiking" class="section level3">
+<h3>Table 3: Fitting statistics, stratified by pain while day hiking</h3>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">0</th>
+<th align="left">1</th>
+<th align="left">p</th>
+<th align="left">test</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td align="left">193</td>
+<td align="left">47</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td>prof_fit_for_day_pack.factor = No (%)</td>
+<td align="left">151 (83.4)</td>
+<td align="left">36 (85.7)</td>
+<td align="left">0.896</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td>physical_conditioning.factor = No (%)</td>
+<td align="left">126 (72.0)</td>
+<td align="left">24 (58.5)</td>
+<td align="left">0.135</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td>day_pack_features___1.factor = Checked (%)</td>
+<td align="left">171 (88.6)</td>
+<td align="left">35 (74.5)</td>
+<td align="left">0.024</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td>day_pack_features___2.factor = Checked (%)</td>
+<td align="left">129 (66.8)</td>
+<td align="left">30 (63.8)</td>
+<td align="left">0.826</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td>day_pack_features___3.factor = Checked (%)</td>
+<td align="left">156 (80.8)</td>
+<td align="left">25 (53.2)</td>
+<td align="left">&lt;0.001</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td>day_pack_features___4.factor = Checked (%)</td>
+<td align="left">67 (34.7)</td>
+<td align="left">16 (34.0)</td>
+<td align="left">1.000</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td>day_pack_features___5.factor = Checked (%)</td>
+<td align="left">5 ( 2.6)</td>
+<td align="left">1 ( 2.1)</td>
+<td align="left">1.000</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td>day_pack_features___6.factor = Checked (%)</td>
+<td align="left">118 (61.1)</td>
+<td align="left">23 (48.9)</td>
+<td align="left">0.174</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+</div>
 
 
 

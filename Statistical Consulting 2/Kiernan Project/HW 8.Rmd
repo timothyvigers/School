@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
+library(tableone)
+library(knitr)
 ```
 
 ```{r echo=FALSE,include=FALSE}
@@ -22,3 +24,28 @@ analysis_set <- data %>%
 ```
 
 This analysis started out with 293 responses in total. Of these, 5 were excluded because the participant did not agree to the terms and conditions. Of the remaining 288 participants, 266 answered that they had been hiking with a pack weighing 10 lbs or more in past 3 years. An additional participant was excluded for indicating that they are over 89 years of age. Out of the remaining 265 participants, 240 responded to the question about back pain in the past 3 years, so this was group was used as the final analysis cohort.
+
+### Table 2: Participants with pain while day hiking
+
+```{r echo=FALSE}
+# Those with pain
+with_pain_day_hike <- analysis_set %>%
+  filter(pain_while_packing___1 == 1)
+# Variables
+freq_vars <- c("choose_from_picture.factor","back_pain_frequency.factor")
+t2 <- CreateTableOne(freq_vars,data = with_pain_day_hike)
+kableone(t2)
+```
+
+### Table 3: Fitting statistics, stratified by pain while day hiking
+
+```{r echo=FALSE}
+# Variables
+vars <- c("prof_fit_for_day_pack.factor","physical_conditioning.factor",
+          "day_pack_features___1.factor","day_pack_features___2.factor",
+          "day_pack_features___3.factor","day_pack_features___4.factor",
+          "day_pack_features___5.factor","day_pack_features___6.factor")
+# Table
+t3 <- CreateTableOne(vars,strata = "pain_while_packing___1",data = analysis_set)
+kableone(t3)
+```
