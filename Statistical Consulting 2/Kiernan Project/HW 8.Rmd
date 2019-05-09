@@ -50,20 +50,28 @@ grViz("digraph flowchart {
 
 This analysis started out with 293 responses in total. Of these, 5 were excluded because the participant did not agree to the terms and conditions. Of the remaining 288 participants, 266 answered that they had been hiking with a pack weighing 10 lbs or more in past 3 years. An additional participant was excluded for indicating that they are over 89 years of age. Out of the remaining 265 participants, 240 responded to the question about back pain in the past 3 years, so this was group was used as the final analysis cohort.
 
-Participants who did not answer "Yes" to agree.factor, intro_backpack_in_3_yrs.factor, intro_age_18.factor, or intro_age_89.factor were also excluded. 
+Participants who did not answer "Yes" to the above questions were also excluded. 
 
-### Table 2: Participants with pain while day hiking (pain_while_packing___1 == 1)
+### Table 2: Descriptive statistics, participants with pain while day hiking
 
 ```{r echo=FALSE}
 # Those with pain
 with_pain_day_hike <- analysis_set %>%
-  filter(pain_while_packing___1 == 1)
+  filter(pain_while_packing___1 == 1 | pain_while_packing___3 == 1)
 # Variables
 freq_vars <- c("choose_from_picture.factor","back_pain_frequency.factor")
 t2 <- CreateTableOne(freq_vars,data = with_pain_day_hike)
-t2 <- print(t2,varLabels = T,printToggle=F)
+t2 <- print(t2,varLabels = T,printToggle=F,missing=T)
+# Rename rows
+rownames(t2) <- c("n","Pain Location n (%)","Neck","Mid back/shoulder blade",
+                  "Low back",
+                  "I do not experience back pain while day hiking with a pack",
+                  "Pain Frequency n (%)","Never","Rarely","Frequently","Always")
+colnames(t2) <- c("Overall","Data Missing (n)")
 kable(t2)
 ```
+
+Ninety seven out of the 240 participants in the analysis set experience pain while day hiking. Of these, the reported pain location was fairly evenly split betweenmid back (38.1%) and low back (39.2%). However, 2 participants then said they never experienced pain when choosing from the picture, and 5 said they never experienced pain in response to the frequency question, so there are some discrepancies in this self-reported data. 
 
 ### Table 3: Fitting statistics, stratified by pain while day hiking
 
@@ -73,15 +81,27 @@ vars <- c("prof_fit_for_day_pack.factor","physical_conditioning.factor",
           "day_pack_features___1.factor","day_pack_features___2.factor",
           "day_pack_features___3.factor","day_pack_features___4.factor",
           "day_pack_features___5.factor","day_pack_features___6.factor")
+# Create new pain while day hiking variable
+analysis_set$pain_while_day_hiking <- pmax(analysis_set$pain_while_packing___1,
+                                           analysis_set$pain_while_packing___3)
 # Table
-t3 <- CreateTableOne(vars,strata = "pain_while_packing___1",data = analysis_set)
-t3 <- print(t3,varLabels = T,printToggle=F)
-kable(t3[,1:2])
+t3 <- CreateTableOne(vars,strata = "pain_while_day_hiking",data = analysis_set)
+t3 <- print(t3,varLabels = T,printToggle=F,missing=T)
+# Rename rows and columns
+rownames(t3) <- c("n","Professional Fit = No n (%)",
+                  "Physical Conditioning = No n (%)","Hip Belt = Yes n (%)",
+                  "Load Lifters = Yes n (%)","Sternal Strap = Yes n (%)",
+                  "Adjustable Torso Length = Yes n (%)",
+                  "External Frame = Yes n (%)","Internal Frame = Yes n (%)")
+colnames(t3) <- c("No Pain","Pain","p","test","Data Missing (%)")
+kable(t3[,c(1,2,5)])
 ```
+
+Although significance testing was not performed, the proportions for all variables appear to be similar between those with and without back pain while day hiking. 
 
 ### Figure 1: Back pain severity by professional fit status
 
-```{r echo=FALSE,warning=FALSE}
+```{r echo=FALSE,warning=FALSE,dpi=600}
 plot <- ggplot(subset(analysis_set,!is.na(prof_fit_for_day_pack.factor)),
                aes(x=prof_fit_for_day_pack.factor,y=as.numeric(back_pain)))+
   geom_boxplot(outlier.colour = "red")+
@@ -91,6 +111,4 @@ plot <- ggplot(subset(analysis_set,!is.na(prof_fit_for_day_pack.factor)),
 plot
 ```
 
-Only 47 out of the 240 participants in the analysis set experience pain while day hiking. Of these, the majority (42.6 %) experience pain in their lower back and experience back pain frequently (50 %). However, 2 participants then said they never experienced pain when choosing from the picture, and 3 said they never experienced pain in response to the frequency question. 
-
-Interestingly, it appears from Figure 1 that the median and maximum back pain severity was slightly worse in those who had been professionally fit compared to those who were not (although significance testing was not performed). 
+Interestingly, it appears from Figure 1 that the median and maximum back pain severity was slightly worse in those who had been professionally fit compared to those who were not (although again significance testing was not performed). 

@@ -1,0 +1,38 @@
+---
+title: ""
+author: ""
+date: ""
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(tableone)
+library(DiagrammeR)
+library(knitr)
+```
+
+```{r echo=FALSE}
+grViz("digraph flowchart {
+      node [fontname = Helvetica, shape = rectangle]        
+      tab1 [label = '@@1']
+      tab2 [label = '@@2']
+      tab3 [label = '@@3']
+      tab4 [label = '@@4']
+      tab5 [label = '@@5']
+      tab6 [label = '@@6']
+
+      # edge definitions with the node IDs
+      tab1 -> tab2 -> tab3 -> tab4 -> tab5 -> tab6;
+      }
+
+      [1]: 'Participants responded to questionnaire n = 293'
+      [2]: 'Participants agreed to terms and conditions n = 288'
+      [3]: 'Participants had been hiking with a pack weighing 10 lbs or more in past 3 years n = 266'
+      [4]: 'Participants older than 18 and younger than 89 n=265'
+      [5]: 'Participants responded to the question about back pain in the past 3 years n = 240'
+      [6]: 'Analysis sample n = 240' 
+      ")
+```
