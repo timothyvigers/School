@@ -1,0 +1,35 @@
+---
+title: "Theory 2 Homework 12"
+author: "Tim Vigers"
+date: "5/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### C&B 10.9
+
+```{r}
+# Data
+mutants <- c(10,7,8,13,8,9,5,7,6,8,3,6,6,3,5)
+y <- sum(mutants)
+n <- length(mutants)
+bue <- ((n-1)/n)^y
+bue
+xbar <- mean(mutants)
+mle <- exp(-xbar)
+mle
+```
+
+### C&B Example 10.1.17 Plot
+
+```{r}
+# C&B Example 10.1.17
+lambda <- seq(0,10,by=0.01)
+var_naive <- exp(-lambda)*(1-exp(-lambda))
+var_mle <- lambda*exp(-2*lambda)
+are <- var_mle/var_naive
+plot(lambda,are,type = "l",xlab = expression(lambda),ylab = "ARE")
+```
