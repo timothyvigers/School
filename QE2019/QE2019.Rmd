@@ -2,11 +2,6 @@
 title: "Qualifying Exam 2019"
 author: "Exam #7"
 date: "6/1/2019"
-header-includes:
-- \usepackage{fancyhdr}
-- \pagestyle{fancy}
-- \fancyhead[CO,CE]{Exam 7}
-- \fancyfoot[LE,RO]{\thepage}
 output: pdf_document
 ---
 
@@ -28,7 +23,7 @@ hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_
 
 # Question 1
 
-## Number of meals involving fish as a positive test
+## a) Number of meals involving fish as a positive test
 
 ```{r echo=FALSE}
 # Create indicator variables and response
@@ -42,14 +37,14 @@ fish$meal14 <- ifelse(fish$fishmlwk >= 14,1,0)
 fish$meal21 <- ifelse(fish$fishmlwk >= 21,1,0)
 fish$response <- ifelse(fish$MeHg >= 8,1,0)
 # Create contingency tables
-ctable0 <- table(factor(fish$meal0,levels=0:1),factor(fish$response,levels=0:1))
-ctable1 <- table(fish$meal1,fish$response)
-ctable2 <- table(fish$meal2,fish$response)
-ctable3 <- table(fish$meal3,fish$response)
-ctable4 <- table(fish$meal4,fish$response)
-ctable7 <- table(fish$meal7,fish$response)
-ctable14 <- table(fish$meal14,fish$response)
-ctable21 <- table(fish$meal21,fish$response)
+ctable0 <- table(factor(fish$meal0,levels=1:0),factor(fish$response,levels=1:0))
+ctable1 <- table(factor(fish$meal1,levels=1:0),factor(fish$response,levels=1:0))
+ctable2 <- table(factor(fish$meal2,levels=1:0),factor(fish$response,levels=1:0))
+ctable3 <- table(factor(fish$meal3,levels=1:0),factor(fish$response,levels=1:0))
+ctable4 <- table(factor(fish$meal4,levels=1:0),factor(fish$response,levels=1:0))
+ctable7 <- table(factor(fish$meal7,levels=1:0),factor(fish$response,levels=1:0))
+ctable14 <- table(factor(fish$meal14,levels=1:0),factor(fish$response,levels=1:0))
+ctable21 <- table(factor(fish$meal21,levels=1:0),factor(fish$response,levels=1:0))
 # Make results table
 sens_spec_results <- as.data.frame(matrix(ncol = 2,nrow = 8))
 colnames(sens_spec_results) <- c("Sensitivity","Specificity")
@@ -104,3 +99,150 @@ sens_spec_results[">=21","Sensitivity"] <-
   round(sensspec21$elements$sensitivity$est*100,1)
 kable(sens_spec_results)
 ```
+
+## b) Appropriate thresholds
+
+Sensitivity refers to the true positive rate, or the probability that a test will rule in disease correctly. Specificity indicates the true negative rate, or the probability that a test will correctly rule out disease. Therefore, the probability of a false negative is 100 - sensitivity and the the false positive rate is 100 - specificity.
+
+### i. True positives
+
+If we want to maximize true positives while minimizing false positives, the optimal threshold is the one with the highest sensitivity and lowest 100 - specificity. A threshold of >= 3 meals per week including fish would provide a 100% true positive rate and a 72% false negative rate.
+
+### ii. True negatives
+
+Maximizing true negatives first and then true positives requires choosing the test with highest specificity and highest sensitivity. In this case a threshold of >= 21 meals including fish per week would provide a true negative detection rate of 93.6% and a true positive rate of 30%. 
+
+## c) Bootstrap sampling for >= 21 meals threshold
+
+```{r}
+# Vector for storing results
+set.seed(1234)
+B <- 10000
+sens_results <- numeric(B)
+spec_results <- numeric(B)
+# Loop
+for (i in 1:B) {
+  meals <- sample(fish$fishmlwk,replace = T)
+  meals <- ifelse(meals >= 21,1,0)
+  response <- sample(fish$MeHg,replace = T)
+  response <- ifelse(response >= 8,1,0)
+  table <- table(factor(meals,levels=1:0),factor(response,levels=1:0))
+  sens_results[i] <- (table[1,1]/sum(table[,1])) * 100
+  spec_results[i] <- (table[2,2]/sum(table[,2])) * 100
+}
+```
+
+### i. Plots
+
+```{r}
+# Plots
+hist(sens_results,main = "Sensitivity Bootstrap Distribution",xlab = "Sensitivity")
+hist(spec_results,main = "Specificity Bootstrap Distribution",xlab = "Specificity")
+```
+
+### ii. Mean, SE, and Bias From Bootstrap Distributions
+
+```{r echo=FALSE}
+boot_results <- as.data.frame(matrix(ncol = 3,nrow = 2))
+colnames(boot_results) <- c("Mean","Standard Error","Bias")
+rownames(boot_results) <- c("Sensitivity","Specificity")
+# Sensitivity
+boot_results["Sensitivity","Mean"] <- mean(sens_results)
+boot_results["Sensitivity","Standard Error"] <- 
+  sd(sens_results)/sqrt(length(sens_results))
+boot_results["Sensitivity","Bias"] <- 
+  mean(sens_results) - sensspec21$elements$sensitivity$est*100
+# Specificity
+boot_results["Specificity","Mean"] <- mean(spec_results)
+boot_results["Specificity","Standard Error"] <- 
+  sd(spec_results)/sqrt(length(spec_results))
+boot_results["Specificity","Bias"] <- 
+  mean(spec_results) - sensspec21$elements$specificity$est*100
+kable(boot_results)
+```
+
+### iii. 90% Bootstrap and Normal Percentile Confidence Intervals
+
+```{r}
+# Sensitivity
+# Normal percentiles
+L <- mean(sens_results) - (1.645 * sd(sens_results))
+L
+U <- mean(sens_results) + (1.645 * sd(sens_results))
+U
+# Coverage
+sum(sens_results < L)/B
+sum(sens_results > U)/B
+# Bootstrap percentiles
+quantile(sens_results,c(0.05,0.95))
+```
+
+The bootstrap distribution for sensitivity is not at all normal. The 90% confidence interval for this distribution using normal percentiles is (-7.00%,23.34%), which does not make sense as sensitivity cannot be negative. Also, none of the bootstrap values were below the lower limit (again, because this is impossible), when we'd expect that 5% would be for a normal distribution. So in this case it would probably be better to use the bootstrap confidence interval (0%,25%). 
+
+```{r}
+# Specificity
+# Normal percentiles
+Lc <- mean(spec_results) - (1.645 * sd(spec_results))
+Lc
+Uc <- mean(spec_results) + (1.645 * sd(spec_results))
+Uc
+# Coverage
+sum(spec_results < Lc)/B
+sum(spec_results > Uc)/B
+# Bootstrap percentiles
+quantile(spec_results,c(0.05,0.95))
+```
+
+The bootstrap distribution for specificity appears to be much closer to normal than sensitivity. The 90% normal percentile confidence interval is (87.92%,95.83%), which matches the bootstrap confidence interval very closely (87.80%,95.80%). Also, approximately 5% percent of the bootstrap values were below the lower limit and above the upper limit, which is what we would expect from a normal distribution.
+
+## d. 90% Confidence Intervals Using Exact and Asymptotic Methods
+
+### i. Sensitivity
+
+Clopper-Pearson Method
+
+$$
+\hat{p} = \frac{x}{n}\\
+0.3 = \frac{x}{135}\\
+x = 0.3*135 = 40.5
+$$
+
+$$
+\text{CI} = (\frac{x}{x+(n-x+1)F_{1-\frac{\alpha}{2};2(n-x+1),2x}},\frac{(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}}{(n-x)+(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}})
+$$
+
+```{r}
+n <- 135
+x <- 0.3 * 135
+L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
+L
+U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
+U
+```
+
+The Clopper-Pearson CI for sensitivity is (23.52%,37.15%). 
+
+### ii. Specificity
+
+#### 1. Clopper-Pearson Method
+
+$$
+\hat{p} = \frac{x}{n}\\
+0.936 = \frac{x}{135}\\
+x = 0.936*135 = 126.36
+$$
+
+$$
+\text{CI} = (\frac{x}{x+(n-x+1)F_{1-\frac{\alpha}{2};2(n-x+1),2x}},\frac{(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}}{(n-x)+(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}})
+$$
+
+```{r}
+n <- 135
+x <- 0.936*135
+L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
+L
+U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
+U
+```
+
+The Clopper-Pearson CI for specificity is (88.98%,96.67%).
