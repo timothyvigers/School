@@ -1,0 +1,106 @@
+---
+title: "Qualifying Exam 2019"
+author: "Exam #7"
+date: "6/1/2019"
+header-includes:
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhead[CO,CE]{Exam 7}
+- \fancyfoot[LE,RO]{\thepage}
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(Epi)
+library(epiR)
+library(ROC)
+library(tidyverse)
+```
+
+```{r echo=FALSE}
+# Import datasets
+fish <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/fishermen_mercury.csv")
+pcbs <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/pcb_conc.csv")
+hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv")
+```
+
+# Question 1
+
+## Number of meals involving fish as a positive test
+
+```{r echo=FALSE}
+# Create indicator variables and response
+fish$meal0 <- ifelse(fish$fishmlwk >= 0,1,0)
+fish$meal1 <- ifelse(fish$fishmlwk >= 1,1,0)
+fish$meal2 <- ifelse(fish$fishmlwk >= 2,1,0)
+fish$meal3 <- ifelse(fish$fishmlwk >= 3,1,0)
+fish$meal4 <- ifelse(fish$fishmlwk >= 4,1,0)
+fish$meal7 <- ifelse(fish$fishmlwk >= 7,1,0)
+fish$meal14 <- ifelse(fish$fishmlwk >= 14,1,0)
+fish$meal21 <- ifelse(fish$fishmlwk >= 21,1,0)
+fish$response <- ifelse(fish$MeHg >= 8,1,0)
+# Create contingency tables
+ctable0 <- table(factor(fish$meal0,levels=0:1),factor(fish$response,levels=0:1))
+ctable1 <- table(fish$meal1,fish$response)
+ctable2 <- table(fish$meal2,fish$response)
+ctable3 <- table(fish$meal3,fish$response)
+ctable4 <- table(fish$meal4,fish$response)
+ctable7 <- table(fish$meal7,fish$response)
+ctable14 <- table(fish$meal14,fish$response)
+ctable21 <- table(fish$meal21,fish$response)
+# Make results table
+sens_spec_results <- as.data.frame(matrix(ncol = 2,nrow = 8))
+colnames(sens_spec_results) <- c("Sensitivity","Specificity")
+rownames(sens_spec_results) <- c(">=0",">=1",">=2",">=3",">=4",">=7",">=14",">=21")
+```
+
+```{r}
+# epiR package for calculating sensitivity and specificity
+sensspec0 <- epi.tests(ctable0)
+sensspec1 <- epi.tests(ctable1)
+sensspec2 <- epi.tests(ctable2)
+sensspec3 <- epi.tests(ctable3)
+sensspec4 <- epi.tests(ctable4)
+sensspec7 <- epi.tests(ctable7)
+sensspec14 <- epi.tests(ctable14)
+sensspec21 <- epi.tests(ctable21)
+```
+
+```{r echo=FALSE}
+# Format results
+sens_spec_results[">=0","Specificity"] <- 
+  round(sensspec0$elements$specificity$est*100,1)
+sens_spec_results[">=0","Sensitivity"] <- 
+  round(sensspec0$elements$sensitivity$est*100,1)
+sens_spec_results[">=1","Specificity"] <- 
+  round(sensspec1$elements$specificity$est*100,1)
+sens_spec_results[">=1","Sensitivity"] <- 
+  round(sensspec1$elements$sensitivity$est*100,1)
+sens_spec_results[">=2","Specificity"] <- 
+  round(sensspec2$elements$specificity$est*100,1)
+sens_spec_results[">=2","Sensitivity"] <- 
+  round(sensspec2$elements$sensitivity$est*100,1)
+sens_spec_results[">=3","Specificity"] <- 
+  round(sensspec3$elements$specificity$est*100,1)
+sens_spec_results[">=3","Sensitivity"] <- 
+  round(sensspec3$elements$sensitivity$est*100,1)
+sens_spec_results[">=4","Specificity"] <- 
+  round(sensspec4$elements$specificity$est*100,1)
+sens_spec_results[">=4","Sensitivity"] <- 
+  round(sensspec4$elements$sensitivity$est*100,1)
+sens_spec_results[">=7","Specificity"] <- 
+  round(sensspec7$elements$specificity$est*100,1)
+sens_spec_results[">=7","Sensitivity"] <- 
+  round(sensspec7$elements$sensitivity$est*100,1)
+sens_spec_results[">=14","Specificity"] <- 
+  round(sensspec14$elements$specificity$est*100,1)
+sens_spec_results[">=14","Sensitivity"] <- 
+  round(sensspec14$elements$sensitivity$est*100,1)
+sens_spec_results[">=21","Specificity"] <- 
+  round(sensspec21$elements$specificity$est*100,1)
+sens_spec_results[">=21","Sensitivity"] <- 
+  round(sensspec21$elements$sensitivity$est*100,1)
+kable(sens_spec_results)
+```
