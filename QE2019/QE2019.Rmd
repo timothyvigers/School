@@ -8,9 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
-library(Epi)
 library(epiR)
-library(ROC)
 library(tidyverse)
 ```
 
@@ -360,3 +358,20 @@ An individual fisherman who eats 4 meals of whole fish each week will have a mer
 The confidence interval above gives us information about the average mercury level for fishermen who eat 4 meals of whole fish each week in the current sample. However, the prediction interval refers to the mercury level for a theoretical new study participant. So because we are trying to make inference about a broader population, we need to account for some uncertainty in our estimators, which results in a wider interval. 
 
 # Question 2
+
+## a. 
+
+```{r}
+l <- 0.001
+# Contamination and location as binary variables
+pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
+pcbs$location_num <- ifelse(pcbs$location == "Niagara",1,0)
+# Order by Yi so that the first 59 participants have Yi = 1
+pcbs_ordered <- pcbs[order(pcbs$Yi,decreasing = T),]
+xi <- pcbs$location_num
+# Log likelihood function
+logL <- function(theta){
+  -sum(log(1-pnorm((log(l)-theta[1]-theta[2]*xi[1:59]))/theta[3]))
+}
+nlm(logL,theta <- c(0,1), hessian=TRUE)
+```
