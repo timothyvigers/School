@@ -2,7 +2,7 @@
 title: "Qualifying Exam 2019"
 author: "Exam #7"
 date: "6/1/2019"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -202,9 +202,7 @@ The bootstrap distribution for specificity appears to be much closer to normal t
 Clopper-Pearson Method
 
 $$
-\hat{p} = \frac{x}{n}\\
-0.3 = \frac{x}{135}\\
-x = 0.3*135 = 40.5
+\hat{p} = \frac{3}{10}
 $$
 
 $$
@@ -212,24 +210,35 @@ $$
 $$
 
 ```{r}
-n <- 135
-x <- 0.3 * 135
+n <- sum(ctable21[,1])
+x <- ctable21[1,1]
 L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
 L
 U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
 U
 ```
 
-The Clopper-Pearson CI for sensitivity is (23.52%,37.15%). 
+2. Simple Asymptotic (Normal Approximation to the Binomial Distribution)
+
+$$
+\hat{p}\pm z_{1-\frac{\alpha}{2}} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
+$$
+
+```{r}
+n <- sum(ctable21[,1])
+phat <- 0.3
+L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+L
+U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+U 
+```
 
 ### ii. Specificity
 
 #### 1. Clopper-Pearson Method
 
 $$
-\hat{p} = \frac{x}{n}\\
-0.936 = \frac{x}{135}\\
-x = 0.936*135 = 126.36
+\hat{p} = \frac{117}{125}
 $$
 
 $$
@@ -237,12 +246,66 @@ $$
 $$
 
 ```{r}
-n <- 135
-x <- 0.936*135
+n <- sum(ctable21[,2])
+x <- ctable21[2,2]
 L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
 L
 U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
 U
 ```
 
-The Clopper-Pearson CI for specificity is (88.98%,96.67%).
+2. Simple Asymptotic (Normal Approximation to the Binomial Distribution)
+
+$$
+\hat{p}\pm z_{1-\frac{\alpha}{2}}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
+$$
+
+```{r}
+n <- sum(ctable21[,2])
+phat <- 0.936
+L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+L
+U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+U 
+```
+
+The Clopper-Pearson CI for sensitivity is (8.73%,60.66%). The simple asymptotic CI for sensitivity is (6.16%,53.84%). The Clopper-Pearson CI for specificity is (88.75%,96.78%). The simple asymptotic CI for specificity is (90.00%,97.20%). 
+
+In general, the normal approximation works best for large sample sizes. Although as a general rule of thumb the Central Limit Theorem applies to sample sizes over 30, the boostrap distribution of sensitivity was not normally distributed so I would use the exact confidence interval in this case. 
+
+Confidence intervals are essentially the range for a parameter that is consistent with the data. So based on the exact confidence intervals, if we were to repeat this experiment many times, sensitivity for this test would be between 8.73% and 60.66% in 90% of those experiments.
+
+## e. Linear Regression
+
+### i. Model Equation
+
+$$
+\hat{MeHg} = \hat{\beta_0} + \hat{\beta}_1X_{\text{fisherman}}+ \hat{\beta}_2X_{\text{fish meals per week}}+\hat{\beta}_3X_{\text{fish parts=1}}+\hat{\beta}_4X_{\text{fish parts=2}}+\hat{\beta}_5X_{\text{fish parts=3}}
+$$
+
+In the model above, $\hat{\beta}_1$ is the estimate for the effect of being a fisherman on mercury levels. $\hat{\beta}_2$ is the estimated effect of the number of fish meals per week on mercury levels. In this model we are treating the number of fish meals per week as continuous. $\hat{\beta}_3$,$\hat{\beta}_4$, and $\hat{\beta}_5$ are the estimated effect of eating muscle tissue only, muscle tissue and sometimes the whole fish, or the whole fish (respectively). $\hat{\beta}_0$, the intercept, is the average mercury level for someone who is not a fisherman, eats 0 fish meals per week, and do not consume any fish parts.
+
+### ii. Results
+
+```{r}
+lin_mod <- lm(MeHg ~ factor(fisherman)+fishmlwk+factor(fishpart),data = fish)
+results <- as.data.frame(summary(lin_mod)$coefficients)
+rownames(results) <- c("Intercept","Fisherman = Yes",
+                       "Fish Meals per Week","Fish Part = Muscle",
+                       "Fish Part = Muscle and Whole",
+                       "Fish Part = Whole")
+kable(results)
+```
+
+### iii. Summary
+
+On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,1.714), but this relationship is not statiostically significant (p = 0.740).
+
+## f. Confidence Intervals with Matrices
+
+$$
+\textbf{a} = \begin{pmatrix}
+1&1&4&0&0&1
+\end{pmatrix}\\
+\pmb\beta
+$$
