@@ -2,21 +2,24 @@
 title: "Qualifying Exam 2019"
 author: "Exam #7"
 date: "6/1/2019"
-output: html_document
+output: pdf_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup,include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(epiR)
-library(tinytex)
+library(ggplot2)
+library(lme4)
+library(nlme)
 ```
 
 ```{r echo=FALSE}
 # Import datasets
 fish <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/fishermen_mercury.csv")
 pcbs <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/pcb_conc.csv")
-hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv")
+hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv",header = F)
+colnames(hiv) <- c("pid","trt","week","logvl")
 ```
 
 # Question 1
@@ -50,7 +53,7 @@ rownames(sens_spec_results) <- c(">=0",">=1",">=2",">=3",">=4",">=7",">=14",">=2
 ```
 
 ```{r}
-# epiR package for calculating sensitivity and specificity
+# epiR package for calculating sensitivity and specificity using contingency tables
 sensspec0 <- epi.tests(ctable0)
 sensspec1 <- epi.tests(ctable1)
 sensspec2 <- epi.tests(ctable2)
@@ -112,7 +115,7 @@ Maximizing true negatives first and then true positives requires choosing the te
 
 ## c) Bootstrap sampling for >= 21 meals threshold
 
-```{r}
+```{r echo=FALSE}
 # Vector for storing results
 set.seed(1234)
 B <- 10000
@@ -132,13 +135,17 @@ for (i in 1:B) {
 
 ### i. Plots
 
-```{r}
-# Plots
+```{r echo=FALSE}
 hist(sens_results,main = "Sensitivity Bootstrap Distribution",xlab = "Sensitivity")
+```
+
+```{r echo=FALSE}
 hist(spec_results,main = "Specificity Bootstrap Distribution",xlab = "Specificity")
 ```
 
 ### ii. Mean, SE, and Bias From Bootstrap Distributions
+
+# TALK ABOUT THESE RESULTS
 
 ```{r echo=FALSE}
 boot_results <- as.data.frame(matrix(ncol = 3,nrow = 2))
@@ -161,117 +168,88 @@ kable(boot_results)
 
 ### iii. 90% Bootstrap and Normal Percentile Confidence Intervals
 
-```{r}
+```{r include=FALSE}
 # Sensitivity
 # Normal percentiles
 L <- mean(sens_results) - (1.645 * sd(sens_results))
-L
 U <- mean(sens_results) + (1.645 * sd(sens_results))
-U
-# Coverage
-sum(sens_results < L)/B
-sum(sens_results > U)/B
-# Bootstrap percentiles
-quantile(sens_results,c(0.05,0.95))
-```
-
-The bootstrap distribution for sensitivity is not at all normal. The 90% confidence interval for this distribution using normal percentiles is (-7.00%,23.34%), which does not make sense as sensitivity cannot be negative. Also, none of the bootstrap values were below the lower limit (again, because this is impossible), when we'd expect that 5% would be for a normal distribution. So in this case it would probably be better to use the bootstrap confidence interval (0%,25%). 
-
-```{r}
 # Specificity
 # Normal percentiles
 Lc <- mean(spec_results) - (1.645 * sd(spec_results))
-Lc
 Uc <- mean(spec_results) + (1.645 * sd(spec_results))
-Uc
-# Coverage
-sum(spec_results < Lc)/B
-sum(spec_results > Uc)/B
-# Bootstrap percentiles
-quantile(spec_results,c(0.05,0.95))
+# Results table
+results <- as.data.frame(matrix(ncol = 3,nrow = 2))
+rownames(results) <- c("Sensitivity","Specificity")
+colnames(results) <- c("Normal Percentile","Coverage","Bootstrap CI")
+L <- round(L,2)
+U <- round(U,2)
+Lc <- round(Lc,2)
+Uc <- round(Uc,2)
+results["Sensitivity",] <- 
+  c(paste0(L,"%, ",U,"%"),
+    paste0(round(sum(sens_results < L)/B * 100,2),"%, ",
+           round(sum(sens_results > U)/B * 100,2),"%"),
+    paste0(paste(round(quantile(sens_results,c(0.05,0.95)),2),collapse = "%, "),"%"))
+results["Specificity",] <- 
+  c(paste0(Lc,"%, ",Uc,"%"),
+    paste0(round(sum(spec_results < Lc)/B * 100,2),"%, ",
+           round(sum(spec_results > Uc)/B * 100,2),"%"),
+    paste0(paste(round(quantile(spec_results,c(0.05,0.95)),2),collapse = "%, "),"%"))
 ```
 
-The bootstrap distribution for specificity appears to be much closer to normal than sensitivity. The 90% normal percentile confidence interval is (87.92%,95.83%), which matches the bootstrap confidence interval very closely (87.80%,95.80%). Also, approximately 5% percent of the bootstrap values were below the lower limit and above the upper limit, which is what we would expect from a normal distribution.
+```{r echo=FALSE}
+kable(results)
+```
+
+The bootstrap distribution for sensitivity is not at all normal. The 90% confidence interval for this distribution using normal percentiles is (-7.00%, 23.34%), which does not make sense as sensitivity cannot be negative. Also, none of the bootstrap values were below the lower limit (again, because this is impossible), when we'd expect that 5% would be for a normal distribution. So in this case it would probably be better to use the bootstrap confidence interval (0%, 25%). 
+
+The bootstrap distribution for specificity appears to be much closer to normal than for sensitivity. The 90% normal percentile confidence interval is (87.92%, 95.83%), which matches the bootstrap confidence interval very closely (87.80%, 95.80%). Also, approximately 5% percent of the bootstrap values were in each tail, which is what we would expect from a normal distribution.
 
 ## d. 90% Confidence Intervals Using Exact and Asymptotic Methods
 
-### i. Sensitivity
-
-Clopper-Pearson Method
-
-$$
-\hat{p} = \frac{3}{10}
-$$
-
-$$
-\text{CI} = (\frac{x}{x+(n-x+1)F_{1-\frac{\alpha}{2};2(n-x+1),2x}},\frac{(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}}{(n-x)+(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}})
-$$
-
-```{r}
+```{r include=FALSE}
+# Sensitivity
+# Clopper-Pearson
+results <- as.data.frame(matrix(ncol = 2,nrow = 2))
+rownames(results) <- c("Sensitivity","Specificity")
+colnames(results) <- c("Clopper-Pearson","Simple Asymptotic")
 n <- sum(ctable21[,1])
 x <- ctable21[1,1]
 L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
-L
 U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
-U
-```
-
-2. Simple Asymptotic (Normal Approximation to the Binomial Distribution)
-
-$$
-\hat{p}\pm z_{1-\frac{\alpha}{2}} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
-$$
-
-```{r}
+results["Sensitivity",1] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Simple asymptotic
 n <- sum(ctable21[,1])
 phat <- 0.3
 L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
-L
 U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
-U 
-```
-
-### ii. Specificity
-
-#### 1. Clopper-Pearson Method
-
-$$
-\hat{p} = \frac{117}{125}
-$$
-
-$$
-\text{CI} = (\frac{x}{x+(n-x+1)F_{1-\frac{\alpha}{2};2(n-x+1),2x}},\frac{(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}}{(n-x)+(x+1)F_{1-\frac{\alpha}{2};2(x+1),2(n-x)}})
-$$
-
-```{r}
+results["Sensitivity",2] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Specificity
+# Clopper-Pearson
 n <- sum(ctable21[,2])
 x <- ctable21[2,2]
 L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
-L
 U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
-U
-```
-
-2. Simple Asymptotic (Normal Approximation to the Binomial Distribution)
-
-$$
-\hat{p}\pm z_{1-\frac{\alpha}{2}}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
-$$
-
-```{r}
+results["Specificity",1] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Simple asymptotic
 n <- sum(ctable21[,2])
 phat <- 0.936
 L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
-L
 U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
-U 
+results["Specificity",2] <- paste0(round(L,2),"%, ",round(U,2),"%")
 ```
 
-The Clopper-Pearson CI for sensitivity is (8.73%,60.66%). The simple asymptotic CI for sensitivity is (6.16%,53.84%). The Clopper-Pearson CI for specificity is (88.75%,96.78%). The simple asymptotic CI for specificity is (90.00%,97.20%). 
+```{r echo=FALSE}
+kable(results)
+```
+
+The Clopper-Pearson CI for sensitivity is (8.73%,60.66%). The simple asymptotic CI for sensitivity is (6.16%,53.84%). The Clopper-Pearson CI for specificity is (88.75%, 96.78%). The simple asymptotic CI for specificity is (90.00%, 97.20%). 
 
 In general, the normal approximation works best for large sample sizes. Although as a general rule of thumb the Central Limit Theorem applies to sample sizes over 30, the boostrap distribution of sensitivity was not normally distributed so I would use the exact confidence interval in this case. 
 
 Confidence intervals are essentially the range for a parameter that is consistent with the data. So based on the exact confidence intervals, if we were to repeat this experiment many times, sensitivity for this test would be between 8.73% and 60.66% in 90% of those experiments.
+
+\pagebreak
 
 ## e. Linear Regression
 
@@ -281,11 +259,11 @@ $$
 \hat{MeHg} = \hat{\beta_0} + \hat{\beta}_1X_{\text{fisherman}}+ \hat{\beta}_2X_{\text{fish meals per week}}+\hat{\beta}_3X_{\text{fish parts=1}}+\hat{\beta}_4X_{\text{fish parts=2}}+\hat{\beta}_5X_{\text{fish parts=3}}
 $$
 
-In the model above, $\hat{\beta}_1$ is the estimate for the effect of being a fisherman on mercury levels. $\hat{\beta}_2$ is the estimated effect of the number of fish meals per week on mercury levels. In this model we are treating the number of fish meals per week as continuous. $\hat{\beta}_3$,$\hat{\beta}_4$, and $\hat{\beta}_5$ are the estimated effect of eating muscle tissue only, muscle tissue and sometimes the whole fish, or the whole fish (respectively). $\hat{\beta}_0$, the intercept, is the average mercury level for someone who is not a fisherman, eats 0 fish meals per week, and do not consume any fish parts.
+In the model above, $\hat{\beta}_1$ is the estimate for the effect of being a fisherman on mercury levels. $\hat{\beta}_2$ is the estimated effect of the number of fish meals per week on mercury levels. In this model we are treating the number of fish meals per week as continuous. $\hat{\beta}_3$, $\hat{\beta}_4$, and $\hat{\beta}_5$ are the estimated effect of eating muscle tissue only, muscle tissue and sometimes the whole fish, or the whole fish (respectively). $\hat{\beta}_0$, the intercept, is the average mercury level for someone who is not a fisherman, eats 0 fish meals per week, and do not consume any fish parts.
 
 ### ii. Results
 
-```{r}
+```{r echo=FALSE}
 lin_mod <- lm(MeHg ~ factor(fisherman)+fishmlwk+factor(fishpart),data = fish)
 results <- as.data.frame(summary(lin_mod)$coefficients)
 rownames(results) <- c("Intercept","Fisherman = Yes",
@@ -297,7 +275,7 @@ kable(results)
 
 ### iii. Summary
 
-On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,1.714), but this relationship is not statiostically significant (p = 0.740).
+On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,1.714), but this relationship is not statistically significant (p = 0.740).
 
 ## f. Fishermen Who Eat 4 Meals of Whole Fish Each Week
 
@@ -306,13 +284,331 @@ On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,
 $$
 \textbf{a} = \begin{pmatrix}
 1&1&4&0&0&1
-\end{pmatrix}\\\\
+\end{pmatrix}
+$$
+$$
 \pmb\beta=\begin{pmatrix}
 0.904&0.246&0.096&3.061&1.676&3.009
-\end{pmatrix}\\\\
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
-\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
+\end{pmatrix}
 $$
+$$
+\hat{Y} = \textbf{a}^{\text{T}}\pmb\beta=4.543
+$$
+$$
+\text{CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^{\text{T}}(\textbf{X}^{\text{T}}\textbf{X})^{-1}\textbf{a}}
+$$
+
+```{r include=FALSE}
+a <- matrix(c(1,1,4,0,0,1))
+b <- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat <- t(a)%*%b
+mse <- mean(lin_mod$residuals^2)
+t <- qt(0.1/2,133,lower.tail = F)
+x <- model.matrix(lin_mod)
+L <- yhat - t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+U <- yhat + t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+```
+
+On average, fishermen who eat 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: 3.071,6.019).
+
+### ii. Individual
+
+$$
+\hat{Y} = \textbf{a}^{\text{T}}\pmb\beta=4.543
+$$
+$$
+\text{CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^{\text{T}}(\textbf{X}^{\text{T}}\textbf{X})^{-1}\textbf{a})}
+$$
+
+```{r include=FALSE}
+a <- matrix(c(1,1,4,0,0,1))
+b <- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat <- t(a)%*%b
+mse <- mean(lin_mod$residuals^2)
+t <- qt(0.1/2,133,lower.tail = F)
+x <- model.matrix(lin_mod)
+L <- yhat - t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+```
+
+An individual fisherman who eats 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: -0.011,9.102).
+
+### iii. Prediction Interval vs. Confidence interval
+
+The confidence interval above gives us information about the average mercury level for fishermen who eat 4 meals of whole fish each week in the current sample. However, the prediction interval refers to the mercury level for a theoretical new study participant. So because we are trying to make inference about a broader population, we need to account for some uncertainty in our estimators, which results in a wider interval.
+
+# Question 2
+
+## a.
+
+# What restriction allows it to be identified? Betas are the restricted parameters.
+
+$$
+log(Y_i^*) \text{~}N(\beta_0+\beta_1X_i,\sigma^2)
+$$
+$$
+Yi = 1\text{ when }Y_i^* > l=0.001
+$$
+$$
+Yi = 1\text{ when }log(Y_i^*) > log(l)
+$$
+$$
+P(log(Y_i^*) > log(l)) = 1-P(log(Y_i^*)\leq log(l))
+$$
+$$
+=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})
+$$
+$$
+= 1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})
+$$
+$$
+\text{Set }P(log(Y_i^*) > log(l)) = \theta_i
+$$
+$$
+Y_i\text{~ Bernoulli}(\theta_i)
+$$
+
+Calculate the log likelihood of Yi:
+
+$$
+L(Y|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}
+$$
+$$
+logL(Y|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)
+$$
+$$
+= \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
+$$
+
+This is a probit regression model, so we can use glm() to calculate the coefficient estimates and their standard error:
+
+```{r echo=FALSE}
+# Contamination as binary variable
+pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
+```
+
+```{r}
+probit_mod <-
+  glm(Yi ~ factor(location), family = binomial(link = "probit"), data = pcbs)
+```
+
+```{r echo=FALSE}
+kable(summary(probit_mod)$coefficients)
+```
+
+## b.
+
+
+
+# Question 3
+
+```{r}
+cat_mod <- lmer(logvl~trt*week+(1|pid),data=hiv)
+cat_mod <- lme(logvl~trt*week,random = ~1|pid,data=hiv)
+summary(cat_mod)$tTable
+```
+
+
+
+
+# Appendix
+
+### Import and format data
+
+```{r}
+# Import datasets
+fish <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/fishermen_mercury.csv")
+pcbs <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/pcb_conc.csv")
+hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv",header = F)
+colnames(hiv) <- c("pid","trt","week","logvl")
+```
+
+## Question 1
+
+### Create dummy variables for fish data
+
+```{r}
+# Create indicator variables and response
+fish$meal0 <- ifelse(fish$fishmlwk >= 0,1,0)
+fish$meal1 <- ifelse(fish$fishmlwk >= 1,1,0)
+fish$meal2 <- ifelse(fish$fishmlwk >= 2,1,0)
+fish$meal3 <- ifelse(fish$fishmlwk >= 3,1,0)
+fish$meal4 <- ifelse(fish$fishmlwk >= 4,1,0)
+fish$meal7 <- ifelse(fish$fishmlwk >= 7,1,0)
+fish$meal14 <- ifelse(fish$fishmlwk >= 14,1,0)
+fish$meal21 <- ifelse(fish$fishmlwk >= 21,1,0)
+fish$response <- ifelse(fish$MeHg >= 8,1,0)
+# Create contingency tables
+ctable0 <- table(factor(fish$meal0,levels=1:0),factor(fish$response,levels=1:0))
+ctable1 <- table(factor(fish$meal1,levels=1:0),factor(fish$response,levels=1:0))
+ctable2 <- table(factor(fish$meal2,levels=1:0),factor(fish$response,levels=1:0))
+ctable3 <- table(factor(fish$meal3,levels=1:0),factor(fish$response,levels=1:0))
+ctable4 <- table(factor(fish$meal4,levels=1:0),factor(fish$response,levels=1:0))
+ctable7 <- table(factor(fish$meal7,levels=1:0),factor(fish$response,levels=1:0))
+ctable14 <- table(factor(fish$meal14,levels=1:0),factor(fish$response,levels=1:0))
+ctable21 <- table(factor(fish$meal21,levels=1:0),factor(fish$response,levels=1:0))
+# Make results table
+sens_spec_results <- as.data.frame(matrix(ncol = 2,nrow = 8))
+colnames(sens_spec_results) <- c("Sensitivity","Specificity")
+rownames(sens_spec_results) <- c(">=0",">=1",">=2",">=3",">=4",">=7",">=14",">=21")
+```
+
+### Format sensitivity and specificity results
+
+```{r}
+# Format results
+sens_spec_results[">=0","Specificity"] <-
+  round(sensspec0$elements$specificity$est*100,1)
+sens_spec_results[">=0","Sensitivity"] <-
+  round(sensspec0$elements$sensitivity$est*100,1)
+sens_spec_results[">=1","Specificity"] <-
+  round(sensspec1$elements$specificity$est*100,1)
+sens_spec_results[">=1","Sensitivity"] <-
+  round(sensspec1$elements$sensitivity$est*100,1)
+sens_spec_results[">=2","Specificity"] <-
+  round(sensspec2$elements$specificity$est*100,1)
+sens_spec_results[">=2","Sensitivity"] <-
+  round(sensspec2$elements$sensitivity$est*100,1)
+sens_spec_results[">=3","Specificity"] <-
+  round(sensspec3$elements$specificity$est*100,1)
+sens_spec_results[">=3","Sensitivity"] <-
+  round(sensspec3$elements$sensitivity$est*100,1)
+sens_spec_results[">=4","Specificity"] <-
+  round(sensspec4$elements$specificity$est*100,1)
+sens_spec_results[">=4","Sensitivity"] <-
+  round(sensspec4$elements$sensitivity$est*100,1)
+sens_spec_results[">=7","Specificity"] <-
+  round(sensspec7$elements$specificity$est*100,1)
+sens_spec_results[">=7","Sensitivity"] <-
+  round(sensspec7$elements$sensitivity$est*100,1)
+sens_spec_results[">=14","Specificity"] <-
+  round(sensspec14$elements$specificity$est*100,1)
+sens_spec_results[">=14","Sensitivity"] <-
+  round(sensspec14$elements$sensitivity$est*100,1)
+sens_spec_results[">=21","Specificity"] <-
+  round(sensspec21$elements$specificity$est*100,1)
+sens_spec_results[">=21","Sensitivity"] <-
+  round(sensspec21$elements$sensitivity$est*100,1)
+```
+
+### Bootstrap
+```{r}
+# Vector for storing results
+set.seed(1234)
+B <- 10000
+sens_results <- numeric(B)
+spec_results <- numeric(B)
+# Loop
+for (i in 1:B) {
+  meals <- sample(fish$fishmlwk,replace = T)
+  meals <- ifelse(meals >= 21,1,0)
+  response <- sample(fish$MeHg,replace = T)
+  response <- ifelse(response >= 8,1,0)
+  table <- table(factor(meals,levels=1:0),factor(response,levels=1:0))
+  sens_results[i] <- (table[1,1]/sum(table[,1])) * 100
+  spec_results[i] <- (table[2,2]/sum(table[,2])) * 100
+}
+```
+
+### Mean, SE, and Bias for Bootstrap Distributions
+
+```{r}
+boot_results <- as.data.frame(matrix(ncol = 3,nrow = 2))
+colnames(boot_results) <- c("Mean","Standard Error","Bias")
+rownames(boot_results) <- c("Sensitivity","Specificity")
+# Sensitivity
+boot_results["Sensitivity","Mean"] <- mean(sens_results)
+boot_results["Sensitivity","Standard Error"] <-
+  sd(sens_results)/sqrt(length(sens_results))
+boot_results["Sensitivity","Bias"] <-
+  mean(sens_results) - sensspec21$elements$sensitivity$est*100
+# Specificity
+boot_results["Specificity","Mean"] <- mean(spec_results)
+boot_results["Specificity","Standard Error"] <-
+  sd(spec_results)/sqrt(length(spec_results))
+boot_results["Specificity","Bias"] <-
+  mean(spec_results) - sensspec21$elements$specificity$est*100
+```
+
+### Bootstrap and Normal Percentile Confidence Intervals
+
+```{r}
+# Sensitivity
+# Normal percentiles
+L <- mean(sens_results) - (1.645 * sd(sens_results))
+U <- mean(sens_results) + (1.645 * sd(sens_results))
+# Specificity
+# Normal percentiles
+Lc <- mean(spec_results) - (1.645 * sd(spec_results))
+Uc <- mean(spec_results) + (1.645 * sd(spec_results))
+# Results table
+results <- as.data.frame(matrix(ncol = 3,nrow = 2))
+rownames(results) <- c("Sensitivity","Specificity")
+colnames(results) <- c("Normal Percentile","Coverage","Bootstrap CI")
+L <- round(L,2)
+U <- round(U,2)
+Lc <- round(Lc,2)
+Uc <- round(Uc,2)
+results["Sensitivity",] <-
+  c(paste0(L,"%, ",U,"%"),
+    paste0(round(sum(sens_results < L)/B * 100,2),"%, ",
+           round(sum(sens_results > U)/B * 100,2),"%"),
+    paste0(paste(round(quantile(sens_results,c(0.05,0.95)),2),collapse = "%, "),"%"))
+results["Specificity",] <-
+  c(paste0(Lc,"%, ",Uc,"%"),
+    paste0(round(sum(spec_results < Lc)/B * 100,2),"%, ",
+           round(sum(spec_results > Uc)/B * 100,2),"%"),
+    paste0(paste(round(quantile(spec_results,c(0.05,0.95)),2),collapse = "%, "),"%"))
+```
+
+### 90% Confidence Intervals Using Exact and Asymptotic Methods
+
+```{r}
+# Sensitivity
+# Clopper-Pearson
+results <- as.data.frame(matrix(ncol = 2,nrow = 2))
+rownames(results) <- c("Sensitivity","Specificity")
+colnames(results) <- c("Clopper-Pearson","Simple Asymptotic")
+n <- sum(ctable21[,1])
+x <- ctable21[1,1]
+L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
+U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
+results["Sensitivity",1] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Simple asymptotic
+n <- sum(ctable21[,1])
+phat <- 0.3
+L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+results["Sensitivity",2] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Specificity
+# Clopper-Pearson
+n <- sum(ctable21[,2])
+x <- ctable21[2,2]
+L <- x/(x+((n-x+1)*qf(0.95,(2*(n-x+1)),2*x))) * 100
+U <- (x+1)*qf(0.95,(2*(x+1)),2*(n-x))/((n-x)+(x+1)*qf(0.95,(2*(x+1)),2*(n-x))) * 100
+results["Specificity",1] <- paste0(round(L,2),"%, ",round(U,2),"%")
+# Simple asymptotic
+n <- sum(ctable21[,2])
+phat <- 0.936
+L <- (phat - qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+U <- (phat + qnorm(0.95)*sqrt((phat*(1-phat))/n))*100
+results["Specificity",2] <- paste0(round(L,2),"%, ",round(U,2),"%")
+```
+
+### Linear Model
+
+```{r}
+lin_mod <- lm(MeHg ~ factor(fisherman)+fishmlwk+factor(fishpart),data = fish)
+results <- as.data.frame(summary(lin_mod)$coefficients)
+rownames(results) <- c("Intercept","Fisherman = Yes",
+                       "Fish Meals per Week","Fish Part = Muscle",
+                       "Fish Part = Muscle and Whole",
+                       "Fish Part = Whole")
+```
+
+### Confidence and Prediction Intervals
+
+Confidence
 
 ```{r}
 a <- matrix(c(1,1,4,0,0,1))
@@ -323,19 +619,9 @@ t <- qt(0.1/2,133,lower.tail = F)
 x <- model.matrix(lin_mod)
 L <- yhat - t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
 U <- yhat + t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
-yhat
-L
-U
 ```
 
-On average, fishermen who eat 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: 3.071,6.019). 
-
-### ii. Individual
-
-$$
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
-\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
-$$
+Prediction
 
 ```{r}
 a <- matrix(c(1,1,4,0,0,1))
@@ -346,49 +632,14 @@ t <- qt(0.1/2,133,lower.tail = F)
 x <- model.matrix(lin_mod)
 L <- yhat - t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
 U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
-yhat
-L
-U
 ```
 
-An individual fisherman who eats 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: -0.011,9.102).
 
-### iii. Prediction Interval vs. Confidence interval
+## Question 2
 
-The confidence interval above gives us information about the average mercury level for fishermen who eat 4 meals of whole fish each week in the current sample. However, the prediction interval refers to the mercury level for a theoretical new study participant. So because we are trying to make inference about a broader population, we need to account for some uncertainty in our estimators, which results in a wider interval. 
-
-# Question 2
-
-## a. 
-
-What restriction allows it to be identified? Betas are the restricted parameters.
-
-$$
-log(Y_i^*) \text{~}N(\beta_0+\beta_1X_i,\sigma^2)\\
-Yi = 1\text{ when }Y_i^* > l=0.001\\
-Yi = 1\text{ when }log(Y_i^*) > log(l)\\
-P(log(Y_i^*) > log(l)) = 1-P(log(Y_i^*)\leq log(l))\\
-=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
-= 1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
-\text{Set }P(log(Y_i^*) > log(l)) = \theta_i\\
-Y_i\text{~ Bernoulli}(\theta_i)
-$$
-
-Calculate the log likelihood of Yi:
-
-$$
-L(Y|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}\\
-logL(Y|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)\\
-= \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
-$$
-
-This is a probit regression model, so we can use glm() to calculate the coefficient estimates and their standard error:
+### Format data
 
 ```{r}
 # Contamination as binary variable
 pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
-# Probit model
-probit_mod <- 
-  glm(Yi ~ factor(location), family = binomial(link = "probit"), data = pcbs)
-kable(summary(probit_mod)$coefficients)
 ```
