@@ -701,8 +701,68 @@ kable(results)</code></pre>
 <p>On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,1.714), but this relationship is not statiostically significant (p = 0.740).</p>
 </div>
 </div>
-<div id="f.-confidence-intervals-with-matrices" class="section level2">
-<h2>f. Confidence Intervals with Matrices</h2>
+<div id="f.-fishermen-who-eat-4-meals-of-whole-fish-each-week" class="section level2">
+<h2>f. Fishermen Who Eat 4 Meals of Whole Fish Each Week</h2>
+<div id="i.-average" class="section level3">
+<h3>i. Average</h3>
+<p><span class="math display">\[
+\textbf{a} = \begin{pmatrix}
+1&amp;1&amp;4&amp;0&amp;0&amp;1
+\end{pmatrix}\\
+\pmb\beta=\begin{pmatrix}
+0.904&amp;0.246&amp;0.096&amp;3.061&amp;1.676&amp;3.009
+\end{pmatrix}\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
+\]</span></p>
+<pre class="r"><code>a &lt;- matrix(c(1,1,4,0,0,1))
+b &lt;- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat &lt;- t(a)%*%b
+mse &lt;- mean(lin_mod$residuals^2)
+t &lt;- qt(0.1/2,133,lower.tail = F)
+x &lt;- model.matrix(lin_mod)
+L &lt;- yhat - t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+U &lt;- yhat + t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+yhat</code></pre>
+<pre><code>##          [,1]
+## [1,] 4.545547</code></pre>
+<pre class="r"><code>L</code></pre>
+<pre><code>##          [,1]
+## [1,] 3.071664</code></pre>
+<pre class="r"><code>U</code></pre>
+<pre><code>##          [,1]
+## [1,] 6.019431</code></pre>
+<p>On average, fishermen who eat 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: 3.071,6.019).</p>
+</div>
+<div id="ii.-individual" class="section level3">
+<h3>ii. Individual</h3>
+<p><span class="math display">\[
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
+\]</span></p>
+<pre class="r"><code>a &lt;- matrix(c(1,1,4,0,0,1))
+b &lt;- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat &lt;- t(a)%*%b
+mse &lt;- mean(lin_mod$residuals^2)
+t &lt;- qt(0.1/2,133,lower.tail = F)
+x &lt;- model.matrix(lin_mod)
+L &lt;- yhat - t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+U &lt;- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+yhat</code></pre>
+<pre><code>##          [,1]
+## [1,] 4.545547</code></pre>
+<pre class="r"><code>L</code></pre>
+<pre><code>##             [,1]
+## [1,] -0.01074342</code></pre>
+<pre class="r"><code>U</code></pre>
+<pre><code>##          [,1]
+## [1,] 9.101838</code></pre>
+<p>An individual fisherman who eats 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: -0.011,9.102).</p>
+</div>
+<div id="iii.-prediction-interval-vs.confidence-interval" class="section level3">
+<h3>iii. Prediction Interval vs. Confidence interval</h3>
+<p>The confidence interval above indicates the</p>
+</div>
 </div>
 </div>
 

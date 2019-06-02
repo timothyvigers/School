@@ -301,11 +301,62 @@ kable(results)
 
 On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,1.714), but this relationship is not statiostically significant (p = 0.740).
 
-## f. Confidence Intervals with Matrices
+## f. Fishermen Who Eat 4 Meals of Whole Fish Each Week
+
+### i. Average
 
 $$
 \textbf{a} = \begin{pmatrix}
 1&1&4&0&0&1
 \end{pmatrix}\\
-\pmb\beta
+\pmb\beta=\begin{pmatrix}
+0.904&0.246&0.096&3.061&1.676&3.009
+\end{pmatrix}\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
 $$
+
+```{r}
+a <- matrix(c(1,1,4,0,0,1))
+b <- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat <- t(a)%*%b
+mse <- mean(lin_mod$residuals^2)
+t <- qt(0.1/2,133,lower.tail = F)
+x <- model.matrix(lin_mod)
+L <- yhat - t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+U <- yhat + t*sqrt(mse*(t(a)%*%(solve((t(x)%*%x)))%*%a))
+yhat
+L
+U
+```
+
+On average, fishermen who eat 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: 3.071,6.019). 
+
+### ii. Individual
+
+$$
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
+$$
+
+```{r}
+a <- matrix(c(1,1,4,0,0,1))
+b <- as.numeric(summary(lin_mod)$coefficients[,1])
+yhat <- t(a)%*%b
+mse <- mean(lin_mod$residuals^2)
+t <- qt(0.1/2,133,lower.tail = F)
+x <- model.matrix(lin_mod)
+L <- yhat - t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
+yhat
+L
+U
+```
+
+An individual fisherman who eats 4 meals of whole fish each week will have a mercury level of 4.546 (95% CI: -0.011,9.102).
+
+### iii. Prediction Interval vs. Confidence interval
+
+The confidence interval above gives us information about the average mercury level for fishermen who eat 4 meals of whole fish each week in the current sample. However, the prediction interval refers to the mercury level for a theoretical new study participant. So because we are trying to make inference about a broader population, we need to account for some uncertainty in our estimators, which results in a wider interval. 
+
+# Question 2
