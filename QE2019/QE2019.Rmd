@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(epiR)
-library(tidyverse)
+library(tinytex)
 ```
 
 ```{r echo=FALSE}
@@ -306,11 +306,11 @@ On average, being a fisherman increases mercury levels by 0.246 (95% CI: -1.221,
 $$
 \textbf{a} = \begin{pmatrix}
 1&1&4&0&0&1
-\end{pmatrix}\\
+\end{pmatrix}\\\\
 \pmb\beta=\begin{pmatrix}
 0.904&0.246&0.096&3.061&1.676&3.009
-\end{pmatrix}\\
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\end{pmatrix}\\\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
 $$
 
@@ -333,7 +333,7 @@ On average, fishermen who eat 4 meals of whole fish each week will have a mercur
 ### ii. Individual
 
 $$
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
 $$
 
@@ -361,17 +361,34 @@ The confidence interval above gives us information about the average mercury lev
 
 ## a. 
 
+What restriction allows it to be identified? Betas are the restricted parameters.
+
+$$
+log(Y_i^*) \text{~}N(\beta_0+\beta_1X_i,\sigma^2)\\
+Yi = 1\text{ when }Y_i^* > l=0.001\\
+Yi = 1\text{ when }log(Y_i^*) > log(l)\\
+P(log(Y_i^*) > log(l)) = 1-P(log(Y_i^*)\leq log(l))\\
+=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
+= 1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
+\text{Set }P(log(Y_i^*) > log(l)) = \theta_i\\
+Y_i\text{~ Bernoulli}(\theta_i)
+$$
+
+Calculate the log likelihood of Yi:
+
+$$
+L(Y|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}\\
+logL(Y|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)\\
+= \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
+$$
+
+This is a probit regression model, so we can use glm() to calculate the coefficient estimates and their standard error:
+
 ```{r}
-l <- 0.001
-# Contamination and location as binary variables
+# Contamination as binary variable
 pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
-pcbs$location_num <- ifelse(pcbs$location == "Niagara",1,0)
-# Order by Yi so that the first 59 participants have Yi = 1
-pcbs_ordered <- pcbs[order(pcbs$Yi,decreasing = T),]
-xi <- pcbs$location_num
-# Log likelihood function
-logL <- function(theta){
-  -sum(log(1-pnorm((log(l)-theta[1]-theta[2]*xi[1:59]))/theta[3]))
-}
-nlm(logL,theta <- c(0,1), hessian=TRUE)
+# Probit model
+probit_mod <- 
+  glm(Yi ~ factor(location), family = binomial(link = "probit"), data = pcbs)
+kable(summary(probit_mod)$coefficients)
 ```

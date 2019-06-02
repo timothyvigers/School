@@ -624,11 +624,11 @@ Week}\label{f.-fishermen-who-eat-4-meals-of-whole-fish-each-week}}
 \[
 \textbf{a} = \begin{pmatrix}
 1&1&4&0&0&1
-\end{pmatrix}\\
+\end{pmatrix}\\\\
 \pmb\beta=\begin{pmatrix}
 0.904&0.246&0.096&3.061&1.676&3.009
-\end{pmatrix}\\
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\end{pmatrix}\\\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
 \]
 
@@ -680,7 +680,7 @@ a mercury level of 4.546 (95\% CI: 3.071,6.019).
 \subsubsection{ii. Individual}\label{ii.-individual}}
 
 \[
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
 \]
 
@@ -731,6 +731,47 @@ have a mercury level of 4.546 (95\% CI: -0.011,9.102).
 \hypertarget{iii.-prediction-interval-vs.confidence-interval}{%
 \subsubsection{iii. Prediction Interval vs.~Confidence
 interval}\label{iii.-prediction-interval-vs.confidence-interval}}
+
+The confidence interval above gives us information about the average
+mercury level for fishermen who eat 4 meals of whole fish each week in
+the current sample. However, the prediction interval refers to the
+mercury level for a theoretical new study participant. So because we are
+trying to make inference about a broader population, we need to account
+for some uncertainty in our estimators, which results in a wider
+interval.
+
+\hypertarget{question-2}{%
+\section{Question 2}\label{question-2}}
+
+\hypertarget{a.}{%
+\subsection{a.}\label{a.}}
+
+What restriction allows it to be identified? Betas are the restricted
+parameters.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Contamination as binary variable}
+\NormalTok{pcbs}\OperatorTok{$}\NormalTok{Yi <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(pcbs}\OperatorTok{$}\NormalTok{contam.lev }\OperatorTok{>=}\StringTok{ }\FloatTok{0.001}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{)}
+\CommentTok{# Probit model}
+\NormalTok{probit_mod <-}\StringTok{ }
+\StringTok{  }\KeywordTok{glm}\NormalTok{(Yi }\OperatorTok{~}\StringTok{ }\KeywordTok{factor}\NormalTok{(location), }\DataTypeTok{family =} \KeywordTok{binomial}\NormalTok{(}\DataTypeTok{link =} \StringTok{"probit"}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ pcbs)}
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{summary}\NormalTok{(probit_mod)}\OperatorTok{$}\NormalTok{coefficients)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lrrrr@{}}
+\toprule
+& Estimate & Std. Error & z value &
+Pr(\textgreater{}\textbar{}z\textbar{})\tabularnewline
+\midrule
+\endhead
+(Intercept) & 0.7215223 & 0.2365641 & 3.050007 &
+0.0022884\tabularnewline
+factor(location)Niagara & 1.1679877 & 0.4933294 & 2.367561 &
+0.0179058\tabularnewline
+\bottomrule
+\end{longtable}
 
 
 \end{document}

@@ -708,11 +708,11 @@ kable(results)</code></pre>
 <p><span class="math display">\[
 \textbf{a} = \begin{pmatrix}
 1&amp;1&amp;4&amp;0&amp;0&amp;1
-\end{pmatrix}\\
+\end{pmatrix}\\\\
 \pmb\beta=\begin{pmatrix}
 0.904&amp;0.246&amp;0.096&amp;3.061&amp;1.676&amp;3.009
-\end{pmatrix}\\
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\end{pmatrix}\\\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a}}
 \]</span></p>
 <pre class="r"><code>a &lt;- matrix(c(1,1,4,0,0,1))
@@ -737,7 +737,7 @@ yhat</code></pre>
 <div id="ii.-individual" class="section level3">
 <h3>ii. Individual</h3>
 <p><span class="math display">\[
-\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\
+\hat{Y} = \textbf{a}^\text{T}\pmb\beta=4.543\\\\
 \text{95% CI} = \hat{Y}\pm t_{\frac{\alpha}{2}}\sqrt{(MSE)(1+\textbf{a}^\text{T}(\textbf{X}^\text{T}\textbf{X})^{-1}\textbf{a})}
 \]</span></p>
 <pre class="r"><code>a &lt;- matrix(c(1,1,4,0,0,1))
@@ -761,8 +761,65 @@ yhat</code></pre>
 </div>
 <div id="iii.-prediction-interval-vs.confidence-interval" class="section level3">
 <h3>iii. Prediction Interval vs. Confidence interval</h3>
-<p>The confidence interval above indicates the</p>
+<p>The confidence interval above gives us information about the average mercury level for fishermen who eat 4 meals of whole fish each week in the current sample. However, the prediction interval refers to the mercury level for a theoretical new study participant. So because we are trying to make inference about a broader population, we need to account for some uncertainty in our estimators, which results in a wider interval.</p>
 </div>
+</div>
+</div>
+<div id="question-2" class="section level1">
+<h1>Question 2</h1>
+<div id="a." class="section level2">
+<h2>a.</h2>
+<p>What restriction allows it to be identified? Betas are the restricted parameters.</p>
+<p><span class="math display">\[
+log(Y_i^*) \text{~}N(\beta_0+\beta_1X_i,\sigma^2)\\
+Yi = 1\text{ when }Y_i^* &gt; l=0.001\\
+Yi = 1\text{ when }log(Y_i^*) &gt; log(l)\\
+P(log(Y_i^*) &gt; log(l)) = 1-P(log(Y_i^*)\leq log(l))\\
+=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
+= 1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})\\
+\text{Set }P(log(Y_i^*) &gt; log(l)) = \theta_i\\
+Y_i\text{~ Bernoulli}(\theta_i)
+\]</span></p>
+<p>Calculate the log likelihood of Yi:</p>
+<p><span class="math display">\[
+L(Y|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}\\
+logL(Y|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)\\
+= \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
+\]</span></p>
+<p>This is a probit regression model, so we can use glm() to calculate the coefficient estimates and their standard error:</p>
+<pre class="r"><code># Contamination as binary variable
+pcbs$Yi &lt;- ifelse(pcbs$contam.lev &gt;= 0.001,1,0)
+# Probit model
+probit_mod &lt;- 
+  glm(Yi ~ factor(location), family = binomial(link = &quot;probit&quot;), data = pcbs)
+kable(summary(probit_mod)$coefficients)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Estimate</th>
+<th align="right">Std. Error</th>
+<th align="right">z value</th>
+<th align="right">Pr(&gt;|z|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">0.7215223</td>
+<td align="right">0.2365641</td>
+<td align="right">3.050007</td>
+<td align="right">0.0022884</td>
+</tr>
+<tr class="even">
+<td>factor(location)Niagara</td>
+<td align="right">1.1679877</td>
+<td align="right">0.4933294</td>
+<td align="right">2.367561</td>
+<td align="right">0.0179058</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
