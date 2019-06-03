@@ -434,7 +434,8 @@ So for observations where $log(Y_i^*)>log(l)$, the contribution to the likelihoo
 Define the log likelihood function in R and find MLEs using optim(), then calculate asymptotic variance using the Fisher Information Matrix (Hessian):
 
 ```{r}
-pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) == -Inf,0,log(pcbs$contam.lev))
+# Assign a finite lower censure threshold for those with contam.lev < 0.001
+pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) < log(0.001),-10,log(pcbs$contam.lev))
 # Tobit function
 tobit <- function(par, X, y, ul=-Inf, ll=Inf) {
   sigma = exp(par[length(par)]) 
@@ -452,25 +453,33 @@ tobit <- function(par, X, y, ul=-Inf, ll=Inf) {
   -ll
 }
 
-initmod = lm(contam.lev ~ factor(location), data=pcbs)
+initmod = lm(log_Yi ~ factor(location), data=pcbs)
 X = model.matrix(initmod)
 init = c(coef(initmod), log_sigma=log(summary(initmod)$sigma))
 
-mle <- optim(par=init, tobit, y=pcbs$contam.lev, X=X, ll=log(0.001),hessian = T)
+mle <- optim(par=init, tobit, y=pcbs$log_Yi, X=X, ll=-10,hessian = T)
 mle$par
 I <- mle$hessian
+var_Theta_tobit <- diag(solve(I))
+var_Theta_tobit
 ```
 
-This is a type I Tobit model, which can be fit using the VGAM package:
+This is a type I Tobit model, which can be checked using the AER package:
 
 ```{r message=FALSE}
-tobit <- AER::tobit(contam.lev~ factor(location), left = 0.001, data = pcbs)
+tobit <- AER::tobit(log_Yi ~ factor(location), left = -10, data = pcbs)
 summary(tobit)
 ```
 
 ## c.
 
-Because the Tobit regression is on the log scale, the standard error of the Probit estimators needs to be transformed before comparison. 
+Because the Tobit regression is on the log scale, the variance of the Probit estimators needs to be transformed before comparison.
+
+```{r}
+var_Theta_probit[1:2]/exp(var_Theta_tobit)[1:2]
+```
+
+
 
 ### i. Intercept (Location = Fort Erie)
 
