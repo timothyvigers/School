@@ -400,7 +400,7 @@ mle <- optim(runif(2), minus_log_L_fun, hessian = TRUE)
 mle$par
 I <- mle$hessian
 var_Theta_probit <- diag(solve(I))
-var_Theta_probit
+sqrt(var_Theta_probit/68)
 ```
 
 This is a probit regression model, so we can use glm() to check the coefficient estimates:
@@ -435,7 +435,7 @@ Define the log likelihood function in R and find MLEs using optim(), then calcul
 
 ```{r}
 # Assign a finite lower censure threshold for those with contam.lev < 0.001
-pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) < log(0.001),-10,log(pcbs$contam.lev))
+pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) < log(0.001),-7,log(pcbs$contam.lev))
 # Tobit function
 tobit <- function(par, X, y, ul=-Inf, ll=Inf) {
   sigma = exp(par[length(par)]) 
@@ -457,35 +457,40 @@ initmod = lm(log_Yi ~ factor(location), data=pcbs)
 X = model.matrix(initmod)
 init = c(coef(initmod), log_sigma=log(summary(initmod)$sigma))
 
-mle <- optim(par=init, tobit, y=pcbs$log_Yi, X=X, ll=-10,hessian = T)
+mle <- optim(par=init, tobit, y=pcbs$log_Yi, X=X, ll=-7,hessian = T)
 mle$par
 I <- mle$hessian
 var_Theta_tobit <- diag(solve(I))
-var_Theta_tobit
 ```
 
 This is a type I Tobit model, which can be checked using the AER package:
 
 ```{r message=FALSE}
-tobit <- AER::tobit(log_Yi ~ factor(location), left = -10, data = pcbs)
+tobit <- AER::tobit(contam.lev ~ factor(location), left = 0.001, data = pcbs, dist = "lognormal")
 summary(tobit)
 ```
 
 ## c.
 
-Because the Tobit regression is on the log scale, the variance of the Probit estimators needs to be transformed before comparison.
+Because the Tobit regression is on the log scale, the variance of the Probit estimators needs to be transformed before comparison. Based on this is appears that the Tobit estimators have greater asymptotic variance than the Probit ones. 
 
 ```{r}
 var_Theta_probit[1:2]/exp(var_Theta_tobit)[1:2]
 ```
 
+## d. 
 
+From part b, the average PCB level at Fort Erie is 
 
-### i. Intercept (Location = Fort Erie)
+$$
+\text{CI: }e^{\hat{\beta}_0\pm1.96*\frac{\sigma}{\sqrt{n}}}=e^{-5.26\pm1.96*\frac{0.97}{\sqrt{68}}}=e^{-5.26\pm0.23}=(e^{-5.49},\text{ }e^{-5.03})=(0.004,0.005)
+$$
+
+## e. 
 
 ```{r}
-(0.28489)^2/(log(0.2366))^2
-(exp(0.28489))^2/(0.2366)^2
+plot(fitted(tobit),resid(tobit,type = "response"), main = "Fitted vs Residuals",ylab = "rr",xlab = "yhat")
+qqnorm(resid(tobit,type = "response"))
 ```
 
 # Question 3
