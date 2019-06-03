@@ -391,16 +391,12 @@ pcbs$Xi <- ifelse(pcbs$location == "Niagara",1,0)
 minus_log_L_fun <- function(params) {
     b0 <- params[1]
     b1 <- params[2]
-    sigma <- params[3]
-
-    n <- length(x) # sample size
-
     log_L <- 
-      sum(pcbs$Yi*(log(1-pnorm(log(0.001)-b0-b1*pcbs$Xi))/sigma)+
-            (1-pcbs$Yi)*(log(pnorm(log(0.001)-b0-b1*pcbs$Xi))/sigma))    
+      sum(pcbs$Yi*(log(1-pnorm(log(0.001)-(b0+b1*pcbs$Xi))))+
+            (1-pcbs$Yi)*(log(pnorm(log(0.001)-(b0+b1*pcbs$Xi)))))    
     return (-log_L)
 }
-mle <- optim(par = c(1,1,1), minus_log_L_fun, method = "L-BFGS-B", lower = c(-7,-7,0), upper = c(100,100,100), hessian = TRUE)
+mle <- optim(runif(2), minus_log_L_fun, hessian = TRUE)
 ```
 
 ```{r}
