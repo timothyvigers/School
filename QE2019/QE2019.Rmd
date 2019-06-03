@@ -381,9 +381,9 @@ $$
 = \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
 $$
 
-This is a probit regression model, so we can use glm() to calculate the coefficient estimates and their standard error:
+Define the log likelihood function in R and find MLEs using optim(), then calculate asymptotic variance using the Fisher Information Matrix (Hessian):
 
-```{r echo=FALSE}
+```{r}
 # Contamination as binary variable
 pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
 pcbs$Xi <- ifelse(pcbs$location == "Niagara",1,0)
@@ -392,12 +392,18 @@ minus_log_L_fun <- function(params) {
     b0 <- params[1]
     b1 <- params[2]
     log_L <- 
-      sum(pcbs$Yi*(log(1-pnorm(log(0.001)-(b0+b1*pcbs$Xi))))+
-            (1-pcbs$Yi)*(log(pnorm(log(0.001)-(b0+b1*pcbs$Xi)))))    
+      sum(pcbs$Yi*(log(pnorm(b0+b1*pcbs$Xi)))+
+            (1-pcbs$Yi)*(log(1-pnorm(b0+b1*pcbs$Xi))))    
     return (-log_L)
 }
 mle <- optim(runif(2), minus_log_L_fun, hessian = TRUE)
+mle$par
+I <- mle$hessian
+var_Theta_probit <- diag(solve(I))
+var_Theta_probit
 ```
+
+This is a probit regression model, so we can use glm() to check the coefficient estimates:
 
 ```{r}
 probit_mod <-
@@ -423,10 +429,42 @@ $$
 L(log(Y_i^*)|\theta)=\prod_{i = 1}^{n}(\frac{1}{\sigma}\phi(\frac{log(Y_i^*)-(\beta_0+\beta_1X_i)}{\sigma})^{I(Y_i)}(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))^{1-I(Y_i)}
 $$
 
-So for observations where $log(Y_i^*)>log(l)$, the contribution to the likelihood function is the PDF of $log(Y_i^*)$. For observations that are below the detection threshold, the contribution to the likelihood is just the probability of being below the threshold, as defined above. This is a type I Tobit model, which can be fit using the VGAM package:
+So for observations where $log(Y_i^*)>log(l)$, the contribution to the likelihood function is the PDF of $log(Y_i^*)$. For observations that are below the detection threshold, the contribution to the likelihood is just the probability of being below the threshold, as defined above. 
+
+Define the log likelihood function in R and find MLEs using optim(), then calculate asymptotic variance using the Fisher Information Matrix (Hessian):
+
+```{r}
+pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) == -Inf,0,log(pcbs$contam.lev))
+# Tobit function
+tobit <- function(par, X, y, ul=-Inf, ll=Inf) {
+  sigma = exp(par[length(par)]) 
+  beta = par[-length(par)]
+  if (!is.infinite(ll)) {
+    limit = ll
+    indicator = y > ll  
+  } else {
+    limit = ul
+    indicator = y < ul
+  }
+  lp = X %*% beta
+  ll = sum(indicator * log((1/sigma)*dnorm((y-lp)/sigma)) ) + 
+    sum((1-indicator) * log(pnorm((lp-limit)/sigma, lower=is.infinite(ll))))
+  -ll
+}
+
+initmod = lm(contam.lev ~ factor(location), data=pcbs)
+X = model.matrix(initmod)
+init = c(coef(initmod), log_sigma=log(summary(initmod)$sigma))
+
+mle <- optim(par=init, tobit, y=pcbs$contam.lev, X=X, ll=log(0.001),hessian = T)
+mle$par
+I <- mle$hessian
+```
+
+This is a type I Tobit model, which can be fit using the VGAM package:
 
 ```{r message=FALSE}
-tobit <- AER::tobit(log(contam.lev) ~ factor(location), left = log(0.001), data = pcbs)
+tobit <- AER::tobit(contam.lev~ factor(location), left = 0.001, data = pcbs)
 summary(tobit)
 ```
 
@@ -687,3 +725,9 @@ U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
 
 ### Format data
 
+
+
+
+# Cite 
+
+https://github.com/m-clark/Miscellaneous-R-Code/blob/master/ModelFitting/tobit.R
