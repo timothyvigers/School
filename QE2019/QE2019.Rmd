@@ -12,6 +12,7 @@ library(epiR)
 library(ggplot2)
 library(lme4)
 library(nlme)
+library(AER)
 ```
 
 ```{r echo=FALSE}
@@ -341,10 +342,8 @@ The confidence interval above gives us information about the average mercury lev
 
 ## a.
 
-# What restriction allows it to be identified? Betas are the restricted parameters.
-
 $$
-log(Y_i^*) \text{~}N(\beta_0+\beta_1X_i,\sigma^2)
+log(Y_i^*)\sim N(\beta_0+\beta_1X_i,\sigma^2)
 $$
 $$
 Yi = 1\text{ when }Y_i^* > l=0.001
@@ -356,7 +355,7 @@ $$
 P(log(Y_i^*) > log(l)) = 1-P(log(Y_i^*)\leq log(l))
 $$
 $$
-=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})
+=1-P(\frac{log(Y_i^*)-\beta_0-\beta_1X_i}{\sigma}\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})=1-P(Z\leq\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})
 $$
 $$
 = 1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma})
@@ -368,13 +367,15 @@ $$
 Y_i\text{~ Bernoulli}(\theta_i)
 $$
 
-Calculate the log likelihood of Yi:
+In order for this model to work, $\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}$ must be between 0 and 1, so $0\leq log(l)-(\beta_0+\beta_1X_i)\leq\sigma$, which means $log(l)\geq(\beta_0+\beta_1X_i)$.
+
+Next calculate the log likelihood of Yi:
 
 $$
-L(Y|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}
+L(Y_i|\theta)=\prod_{i = 1}^{n}\theta_i^{Y_i}(1-\theta_i)^{1-Y_i}
 $$
 $$
-logL(Y|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)
+logL(Y_i|\theta)=\sum_{i = 1}^{n}Y_ilog(\theta_i)+(1-Y_i)log(1-\theta_i)
 $$
 $$
 = \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
@@ -385,20 +386,64 @@ This is a probit regression model, so we can use glm() to calculate the coeffici
 ```{r echo=FALSE}
 # Contamination as binary variable
 pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
+pcbs$Xi <- ifelse(pcbs$location == "Niagara",1,0)
+# optim
+minus_log_L_fun <- function(params) {
+    b0 <- params[1]
+    b1 <- params[2]
+    sigma <- params[3]
+
+    n <- length(x) # sample size
+
+    log_L <- 
+      sum(pcbs$Yi*(log(1-pnorm(log(0.001)-b0-b1*pcbs$Xi))/sigma)+
+            (1-pcbs$Yi)*(log(pnorm(log(0.001)-b0-b1*pcbs$Xi))/sigma))    
+    return (-log_L)
+}
+mle <- optim(par = c(1,1,1), minus_log_L_fun, method = "L-BFGS-B", lower = c(-7,-7,0), upper = c(100,100,100), hessian = TRUE)
 ```
 
 ```{r}
 probit_mod <-
   glm(Yi ~ factor(location), family = binomial(link = "probit"), data = pcbs)
-```
-
-```{r echo=FALSE}
-kable(summary(probit_mod)$coefficients)
+summary(probit_mod)
 ```
 
 ## b.
 
+Because $log(Y_i^*)$ is a standard normal distribution with a location and scale shift, we can rewrite the distribution as $log(Y_i^*)\sim \frac{1}{\sigma}\phi(\frac{log(Y_i^*)-(\beta_0+\beta_1X_i)}{\sigma})$. Next we define an indicator variable: 
 
+$$
+I(Y_i)=
+\begin{cases}
+  0, & \text{if}\ log(Y_i^*)\leq log(l) \\
+  1, & \text{if}\ log(Y_i^*)>log(l)
+\end{cases}
+$$
+
+The resulting likelihood is similar to above, but includes the normal PDF of $log(Y_i^*)$:
+
+$$
+L(log(Y_i^*)|\theta)=\prod_{i = 1}^{n}(\frac{1}{\sigma}\phi(\frac{log(Y_i^*)-(\beta_0+\beta_1X_i)}{\sigma})^{I(Y_i)}(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))^{1-I(Y_i)}
+$$
+
+So for observations where $log(Y_i^*)>log(l)$, the contribution to the likelihood function is the PDF of $log(Y_i^*)$. For observations that are below the detection threshold, the contribution to the likelihood is just the probability of being below the threshold, as defined above. This is a type I Tobit model, which can be fit using the VGAM package:
+
+```{r message=FALSE}
+tobit <- AER::tobit(log(contam.lev) ~ factor(location), left = log(0.001), data = pcbs)
+summary(tobit)
+```
+
+## c.
+
+Because the Tobit regression is on the log scale, the standard error of the Probit estimators needs to be transformed before comparison. 
+
+### i. Intercept (Location = Fort Erie)
+
+```{r}
+(0.28489)^2/(log(0.2366))^2
+(exp(0.28489))^2/(0.2366)^2
+```
 
 # Question 3
 
@@ -409,17 +454,24 @@ summary(cat_mod)$tTable
 ```
 
 
-
+\pagebreak
 
 # Appendix
 
-### Import and format data
+### Load libraries, import and format HIV data
+
+```{r message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(epiR)
+library(ggplot2)
+library(lme4)
+library(nlme)
+library(VGAM)
+library(AER)
+```
 
 ```{r}
-# Import datasets
-fish <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/fishermen_mercury.csv")
-pcbs <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/pcb_conc.csv")
-hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv",header = F)
 colnames(hiv) <- c("pid","trt","week","logvl")
 ```
 
@@ -639,7 +691,3 @@ U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
 
 ### Format data
 
-```{r}
-# Contamination as binary variable
-pcbs$Yi <- ifelse(pcbs$contam.lev >= 0.001,1,0)
-```
