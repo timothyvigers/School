@@ -535,9 +535,53 @@ Based on the Tobit regression from part b (the model fit wasn't ideal, but it wa
 
 # Question 3
 
-Random intercept for person and random slope for group?
+## Analysis Plan
 
-Significant concerns for multicollinearity with week (VIF > 10), so treating time a categorical variable. Justifiable given everyone was measured at the same time and the data is categorical in a sense.  
+### Introduction
+
+The data for this analysis are a subset of completers from an early HIV/AIDS clinical trial, in which patients with HIV were treated with monotherapy or combination/dual therapy. Previous studies have shown that lowering HIV viral load can slow progression to AIDS, so it is an important outcome in clinical trials. Unfortunately, the virus develops resistance to mono- and dual-drug therapies. 
+
+The aim of this study is to examine the effect over time of mono- and dual-drug therapies on $log_{10}\text{(viral load)}$. Participants were treated with only one of the two therapies for 48 weeks, and $log_{10}\text{(viral load)}$ was measured at regular intervals during treatment. The primary outcome is the difference between treatment arms at week 48, and a secondary outcome is the difference at week 24. 
+
+### Hypotheses
+
+Primary null hypothesis: There will be no difference in $log_{10}\text{(viral load)}$ between treatment groups at week 48.
+
+Secondary null hypothesis: There will be no difference in $log_{10}\text{(viral load)}$ between treatment groups at week 24.
+
+### Data Description
+
+Variable descriptions from the data dictionary provided:
+
+* pid: patient identification number; range (9, 6861)
+
+* week: study week (0, 2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48)
+
+* trt: treatment group (0=mono-therapy arm (AZT or 3TC, N=111), 1=dual arm (AZT+3TC, N=113)) 
+
+* logvl: log10(viral load); range (2.0, 6.143)
+
+Researchers work with viral load on the log scale so this variable does not need to be tranformed. Participant demographics and CD4 counts unavailable.
+
+### Analysis Methods
+
+Because this study is a repeated measures design, $log_{10}\text{(viral load)}$ is assumed to be correlated within subjects from week to week. Therefore, all models examined for the purpose of model selection will be linear mixed effect models with a random intercept for participant. 
+
+First, models using time ("week") and its higher term polynomials will be examined, because the relationship between $log_{10}\text{(viral load)}$ and time is assumed to be non-linear. The highest order term to be included in the final model will be determined based on the Akaike information criterion (AIC) and polynomial orthogonal contrasts. Because higher order polynomial terms increase multicollinearity, the polynomial models will also be assessed by comparison of variance inflation factor (VIF). 
+
+In addition to models treating time as a continuous covariate, models treating it as a categorical variable will also be assessed using AIC. Treating time as categorical would significantly reduce the risk of collinearity. This model may also make the most sense in terms of how the data were collected, since the weeks of the study can be considered in terms of categorical "bins" rather than as a truly continuous variable.
+
+Once the most parsimonious model has been selected, differences between the two treatment groups at specific timepoints will be analyzed using linear contrasts. Assumptions of normality and homoscedasticity will be checked with diagnostic plots.
+
+### Proposed Tables and Figures
+
+The overall type 3 test of fixed effects and the results of linear contrasts will be reported in tables. Plots of the difference in means at each timepoint (between the groups), and the fitted values of the final model will also be included in the report.
+
+Model selection information, full final model output, and residual plots will be included in the report appendix.
+
+### Other Notes
+
+This analysis is potentially biased due to the fact that it is a complete case analysis. For example, it's possible that only participants who experienced good outcomes completed the study. If possible it would be better to include all participants, even those with missing data. 
 
 ```{r}
 time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
@@ -547,7 +591,6 @@ t <- as.data.frame(pairs(t,by = "week"))
 t$p.value <- format.pval(t$p.value,digits = 3,eps=0.001)
 kable(t)
 ```
-
 
 ```{r}
 emmip(time_mod_cat, week~trt)
@@ -817,6 +860,7 @@ plot(probit_mod)
 ```{r}
 time_mod_cat <- lme(logvl ~ factor(week), data=hiv,random = ~1|pid,method = "ML")
 # Confirm time is nonlinear
+# Linear
 time_mod <- lme(logvl ~ week, data=hiv,random = ~1|pid)
 plot(time_mod)
 # Try quadratic
@@ -827,10 +871,12 @@ vif(time_mod)
 time_mod <- lme(logvl ~ week+I(week^2)+I(week^3), 
                 data=hiv,random = ~1|pid,method = "ML")
 anova(time_mod,time_mod_cat)
+vif(time_mod)
 # Quartic
 time_mod <- lme(logvl ~ week+I(week^2)+I(week^3)+I(week^4), 
                 data=hiv,random = ~1|pid,method = "ML")
 anova(time_mod,time_mod_cat)
+vif(time_mod)
 # Categorical time
 time_mod_cat <- lme(logvl ~ factor(week), data=hiv,random = ~1|pid)
 # Compare categorical time to continuous time with quadratic
@@ -843,6 +889,16 @@ anova(time_mod_cat,time_mod_cat_slope) # slightly better without random slope
 # Full output for final model
 time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
 kable(summary(time_mod_cat)$tTable)
+# Residuals 
+plot(time_mod_cat)
+qqnorm(time_mod_cat)
+# Odd residuals most likely due to higher frequency of values between 2 and 2.5
+hist(hiv$logvl)
+# Check without values < 2.5
+time_mod_cat_check <- lme(logvl ~ trt*factor(week), data=hiv[hiv$logvl>2.5,],random = ~1|pid)
+plot(time_mod_cat_check) # Still not ideal, but a little better
+qqnorm(time_mod_cat_check)
+# Although we're assuming that logvl is normally distributed at each week, this doesn't appear to be the case.
 ```
 
 
