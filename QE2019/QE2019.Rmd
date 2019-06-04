@@ -542,9 +542,15 @@ Significant concerns for multicollinearity with week (VIF > 10), so treating tim
 ```{r}
 time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
 kable(anova(time_mod_cat),caption = "Type 3 Tests of Fixed Effects")
-emmeans(time_mod_cat, ~ trt*factor(week))
+t <- emmeans(time_mod_cat,~ trt*factor(week))
+kable(pairs(t,by = "week"))
+```
+
+
+```{r}
 emmip(time_mod_cat, week~trt)
 ```
+
 
 \pagebreak
 
