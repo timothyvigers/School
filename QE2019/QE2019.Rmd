@@ -469,7 +469,7 @@ initmod = lm(log_Yi ~ factor(location), data=pcbs)
 X = model.matrix(initmod)
 init = c(coef(initmod), log_sigma=log(summary(initmod)$sigma))
 
-mle <- optim(par=init, tobit_fun, y=pcbs$log_Yi, X=X, ll=-7,hessian = T)
+mle <- optim(par=init, tobit_fun, y=pcbs$log_Yi, X=X, ll=-6.9,hessian = T)
 mle$par
 I <- mle$hessian
 var_Theta_tobit <- diag(solve(I))
@@ -583,19 +583,56 @@ Model selection information, full final model output, and residual plots will be
 
 This analysis is potentially biased due to the fact that it is a complete case analysis. For example, it's possible that only participants who experienced good outcomes completed the study. If possible it would be better to include all participants, even those with missing data. 
 
-```{r}
+## Results
+
+### Table 1: Type 3 Tests of Fixed Effects
+
+```{r echo=FALSE}
 time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
-kable(anova(time_mod_cat),caption = "Type 3 Tests of Fixed Effects")
+kable(anova(time_mod_cat))
+```
+
+### Table 2: Linear Contrast Results
+
+```{r echo=FALSE}
 t <- emmeans(time_mod_cat,~ trt*factor(week))
 t <- as.data.frame(pairs(t,by = "week"))
 t$p.value <- format.pval(t$p.value,digits = 3,eps=0.001)
+```
+
+```{r echo=FALSE}
 kable(t)
 ```
 
-```{r}
-emmip(time_mod_cat, week~trt)
+### Figure 1: Difference in Means between Treatment Groups
+
+```{r echo=FALSE}
+em_plot <- emmip(time_mod_cat, week~trt) +
+  xlab("Therapy") + 
+  scale_x_discrete(labels=c("Mono","Dual")) +
+  ylab("Mean log10(viral load)") +
+  theme_bw()
 ```
 
+```{r echo=FALSE}
+em_plot
+```
+
+### Figure 2: Model Results
+
+```{r echo=FALSE}
+plot_data <- as.data.frame(emmeans(time_mod_cat,~ trt*factor(week)))
+mod_plot <- ggplot(plot_data,aes(x=week,y=emmean, group=trt)) + 
+  geom_line(aes(color=trt)) +
+  xlab("Week") +
+  ylab("Mean log10(viral load)") +
+  scale_color_discrete(name = "Therapy", labels = c("Mono","Dual"))+
+  theme_bw()
+```
+
+```{r echo=FALSE}
+mod_plot
+```
 
 \pagebreak
 
@@ -901,6 +938,35 @@ qqnorm(time_mod_cat_check)
 # Although we're assuming that logvl is normally distributed at each week, this doesn't appear to be the case.
 ```
 
+### Linear Contrast Results
+
+```{r}
+t <- emmeans(time_mod_cat,~ trt*factor(week))
+t <- as.data.frame(pairs(t,by = "week"))
+t$p.value <- format.pval(t$p.value,digits = 3,eps=0.001)
+```
+
+### Figure 1 Code
+
+```{r}
+em_plot <- emmip(time_mod_cat, week~trt) +
+  xlab("Therapy") + 
+  scale_x_discrete(labels=c("Mono","Dual")) +
+  ylab("Mean log10(viral load)") +
+  theme_bw()
+```
+
+### Figure 2 Code
+
+```{r}
+plot_data <- as.data.frame(emmeans(time_mod_cat,~ trt*factor(week)))
+mod_plot <- ggplot(plot_data,aes(x=week,y=emmean, group=trt)) + 
+  geom_line(aes(color=trt)) +
+  xlab("Week") +
+  ylab("Mean log10(viral load)") +
+  scale_color_discrete(name = "Therapy", labels = c("Mono","Dual"))+
+  theme_bw()
+```
 
 # Cite 
 
