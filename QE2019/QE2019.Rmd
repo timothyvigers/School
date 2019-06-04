@@ -543,7 +543,9 @@ Significant concerns for multicollinearity with week (VIF > 10), so treating tim
 time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
 kable(anova(time_mod_cat),caption = "Type 3 Tests of Fixed Effects")
 t <- emmeans(time_mod_cat,~ trt*factor(week))
-kable(pairs(t,by = "week"))
+t <- as.data.frame(pairs(t,by = "week"))
+t$p.value <- format.pval(t$p.value,digits = 3,eps=0.001)
+kable(t)
 ```
 
 
