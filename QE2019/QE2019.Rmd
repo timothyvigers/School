@@ -381,6 +381,12 @@ $$
 = \sum_{i = 1}^{n}Y_ilog(1 - \Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))+(1-Y_i)log(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
 $$
 
+In a Probit model like this, the standard normal can be used in place of a normal with arbitrary mean and SD without loss of generality, so the log-likelihood can be re-written in a more standardized matrix form:
+
+$$
+logL(Y_i|\theta)=\sum_{i = 1}^{n}Y_ilog(\Phi(X_i^T\beta)))+(1-Y_i)log(1-\Phi(X_i^T\beta)))
+$$
+
 Define the log likelihood function in R and find MLEs using optim(), then calculate asymptotic variance using the Fisher Information Matrix (Hessian):
 
 ```{r}
@@ -400,15 +406,14 @@ mle <- optim(runif(2), minus_log_L_fun, hessian = TRUE)
 mle$par
 I <- mle$hessian
 var_Theta_probit <- diag(solve(I))
-sqrt(var_Theta_probit/68)
 ```
 
-This is a probit regression model, so we can use glm() to check the coefficient estimates:
+Use glm() to check the coefficient estimates:
 
 ```{r}
 probit_mod <-
   glm(Yi ~ factor(location), family = binomial(link = "probit"), data = pcbs)
-summary(probit_mod)
+summary(probit_mod)$coefficients
 ```
 
 ## b.
@@ -429,6 +434,10 @@ $$
 L(log(Y_i^*)|\theta)=\prod_{i = 1}^{n}(\frac{1}{\sigma}\phi(\frac{log(Y_i^*)-(\beta_0+\beta_1X_i)}{\sigma})^{I(Y_i)}(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))^{1-I(Y_i)}
 $$
 
+$$
+logL(log(Y_i^*)|\theta)=\sum_{i = 1}^{n}I(Y_i)(\frac{1}{\sigma}\phi(\frac{log(Y_i^*)-(\beta_0+\beta_1X_i)}{\sigma})+(1-I(Y_i))(\Phi(\frac{log(l)-\beta_0-\beta_1X_i}{\sigma}))
+$$
+
 So for observations where $log(Y_i^*)>log(l)$, the contribution to the likelihood function is the PDF of $log(Y_i^*)$. For observations that are below the detection threshold, the contribution to the likelihood is just the probability of being below the threshold, as defined above. 
 
 Define the log likelihood function in R and find MLEs using optim(), then calculate asymptotic variance using the Fisher Information Matrix (Hessian):
@@ -437,7 +446,7 @@ Define the log likelihood function in R and find MLEs using optim(), then calcul
 # Assign a finite lower censure threshold for those with contam.lev < 0.001
 pcbs$log_Yi <- ifelse(log(pcbs$contam.lev) < log(0.001),-7,log(pcbs$contam.lev))
 # Tobit function
-tobit <- function(par, X, y, ul=-Inf, ll=Inf) {
+tobit_fun <- function(par, X, y, ul=-Inf, ll=Inf) {
   sigma = exp(par[length(par)]) 
   beta = par[-length(par)]
   if (!is.infinite(ll)) {
@@ -457,7 +466,7 @@ initmod = lm(log_Yi ~ factor(location), data=pcbs)
 X = model.matrix(initmod)
 init = c(coef(initmod), log_sigma=log(summary(initmod)$sigma))
 
-mle <- optim(par=init, tobit, y=pcbs$log_Yi, X=X, ll=-7,hessian = T)
+mle <- optim(par=init, tobit_fun, y=pcbs$log_Yi, X=X, ll=-7,hessian = T)
 mle$par
 I <- mle$hessian
 var_Theta_tobit <- diag(solve(I))
@@ -466,13 +475,14 @@ var_Theta_tobit <- diag(solve(I))
 This is a type I Tobit model, which can be checked using the AER package:
 
 ```{r message=FALSE}
-tobit <- AER::tobit(contam.lev ~ factor(location), left = 0.001, data = pcbs, dist = "lognormal")
-summary(tobit)
+tobit <- AER::tobit(contam.lev ~ factor(location), left = 0.001, 
+                    data = pcbs, dist = "lognormal")
+summary(tobit)$coefficients
 ```
 
 ## c.
 
-Because the Tobit regression is on the log scale, the variance of the Probit estimators needs to be transformed before comparison. Based on this is appears that the Tobit estimators have greater asymptotic variance than the Probit ones. 
+Because the Tobit regression is on the log scale, the variance  needs to be exponentiated before comparison. Based on this is appears that the Tobit estimators have greater asymptotic variance than the Probit ones. 
 
 ```{r}
 var_Theta_probit[1:2]/exp(var_Theta_tobit)[1:2]
@@ -480,25 +490,53 @@ var_Theta_probit[1:2]/exp(var_Theta_tobit)[1:2]
 
 ## d. 
 
-From part b, the average PCB level at Fort Erie is 
-
-$$
-\text{CI: }e^{\hat{\beta}_0\pm1.96*\frac{\sigma}{\sqrt{n}}}=e^{-5.26\pm1.96*\frac{0.97}{\sqrt{68}}}=e^{-5.26\pm0.23}=(e^{-5.49},\text{ }e^{-5.03})=(0.004,0.005)
-$$
+Assuming that log concentration is normally distributed, the estimated mean concentration will be equal to the estimated median. The average log concentration at Fort Erie is -4.451 (95% CI: -5.010, -3.892), and the average log concentration at Niagara is -2.254 (95% CI: -2.801, -1.707). Both of these estimates are slightly lower than the empirical medians from the raw data (-3.912 and -2.003 respectively).
 
 ## e. 
 
-```{r}
+```{r out.width='.49\\linewidth', fig.width=3, fig.height=3,fig.show='hold',fig.align='center'}
 plot(fitted(tobit),resid(tobit,type = "response"), main = "Fitted vs Residuals",ylab = "rr",xlab = "yhat")
 qqnorm(resid(tobit,type = "response"))
 ```
 
-# Question 3
+The residuals for this model are clearly not normally distributed, so the fit is not particularly good. 
+
+### f. 
 
 ```{r}
-cat_mod <- lmer(logvl~trt*week+(1|pid),data=hiv)
-cat_mod <- lme(logvl~trt*week,random = ~1|pid,data=hiv)
-summary(cat_mod)$tTable
+# Tobit function with variable sigma
+tobit_fun <- function(par, X, y, ul=-Inf, ll=Inf) {
+  a <- par[3:4]
+  sigma = exp(X%*%a) 
+  beta = par[-length(par)]
+  if (!is.infinite(ll)) {
+    limit = ll
+    indicator = y > ll  
+  } else {
+    limit = ul
+    indicator = y < ul
+  }
+  lp = X %*% beta
+  ll = sum(indicator * log((1/sigma)*dnorm((y-lp)/sigma)) ) + 
+    sum((1-indicator) * log(pnorm((lp-limit)/sigma, lower=is.infinite(ll))))
+  -ll
+}
+summary(tobit)
+```
+
+### g. 
+
+Based on the Tobit regression from part b (the model fit wasn't ideal, but it was better than the Probit model and the best I was able to come up with), there is significantly more pollution at Niagara compared to Fort Erie (Z = 5.511, p < 0.0001).
+
+# Question 3
+
+Random intercept for person and random slope for group?
+
+```{r}
+vl_plot <- ggplot(hiv,aes(x=week,y=logvl,group=pid)) + 
+  geom_line(aes(color=factor(pid))) +
+  theme(legend.position = "none")
+vl_plot
 ```
 
 
@@ -740,7 +778,21 @@ U <- yhat + t*sqrt(mse*(1+(t(a)%*%(solve((t(x)%*%x)))%*%a)))
 ### Format data
 
 
+### Concentration estimates
 
+```{r}
+tobit_mean <- AER::tobit(contam.lev ~ factor(location)-1, left = 0.001, 
+                    data = pcbs, dist = "lognormal")
+summary(tobit_mean)$coefficients
+median(log(pcbs$contam.lev[which(pcbs$location=="Fort Erie")]))
+median(log(pcbs$contam.lev[which(pcbs$location=="Niagara")]))
+```
+
+### Probit residuals
+
+```{r}
+plot(probit_mod)
+```
 
 # Cite 
 
