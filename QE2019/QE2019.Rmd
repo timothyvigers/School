@@ -13,6 +13,7 @@ library(ggplot2)
 library(lme4)
 library(nlme)
 library(AER)
+library(emmeans)
 ```
 
 ```{r echo=FALSE}
@@ -21,6 +22,8 @@ fish <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/fis
 pcbs <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/pcb_conc.csv")
 hiv <- read.csv("/Users/timvigers/Documents/School/Qualifying Exams/2019 MS/hiv_comp_tall.csv",header = F)
 colnames(hiv) <- c("pid","trt","week","logvl")
+hiv$trt <- as.factor(hiv$trt)
+hiv$pid <- as.factor(hiv$pid)
 ```
 
 # Question 1
@@ -528,17 +531,20 @@ summary(tobit)
 
 Based on the Tobit regression from part b (the model fit wasn't ideal, but it was better than the Probit model and the best I was able to come up with), there is significantly more pollution at Niagara compared to Fort Erie (Z = 5.511, p < 0.0001).
 
+\pagebreak
+
 # Question 3
 
 Random intercept for person and random slope for group?
 
-```{r}
-vl_plot <- ggplot(hiv,aes(x=week,y=logvl,group=pid)) + 
-  geom_line(aes(color=factor(pid))) +
-  theme(legend.position = "none")
-vl_plot
-```
+Significant concerns for multicollinearity with week (VIF > 10), so treating time a categorical variable. Justifiable given everyone was measured at the same time and the data is categorical in a sense.  
 
+```{r}
+time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
+kable(anova(time_mod_cat),caption = "Type 3 Tests of Fixed Effects")
+emmeans(time_mod_cat, ~ trt*factor(week))
+emmip(time_mod_cat, week~trt)
+```
 
 \pagebreak
 
@@ -559,6 +565,8 @@ library(AER)
 
 ```{r}
 colnames(hiv) <- c("pid","trt","week","logvl")
+hiv$trt <- as.factor(hiv$trt)
+hiv$pid <- as.factor(hiv$pid)
 ```
 
 ## Question 1
@@ -793,6 +801,42 @@ median(log(pcbs$contam.lev[which(pcbs$location=="Niagara")]))
 ```{r}
 plot(probit_mod)
 ```
+
+## Question 3
+
+### Model selection
+
+```{r}
+time_mod_cat <- lme(logvl ~ factor(week), data=hiv,random = ~1|pid,method = "ML")
+# Confirm time is nonlinear
+time_mod <- lme(logvl ~ week, data=hiv,random = ~1|pid)
+plot(time_mod)
+# Try quadratic
+time_mod <- lme(logvl ~ week+I(week^2), data=hiv,random = ~1|pid)
+kable(summary(time_mod)$tTable)
+vif(time_mod)
+# Cubic
+time_mod <- lme(logvl ~ week+I(week^2)+I(week^3), 
+                data=hiv,random = ~1|pid,method = "ML")
+anova(time_mod,time_mod_cat)
+# Quartic
+time_mod <- lme(logvl ~ week+I(week^2)+I(week^3)+I(week^4), 
+                data=hiv,random = ~1|pid,method = "ML")
+anova(time_mod,time_mod_cat)
+# Categorical time
+time_mod_cat <- lme(logvl ~ factor(week), data=hiv,random = ~1|pid)
+# Compare categorical time to continuous time with quadratic
+time_mod <- lme(logvl ~ trt*(week+I(week^2)), data=hiv,random = ~1|pid,method = "ML")
+time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid,method = "ML")
+anova(time_mod,time_mod_cat) # AIC much better for categorical time, and makes sense with design
+# Compare with random slope for treatment
+time_mod_cat_slope <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1+trt|pid,method = "ML")
+anova(time_mod_cat,time_mod_cat_slope) # slightly better without random slope
+# Full output for final model
+time_mod_cat <- lme(logvl ~ trt*factor(week), data=hiv,random = ~1|pid)
+kable(summary(time_mod_cat)$tTable)
+```
+
 
 # Cite 
 
