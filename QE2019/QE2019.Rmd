@@ -2,6 +2,13 @@
 title: "Qualifying Exam 2019"
 author: "Exam #7"
 date: "6/6/2019"
+header-includes:
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhead{}
+- \renewcommand{\headrule}{}
+- \fancyfoot[CO,CE]{Exam 7}
+- \fancyfoot[RE,RO]{\thepage}
 output: pdf_document
 ---
 
@@ -250,6 +257,8 @@ The Clopper-Pearson CI for sensitivity is (8.73%,60.66%). The simple asymptotic 
 In general, the normal approximation works best for large sample sizes. Although as a general rule of thumb the Central Limit Theorem applies to sample sizes over 30, the boostrap distribution of sensitivity was not normally distributed so I would use the exact confidence interval in this case. 
 
 Confidence intervals are essentially the range for a parameter that is consistent with the data. So based on the exact confidence intervals, if we were to repeat this experiment many times, sensitivity for this test would be between 8.73% and 60.66% in 90% of those experiments.
+
+\pagebreak
 
 ## e. Linear Regression
 
