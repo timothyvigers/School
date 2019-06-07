@@ -502,7 +502,8 @@ Assuming that log concentration is normally distributed, the estimated mean conc
 ## e. 
 
 ```{r out.width='.49\\linewidth', fig.width=3, fig.height=3,fig.show='hold',fig.align='center'}
-plot(fitted(tobit),resid(tobit,type = "response"), main = "Fitted vs Residuals",ylab = "rr",xlab = "yhat")
+plot(fitted(tobit),resid(tobit,type = "response"), 
+     main = "Fitted vs Residuals",ylab = "rr",xlab = "yhat")
 qqnorm(resid(tobit,type = "response"))
 ```
 
