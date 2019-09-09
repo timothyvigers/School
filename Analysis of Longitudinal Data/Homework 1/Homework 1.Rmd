@@ -1,0 +1,19 @@
+---
+title: "Longitudinal Homework 1"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(lme4)
+library(nlme)
+library(tidyverse)
+```
+
+```{r}
+# Read in data
+chol <- read.csv("/Users/timvigers/Repositories/School/Analysis of Longitudinal Data/Homework 1/cholesterol.csv")
+```
