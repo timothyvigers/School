@@ -13,7 +13,46 @@ library(nlme)
 library(tidyverse)
 ```
 
-```{r}
+```{r echo=FALSE}
 # Read in data
 chol <- read.csv("/Users/timvigers/Repositories/School/Analysis of Longitudinal Data/Homework 1/cholesterol.csv")
+```
+
+# 1. The simplest longitudinal analysis
+
+## a. Change-score model
+
+```{r}
+# Calculate change
+chol$change <- chol$after - chol$before
+# Model
+change_mod <- lm(change ~ 1, data = chol)
+```
+
+### Results
+
+```{r echo=FALSE}
+kable(summary(change_mod)$coefficients)
+```
+
+Regressing on the intercept essentially just calculates the average change score and tests whether or not this value is equal to 0. 
+
+## b. Simple test
+
+The test on the intercept is the same as a simple one-sample t test. 
+
+```{r}
+t.test(chol$change)
+```
+
+## c. Baseline-as-covariate model
+
+```{r}
+baseline_mod <- lm(after ~ before, data = chol)
+```
+
+### Results
+
+```{r echo=FALSE}
+kable(summary(baseline_mod)$coefficients)
 ```
