@@ -133,3 +133,41 @@ kable(summary(mixed_mod)$tTable)
 ```
 
 The mixed model with unstructured variance is the exact same as the linear model (in this case I used the change score model as a comparison). This is because the mixed model is just a special case of the GLM.
+
+# 2. A first-order autoregressive process
+
+## a. Expected value
+
+First, expand the expected value: 
+
+$$
+E(\epsilon_t) = E(Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)
+$$
+
+Because $\phi$ is a constant and we assume the Zs to be independent, this becomes:
+
+$$
+E(\epsilon_t) = E(Z_t) + \phi E(Z_{t-1}) + \phi^2 E(Z_{t-2}) + ...) = 0 + 0 + ... +0
+$$
+
+An infinite sum of zeroes is zero, so $E(\epsilon_t) = 0$
+
+## b. Covariance
+
+$$
+Cov(\epsilon_t,\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - E(\epsilon_{t})E(\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h})\\
+E(\epsilon_t\epsilon_{t+h}) = E((Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)(Z_{t+h} + \phi Z_{t+h-1} + \phi^2 Z_{t+h-2} + ...))\\
+$$
+
+This is easiest to solve with a given h, since the math works no matter what value you choose. Let's go with h = 2.
+
+$$
+E(\epsilon_t\epsilon_{t+2}) = E((Z_t + \phi Z_{t-1} +...)(Z_{t+2} + \phi Z_{t+1} + \phi^2 Z_{t} + \phi^3 Z_{t-1} + ...))\\
+= E(Z_{t}Z_{t+2}+Z_{t}\phi Z_{t+1}+Z_{t}\phi^2 Z_{t}+\phi Z_{t-1}+\phi Z_{t-1}\phi^3 Z_{t-1}) 
+$$
+
+As long as the indices are different, the Z terms are independent. And because the expected value of each Z is 0, this simplifies to:
+
+$$
+E(\epsilon_t\epsilon_{t+1}) = E(\phi^2 Z_{t}^2 + \phi^4 Z_{t-1}^2+ \phi^6 Z_{t-2}^2+...) = \sum_{i=1}^\infty(\phi^2)^i Z_{t-i}^2
+$$
