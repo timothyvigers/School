@@ -39,10 +39,11 @@ Regressing on the intercept essentially just calculates the average change score
 
 ## b. Simple test
 
-The test on the intercept is the same as a simple one-sample t test. 
+The test on the intercept is the same as a simple one-sample t test on the change scores, or a paired t test on the before and after values. 
 
 ```{r}
 t.test(chol$change)
+t.test(chol$after,chol$before,paired = T)
 ```
 
 ## c. Baseline-as-covariate model
@@ -56,3 +57,79 @@ baseline_mod <- lm(after ~ before, data = chol)
 ```{r echo=FALSE}
 kable(summary(baseline_mod)$coefficients)
 ```
+
+The results of this model indicate that for a theoretical starting cholesterol value of 0 mcg/dL, the average after value is 37.16 mcg/dL.For every one unit increase in the starting value, the after value increases by 0.70 (95% CI: 0.52 - 0.88, p < 0.001). Th intercept doesn't make much sense to interpret here, but because the slope for $\beta_1$ is less than 1 we can conclude that the vegetarian diet significantly lowered cholesterol (i.e. after was lower on average than before).
+
+```{r BAC Plot,echo=FALSE}
+ggplot(aes(x = before, y = after), data = chol) + geom_point() + 
+  xlab("Cholesterol Before (mcg/dL)") + ylab("Cholesterol After (mcg/dL)") + 
+  geom_smooth(method = lm,se=F) + theme_bw() + ggtitle("BAC Model Plot")
+```
+
+## d. Compare CS and BAC
+
+### Plot the residuals
+
+```{r echo=FALSE}
+plot(chol$before,resid(change_mod),xlab = "Cholesterol Before (mcg/dL)",
+     ylab = "Residuals",main = "CS Model")
+plot(chol$before,resid(baseline_mod),xlab = "Cholesterol Before (mcg/dL)",
+     ylab = "Residuals",main = "BAC Model")
+```
+
+The biggest advantage of the CS model is that the results are easy to interpret and explain, while the BAC model is a little bit trickier (for example if you only look at the intercept you might falsely conclude that cholesterol was higher after the diet). However, in the residual plot for the CS model you can clearly see that there's an association between the residuals and the starting cholesterol value. The BAC model takes care of this association by adjusting for the baseline value, which makes it the preferable model overall (provided you feel comfortable interpreting it).
+
+The CS model forces the baseline value to have a slope of 1, which is avoided in the BAC model:
+
+$$
+\text{Change score model:}\\
+Y_{i2}-Y_{i1} = \beta_0 +\epsilon_i\\
+Y_{i2} =Y_{i1}+ \beta_0 +\epsilon_i\\
+\text{Baseline-as-covariate model:}\\
+Y_{i2} = \beta_0 + \beta_1Y_{i1}+\epsilon_i\\
+\text{In the BAC model, }Y_{i1}\text{ gets its own } \beta \text{ value.}
+$$
+
+## Hybrid model
+
+### i. Beta coefficients and model fit
+
+$$
+Y_{i2}-Y_{i1} =\beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
+Y_{i2} =Y_{i1} + \beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
+Y_{i2} =\beta_0 + Y_{i1}(\beta_1' + 1)+\epsilon_i\\
+\beta_1=\beta_1'+1\\
+\beta_1'=\beta_1-1
+$$
+
+Based on this, it's clear that the hybrid model with have the same $\beta_0$ , and that the slope of $Y_{i1}$ in the hybrid model is $\beta_1-1$ from the BAC model. You can confirm this using the model output.
+
+```{r echo=FALSE}
+hybrid_mod <- lm(change ~ before,data = chol)
+kable(summary(baseline_mod)$coefficients,caption = "BAC model results")
+kable(summary(hybrid_mod)$coefficients,caption = "Hybrid model results")
+```
+
+### ii. Hypotheses
+
+The null hypothesis for the test of the "before" variable is:
+
+$$
+H_0\text{: }\beta_1' = (\beta_1 -1) = 0 \text{ or }\beta_1 = 1
+$$
+
+## f. Mixed model
+
+```{r eval=FALSE}
+mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id)
+```
+
+### Results
+
+```{r echo=FALSE}
+chol$id <- seq(1,nrow(chol))
+mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id)
+kable(summary(mixed_mod)$tTable)
+```
+
+The mixed model with unstructured variance is the exact same as the linear model (in this case I used the change score model as a comparison). This is because the mixed model is just a special case of the GLM.
