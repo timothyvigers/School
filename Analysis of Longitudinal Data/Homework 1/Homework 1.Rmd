@@ -2,7 +2,7 @@
 title: "Longitudinal Homework 1"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -18,121 +18,121 @@ library(tidyverse)
 chol <- read.csv("/Users/timvigers/Repositories/School/Analysis of Longitudinal Data/Homework 1/cholesterol.csv")
 ```
 
-# 1. The simplest longitudinal analysis
+<!-- # 1. The simplest longitudinal analysis -->
 
-## a. Change-score model
+<!-- ## a. Change-score model -->
 
-```{r}
-# Calculate change
-chol$change <- chol$after - chol$before
-# Model
-change_mod <- lm(change ~ 1, data = chol)
-```
+<!-- ```{r} -->
+<!-- # Calculate change -->
+<!-- chol$change <- chol$after - chol$before -->
+<!-- # Model -->
+<!-- change_mod <- lm(change ~ 1, data = chol) -->
+<!-- ``` -->
 
-### Results
+<!-- ### Results -->
 
-```{r echo=FALSE}
-kable(summary(change_mod)$coefficients)
-```
+<!-- ```{r echo=FALSE} -->
+<!-- kable(summary(change_mod)$coefficients) -->
+<!-- ``` -->
 
-Regressing on the intercept essentially just calculates the average change score and tests whether or not this value is equal to 0. 
+<!-- Regressing on the intercept essentially just calculates the average change score and tests whether or not this value is equal to 0.  -->
 
-## b. Simple test
+<!-- ## b. Simple test -->
 
-The test on the intercept is the same as a simple one-sample t test on the change scores, or a paired t test on the before and after values. 
+<!-- The test on the intercept is the same as a simple one-sample t test on the change scores, or a paired t test on the before and after values.  -->
 
-```{r}
-t.test(chol$change)
-t.test(chol$after,chol$before,paired = T)
-```
+<!-- ```{r} -->
+<!-- t.test(chol$change) -->
+<!-- t.test(chol$after,chol$before,paired = T) -->
+<!-- ``` -->
 
-## c. Baseline-as-covariate model
+<!-- ## c. Baseline-as-covariate model -->
 
-```{r}
-baseline_mod <- lm(after ~ before, data = chol)
-```
+<!-- ```{r} -->
+<!-- baseline_mod <- lm(after ~ before, data = chol) -->
+<!-- ``` -->
 
-### Results
+<!-- ### Results -->
 
-```{r echo=FALSE}
-kable(summary(baseline_mod)$coefficients)
-```
+<!-- ```{r echo=FALSE} -->
+<!-- kable(summary(baseline_mod)$coefficients) -->
+<!-- ``` -->
 
-The results of this model indicate that for a theoretical starting cholesterol value of 0 mcg/dL, the average after value is 37.16 mcg/dL.For every one unit increase in the starting value, the after value increases by 0.70 (95% CI: 0.52 - 0.88, p < 0.001). Th intercept doesn't make much sense to interpret here, but because the slope for $\beta_1$ is less than 1 we can conclude that the vegetarian diet significantly lowered cholesterol (i.e. after was lower on average than before).
+<!-- The results of this model indicate that for a theoretical starting cholesterol value of 0 mcg/dL, the average after value is 37.16 mcg/dL.For every one unit increase in the starting value, the after value increases by 0.70 (95% CI: 0.52 - 0.88, p < 0.001). Th intercept doesn't make much sense to interpret here, but because the slope for $\beta_1$ is less than 1 we can conclude that the vegetarian diet significantly lowered cholesterol (i.e. after was lower on average than before). -->
 
-```{r BAC Plot,echo=FALSE}
-ggplot(aes(x = before, y = after), data = chol) + geom_point() + 
-  xlab("Cholesterol Before (mcg/dL)") + ylab("Cholesterol After (mcg/dL)") + 
-  geom_smooth(method = lm,se=F) + theme_bw() + ggtitle("BAC Model Plot")
-```
+<!-- ```{r BAC Plot,echo=FALSE} -->
+<!-- ggplot(aes(x = before, y = after), data = chol) + geom_point() +  -->
+<!--   xlab("Cholesterol Before (mcg/dL)") + ylab("Cholesterol After (mcg/dL)") +  -->
+<!--   geom_smooth(method = lm,se=F) + theme_bw() + ggtitle("BAC Model Plot") -->
+<!-- ``` -->
 
-## d. Compare CS and BAC
+<!-- ## d. Compare CS and BAC -->
 
-### Plot the residuals
+<!-- ### Plot the residuals -->
 
-```{r echo=FALSE}
-plot(chol$before,resid(change_mod),xlab = "Cholesterol Before (mcg/dL)",
-     ylab = "Residuals",main = "CS Model")
-plot(chol$before,resid(baseline_mod),xlab = "Cholesterol Before (mcg/dL)",
-     ylab = "Residuals",main = "BAC Model")
-```
+<!-- ```{r echo=FALSE} -->
+<!-- plot(chol$before,resid(change_mod),xlab = "Cholesterol Before (mcg/dL)", -->
+<!--      ylab = "Residuals",main = "CS Model") -->
+<!-- plot(chol$before,resid(baseline_mod),xlab = "Cholesterol Before (mcg/dL)", -->
+<!--      ylab = "Residuals",main = "BAC Model") -->
+<!-- ``` -->
 
-The biggest advantage of the CS model is that the results are easy to interpret and explain, while the BAC model is a little bit trickier (for example if you only look at the intercept you might falsely conclude that cholesterol was higher after the diet). However, in the residual plot for the CS model you can clearly see that there's an association between the residuals and the starting cholesterol value. The BAC model takes care of this association by adjusting for the baseline value, which makes it the preferable model overall (provided you feel comfortable interpreting it).
+<!-- The biggest advantage of the CS model is that the results are easy to interpret and explain, while the BAC model is a little bit trickier (for example if you only look at the intercept you might falsely conclude that cholesterol was higher after the diet). However, in the residual plot for the CS model you can clearly see that there's an association between the residuals and the starting cholesterol value. The BAC model takes care of this association by adjusting for the baseline value, which makes it the preferable model overall (provided you feel comfortable interpreting it). -->
 
-The CS model forces the baseline value to have a slope of 1, which is avoided in the BAC model:
+<!-- The CS model forces the baseline value to have a slope of 1, which is avoided in the BAC model: -->
 
-$$
-\text{Change score model:}\\
-Y_{i2}-Y_{i1} = \beta_0 +\epsilon_i\\
-Y_{i2} =Y_{i1}+ \beta_0 +\epsilon_i\\
-\text{Baseline-as-covariate model:}\\
-Y_{i2} = \beta_0 + \beta_1Y_{i1}+\epsilon_i\\
-\text{In the BAC model, }Y_{i1}\text{ gets its own } \beta \text{ value.}
-$$
+<!-- $$ -->
+<!-- \text{Change score model:}\\ -->
+<!-- Y_{i2}-Y_{i1} = \beta_0 +\epsilon_i\\ -->
+<!-- Y_{i2} =Y_{i1}+ \beta_0 +\epsilon_i\\ -->
+<!-- \text{Baseline-as-covariate model:}\\ -->
+<!-- Y_{i2} = \beta_0 + \beta_1Y_{i1}+\epsilon_i\\ -->
+<!-- \text{In the BAC model, }Y_{i1}\text{ gets its own } \beta \text{ value.} -->
+<!-- $$ -->
 
-## Hybrid model
+<!-- ## Hybrid model -->
 
-### i. Beta coefficients and model fit
+<!-- ### i. Beta coefficients and model fit -->
 
-$$
-Y_{i2}-Y_{i1} =\beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
-Y_{i2} =Y_{i1} + \beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
-Y_{i2} =\beta_0 + Y_{i1}(\beta_1' + 1)+\epsilon_i\\
-\beta_1=\beta_1'+1\\
-\beta_1'=\beta_1-1
-$$
+<!-- $$ -->
+<!-- Y_{i2}-Y_{i1} =\beta_0 + \beta_1'Y_{i1}+\epsilon_i\\ -->
+<!-- Y_{i2} =Y_{i1} + \beta_0 + \beta_1'Y_{i1}+\epsilon_i\\ -->
+<!-- Y_{i2} =\beta_0 + Y_{i1}(\beta_1' + 1)+\epsilon_i\\ -->
+<!-- \beta_1=\beta_1'+1\\ -->
+<!-- \beta_1'=\beta_1-1 -->
+<!-- $$ -->
 
-Based on this, it's clear that the hybrid model with have the same $\beta_0$ , and that the slope of $Y_{i1}$ in the hybrid model is $\beta_1-1$ from the BAC model. You can confirm this using the model output.
+<!-- Based on this, it's clear that the hybrid model with have the same $\beta_0$ , and that the slope of $Y_{i1}$ in the hybrid model is $\beta_1-1$ from the BAC model. You can confirm this using the model output. -->
 
-```{r echo=FALSE}
-hybrid_mod <- lm(change ~ before,data = chol)
-kable(summary(baseline_mod)$coefficients,caption = "BAC model results")
-kable(summary(hybrid_mod)$coefficients,caption = "Hybrid model results")
-```
+<!-- ```{r echo=FALSE} -->
+<!-- hybrid_mod <- lm(change ~ before,data = chol) -->
+<!-- kable(summary(baseline_mod)$coefficients,caption = "BAC model results") -->
+<!-- kable(summary(hybrid_mod)$coefficients,caption = "Hybrid model results") -->
+<!-- ``` -->
 
-### ii. Hypotheses
+<!-- ### ii. Hypotheses -->
 
-The null hypothesis for the test of the "before" variable is:
+<!-- The null hypothesis for the test of the "before" variable is: -->
 
-$$
-H_0\text{: }\beta_1' = (\beta_1 -1) = 0 \text{ or }\beta_1 = 1
-$$
+<!-- $$ -->
+<!-- H_0\text{: }\beta_1' = (\beta_1 -1) = 0 \text{ or }\beta_1 = 1 -->
+<!-- $$ -->
 
-## f. Mixed model
+<!-- ## f. Mixed model -->
 
-```{r eval=FALSE}
-mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id)
-```
+<!-- ```{r eval=FALSE} -->
+<!-- mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id) -->
+<!-- ``` -->
 
-### Results
+<!-- ### Results -->
 
-```{r echo=FALSE}
-chol$id <- seq(1,nrow(chol))
-mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id)
-kable(summary(mixed_mod)$tTable)
-```
+<!-- ```{r echo=FALSE} -->
+<!-- chol$id <- seq(1,nrow(chol)) -->
+<!-- mixed_mod <- lme(change ~ 1, data = chol,random = ~1|id) -->
+<!-- kable(summary(mixed_mod)$tTable) -->
+<!-- ``` -->
 
-The mixed model with unstructured variance is the exact same as the linear model (in this case I used the change score model as a comparison). This is because the mixed model is just a special case of the GLM.
+<!-- The mixed model with unstructured variance is the exact same as the linear model (in this case I used the change score model as a comparison). This is because the mixed model is just a special case of the GLM. -->
 
 # 2. A first-order autoregressive process
 
@@ -157,17 +157,58 @@ An infinite sum of zeroes is zero, so $E(\epsilon_t) = 0$
 $$
 Cov(\epsilon_t,\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - E(\epsilon_{t})E(\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h})\\
 E(\epsilon_t\epsilon_{t+h}) = E((Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)(Z_{t+h} + \phi Z_{t+h-1} + \phi^2 Z_{t+h-2} + ...))\\
+= E(Z_{t}Z_{t+h}+\phi Z_{t}Z_{t-1+h}+\phi^2 Z_{t}Z_{t-2+h}+...) 
 $$
 
-This is easiest to solve with a given h, since the math works no matter what value you choose. Let's go with h = 2.
+As long as the indices are different, the Z terms are independent, and the expected value of each Z is 0. So, using h = 1 you get:
 
 $$
-E(\epsilon_t\epsilon_{t+2}) = E((Z_t + \phi Z_{t-1} +...)(Z_{t+2} + \phi Z_{t+1} + \phi^2 Z_{t} + \phi^3 Z_{t-1} + ...))\\
-= E(Z_{t}Z_{t+2}+Z_{t}\phi Z_{t+1}+Z_{t}\phi^2 Z_{t}+\phi Z_{t-1}+\phi Z_{t-1}\phi^3 Z_{t-1}) 
+E(\epsilon_t\epsilon_{t+1}) = E(Z_{t}Z_{t+1}+\phi Z_{t}Z_{t}+\phi^2 Z_{t}Z_{t-1}+\phi Z_{t-1}Z_{t+h}+...) = \phi Z_{t}Z_{t}+\phi^3 Z_{t-1}Z_{t-1} +...=\phi \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2
 $$
 
-As long as the indices are different, the Z terms are independent. And because the expected value of each Z is 0, this simplifies to:
+And h=2 gives you:
 
 $$
-E(\epsilon_t\epsilon_{t+1}) = E(\phi^2 Z_{t}^2 + \phi^4 Z_{t-1}^2+ \phi^6 Z_{t-2}^2+...) = \sum_{i=1}^\infty(\phi^2)^i Z_{t-i}^2
+E(\epsilon_t\epsilon_{t+2}) = \phi^2 Z_{t}Z_{t} + \phi^4 Z_{t-1}Z_{t-1} + ... = \phi^2 \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2
 $$
+
+And so on, giving you:
+
+$$
+\phi^h \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2
+$$
+
+The Zs are identically distributed, so we only need to calculate $E(Z_t^2)$ and plug that value in:
+
+$$
+Var(Z_t) = E(Z_t^2) - E(Z_t)^2\\
+E(Z_t)^2 = 0\\
+E(Z_t^2) = Var(Z_t) = \sigma^2
+$$
+
+So, using the geometric series:
+
+$$
+\phi^h \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2 = \frac{\phi^h \sigma^2}{1-\phi^2}
+$$
+
+## c. Correlation
+
+$$
+\rho(X,Y) = \frac{Cov(X,Y)}{\sqrt{Var(X)Var(Y)}}\\
+\rho(\epsilon_t,\epsilon_{t+h}) = \frac{Cov(\epsilon_t,\epsilon_{t+h})}{\sqrt{Var(\epsilon)Var(\epsilon_{t+h})}}\\
+Var(\epsilon_t) = E(\epsilon_t^2) - E(\epsilon_t)^2=E(\epsilon_t^2)\\
+E(\epsilon_t^2) = E((Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...)(Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...))\\
+= E(Z_t^2+\phi^2 Z_{t-1}^2+\phi^4 Z_{t-2}^2+...)= E(Z_t^2)+\phi^2 E(Z_{t-1}^2)+\phi^4 E(Z_{t-2}^2)+...\\
+= \sum_{i=0}^\infty (\phi^2)^iE(Z_{t-i}^2)=\sum_{i=0}^\infty (\phi^2)^i\sigma^2=\frac{\sigma^2}{1-\phi^2}
+$$
+$Var(\epsilon_{t+h})$ will be the same, so $$
+\sqrt{Var(\epsilon)Var(\epsilon_{t+h})} = \frac{\sigma^2}{1-\phi^2}
+$$. 
+
+Therefore:
+
+$$
+\rho(\epsilon_t,\epsilon_{t+h}) = \frac{\phi^h \sigma^2}{1-\phi^2} * \frac{1-\phi^2}{\sigma^2} = \phi^h
+$$
+
