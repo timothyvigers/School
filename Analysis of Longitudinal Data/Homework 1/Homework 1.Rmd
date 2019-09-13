@@ -2,7 +2,7 @@
 title: "Longitudinal Homework 1"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -58,7 +58,7 @@ baseline_mod <- lm(after ~ before, data = chol)
 kable(summary(baseline_mod)$coefficients)
 ```
 
-The results of this model indicate that for a theoretical starting cholesterol value of 0 mcg/dL, the average after value is 37.16 mcg/dL.For every one unit increase in the starting value, the after value increases by 0.70 (95% CI: 0.52 - 0.88, p < 0.001). Th intercept doesn't make much sense to interpret here, but because the slope for $\beta_1$ is less than 1 we can conclude that the vegetarian diet significantly lowered cholesterol (i.e. after was lower on average than before).
+The results of this model indicate that for a theoretical starting cholesterol value of 0 mcg/dL, the average after value is 37.16 mcg/dL.For every one unit increase in the starting value, the after value increases by 0.70 (95% CI: 0.52 - 0.88, p < 0.001). The intercept doesn't make much sense to interpret here because a cholesterol value of 0 isn't biologically possible, but because the slope for $\beta_1$ is less than 1 we can conclude that the vegetarian diet significantly lowered cholesterol (i.e. after was lower on average than before).
 
 ```{r BAC Plot,echo=FALSE}
 ggplot(aes(x = before, y = after), data = chol) + geom_point() +
@@ -79,30 +79,46 @@ plot(chol$before,resid(baseline_mod),xlab = "Cholesterol Before (mcg/dL)",
 
 The biggest advantage of the CS model is that the results are easy to interpret and explain, while the BAC model is a little bit trickier (for example if you only look at the intercept you might falsely conclude that cholesterol was higher after the diet). However, in the residual plot for the CS model you can clearly see that there's an association between the residuals and the starting cholesterol value. The BAC model takes care of this association by adjusting for the baseline value, which makes it the preferable model overall (provided you feel comfortable interpreting it).
 
-The CS model forces the baseline value to have a slope of 1, which is avoided in the BAC model:
+The CS model forces the baseline value to have a slope of 1, which is avoided in the BAC model.
+
+Change score model:
 
 $$
-\text{Change score model:}\\
-Y_{i2}-Y_{i1} = \beta_0 +\epsilon_i\\
-Y_{i2} =Y_{i1}+ \beta_0 +\epsilon_i\\
-\text{Baseline-as-covariate model:}\\
-Y_{i2} = \beta_0 + \beta_1Y_{i1}+\epsilon_i\\
-\text{In the BAC model, }Y_{i1}\text{ gets its own } \beta \text{ value.}
+Y_{i2}-Y_{i1} = \beta_0 +\epsilon_i
 $$
+$$
+Y_{i2} =Y_{i1}+ \beta_0 +\epsilon_i
+$$
+
+Baseline-as-covariate model:
+
+$$
+Y_{i2} = \beta_0 + \beta_1Y_{i1}+\epsilon_i\\
+$$
+
+In the BAC model, $Y_{i1}$ gets its own $\beta$ value.
 
 ## Hybrid model
 
 ### i. Beta coefficients and model fit
 
 $$
-Y_{i2}-Y_{i1} =\beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
-Y_{i2} =Y_{i1} + \beta_0 + \beta_1'Y_{i1}+\epsilon_i\\
-Y_{i2} =\beta_0 + Y_{i1}(\beta_1' + 1)+\epsilon_i\\
-\beta_1=\beta_1'+1\\
+Y_{i2}-Y_{i1} =\beta_0 + \beta_1'Y_{i1}+\epsilon_i
+$$
+$$
+Y_{i2} =Y_{i1} + \beta_0 + \beta_1'Y_{i1}+\epsilon_i
+$$
+$$
+Y_{i2} =\beta_0 + Y_{i1}(\beta_1' + 1)+\epsilon_i
+$$
+$$
+\beta_1=\beta_1'+1
+$$
+$$
 \beta_1'=\beta_1-1
 $$
 
-Based on this, it's clear that the hybrid model with have the same $\beta_0$ , and that the slope of $Y_{i1}$ in the hybrid model is $\beta_1-1$ from the BAC model. You can confirm this using the model output.
+Based on this, it's clear that the hybrid model will have the same $\beta_0$ , and that the slope of $Y_{i1}$ in the hybrid model is $\beta_1-1$ from the BAC model. You can confirm this using the model output.
 
 ```{r echo=FALSE}
 hybrid_mod <- lm(change ~ before,data = chol)
@@ -144,7 +160,7 @@ $$
 E(\epsilon_t) = E(Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)
 $$
 
-Because $\phi$ is a constant and we assume the Zs to be independent, this becomes:
+Because $\phi$ is a constant and we assume the Zs to be independent (so we can apply $E(XY)=E(X)E(Y)$ for independent variables), this becomes:
 
 $$
 E(\epsilon_t) = E(Z_t) + \phi E(Z_{t-1}) + \phi^2 E(Z_{t-2}) + ...) = 0 + 0 + ... +0
@@ -155,8 +171,12 @@ An infinite sum of zeroes is zero, so $E(\epsilon_t) = 0$
 ## b. Covariance
 
 $$
-Cov(\epsilon_t,\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - E(\epsilon_{t})E(\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) \\
-E(\epsilon_t\epsilon_{t+h}) = E((Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)(Z_{t+h} + \phi Z_{t+h-1} + \phi^2 Z_{t+h-2} + ...)) \\
+Cov(\epsilon_t,\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - E(\epsilon_{t})E(\epsilon_{t+h}) = E(\epsilon_t\epsilon_{t+h}) - 0
+$$
+$$
+E(\epsilon_t\epsilon_{t+h}) = E((Z_t + \phi Z_{t-1} + \phi^2 Z_{t-2} + ...)(Z_{t+h} + \phi Z_{t+h-1} + \phi^2 Z_{t+h-2} + ...)) 
+$$
+$$
 = E(Z_{t}Z_{t+h}+\phi Z_{t}Z_{t-1+h}+\phi^2 Z_{t}Z_{t-2+h}+...) 
 $$
 
@@ -178,33 +198,49 @@ $$
 \phi^h \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2
 $$
 
-The Zs are identically distributed, so we only need to calculate $E(Z_t^2)$ and plug that value in:
+The Zs are identically distributed, so we only need to calculate $E(Z_t^2)$ and plug that value into the equation above:
 
 $$
-Var(Z_t) = E(Z_t^2) - E(Z_t)^2\\
-E(Z_t)^2 = 0\\
+Var(Z_t) = E(Z_t^2) - E(Z_t)^2
+$$
+$$
+E(Z_t)^2 = 0
+$$
+$$
 E(Z_t^2) = Var(Z_t) = \sigma^2
 $$
 
 So, using the geometric series:
 
 $$
-\phi^h \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2 = \frac{\phi^h \sigma^2}{1-\phi^2}
+\phi^h \sum_{i=0}^\infty(\phi^2)^iZ_{t-i}^2 = \phi^h \sum_{i=0}^\infty(\phi^2)^i\sigma^2 = \frac{\phi^h \sigma^2}{1-\phi^2}
 $$
 
 ## c. Correlation
 
 $$
-\rho(X,Y) = \frac{Cov(X,Y)}{\sqrt{Var(X)Var(Y)}}\\
-\rho(\epsilon_t,\epsilon_{t+h}) = \frac{Cov(\epsilon_t,\epsilon_{t+h})}{\sqrt{Var(\epsilon)Var(\epsilon_{t+h})}} \\
-Var(\epsilon_t) = E(\epsilon_t^2) - E(\epsilon_t)^2=E(\epsilon_t^2)\\
-E(\epsilon_t^2) = E((Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...)(Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...))\\
-= E(Z_t^2+\phi^2 Z_{t-1}^2+\phi^4 Z_{t-2}^2+...)= E(Z_t^2)+\phi^2 E(Z_{t-1}^2)+\phi^4 E(Z_{t-2}^2)+...\\
+\rho(X,Y) = \frac{Cov(X,Y)}{\sqrt{Var(X)Var(Y)}}
+$$
+$$
+\rho(\epsilon_t,\epsilon_{t+h}) = \frac{Cov(\epsilon_t,\epsilon_{t+h})}{\sqrt{Var(\epsilon)Var(\epsilon_{t+h})}}
+$$
+$$
+Var(\epsilon_t) = E(\epsilon_t^2) - E(\epsilon_t)^2=E(\epsilon_t^2)
+$$
+$$
+E(\epsilon_t^2) = E((Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...)(Z_t+\phi Z_{t-1}+\phi^2 Z_{t-2}+...))
+$$
+$$
+= E(Z_t^2+\phi^2 Z_{t-1}^2+\phi^4 Z_{t-2}^2+...)= E(Z_t^2)+\phi^2 E(Z_{t-1}^2)+\phi^4 E(Z_{t-2}^2)+...
+$$
+$$
 = \sum_{i=0}^\infty (\phi^2)^iE(Z_{t-i}^2)=\sum_{i=0}^\infty (\phi^2)^i\sigma^2=\frac{\sigma^2}{1-\phi^2}
 $$
-$Var(\epsilon_{t+h})$ will be the same, so $$
+$Var(\epsilon_{t+h})$ will be the same, so:
+
+$$
 \sqrt{Var(\epsilon)Var(\epsilon_{t+h})} = \frac{\sigma^2}{1-\phi^2}
-$$. 
+$$
 
 Therefore:
 
@@ -221,13 +257,14 @@ A stationary process {$Y_t$} has a constant mean and finite second moment for al
 ```{r echo=FALSE}
 temps <- read.csv("/Users/timvigers/Repositories/School/Analysis of Longitudinal Data/Homework 1/global_temp_anomalies.csv",header = F)
 colnames(temps) <- c("year","temp")
-temps$fake <- 1
 ```
 
 The model:
 
 ```{r}
-mod1 <- gls(temp ~ year,data = temps,method = "ML",correlation = corAR1(form = ~1|fake))
+temps$fake <- 1
+mod1 <- gls(temp ~ year,data = temps,method = "ML",
+            correlation = corAR1(form = ~1|fake))
 ```
 
 ```{r echo=FALSE}
@@ -243,7 +280,7 @@ plot(temps$year,resid(mod1),xlab = "Year",
      ylab = "Residuals",main = "AR(1) Residuals")
 ```
 
-It's pretty obvious that there is a pattern in these residuals, and I think the plot suggests that there could be a polynomial trend in the data.
+It's pretty obvious that there is a pattern in these residuals, and I think the plot suggests that there could be a quartic trend.
 
 ## b. New residuals
 
@@ -251,18 +288,64 @@ It's pretty obvious that there is a pattern in these residuals, and I think the 
 resids <- temps$temp - predict(mod1)
 new_resids <- temps$temp - (predict(mod1) + 0.7395*lag(resids))
 plot(temps$year,new_resids,xlab = "Year",
-     ylab = "Residuals",main = "New AR(1) Residuals")
+     ylab = "Residuals",main = "Adjusted AR(1) Residuals")
 ```
 
-Using the estimated correlation parameter from SAS to calculate new residuals looks much better. I think this model actually fits the data realtively well given these residuals, but it isn't perfect. The trend "W" trend from the previous plot it still sort of visible, although I doubt I'd notice it if I hadn't seen the first plot. 
+Using the estimated correlation parameter from SAS ($\phi$=0.7395) to calculate new residuals looks much better. I think this model actually fits the data realtively well given these residuals, but it isn't perfect. The "W" trend from the previous plot it still sort of visible, although I'm not sure I'd notice it if I hadn't seen the first plot. 
 
 Also, a qq plot of these residuals looks decent to me:
 
 ```{r echo=FALSE}
-qqplot(temps$year,new_resids,ylab = "Residuals",main = "New AR(1) Residuals",xlab = "Year")
+qqplot(temps$year,new_resids,ylab = "Residuals",main = "New AR(1) Residuals",
+       xlab = "Year")
 ```
 
 ## c. Average increase per decade
 
 Based on this model, the average increase in temperature per decade is 0.073 degrees C (95% CI: 0.056 - 0.090). 
 
+## d. Polynomial model
+
+The first residual plot has a "W" shape, so I tried to fit a quartic model, but got a convergence warning: 
+
+```{r error=TRUE}
+mod2 <- gls(temp ~ year+I(year^2)+I(year^3)+I(year^4),data = temps,
+            method = "ML",correlation = corAR1(form = ~1|fake))
+```
+
+So I took it back down to a cubic model:
+
+```{r}
+mod2 <- gls(temp ~ year+I(year^2)+I(year^3),data = temps,method = "ML",
+            correlation = corAR1(form = ~1|fake))
+```
+
+```{r echo=FALSE}
+kable(summary(mod2)$tTable)
+```
+
+### Polynomial model residuals
+
+```{r echo=FALSE}
+plot(temps$year,resid(mod2),xlab = "Year",
+     ylab = "Residuals",main = "Polynomial AR(1) Residuals")
+plot(temps$year,temps$temp - (predict(mod2) + 0.4655*lag(resids)),xlab = "Year",
+     ylab = "Residuals",main = "Adjusted Polynomial AR(1) Residuals")
+```
+
+This model appears to be a better fit than the linear linear model overall, based on the regular residuals (even though there's still a pattern in the adjusted residuals, which I'm assuming is a result of the correlation parameter changing). The correlation parameter decreases from 0.7395 to 0.4655, which makes some intuitive sense. Because the fit is better, the polynomial terms are accounting for some of the correlation between outcomes.
+
+## e. Loess model
+
+### The model
+
+```{r}
+mod3 <- loess(temp ~ year,temps,span = 0.3)
+```
+
+```{r echo=FALSE}
+plot(temps$year,resid(mod3),xlab = "Year",
+     ylab = "Residuals",main = "Loess Residuals")
+```
+
+The Loess residuals indicate that the fit is pretty good. They certainly look better than the polynomial residuals and the regular residual plot from the linear model. They look fairly normal for the Loess plot, whereas there were clear patterns in the linear and polynomial models. However, the "W" pattern is still vaguely visible in the most extreme points in the Loess residuals. I think the Loess plot is probably the best model overall, although the adjusted residuals that take into account both the mean and the error parts of the linear model also look good to me. Since I'm not at all comfortable interpreting the results of a Loess model, I would probably use the linear model if I was analyzing this on my own, but the Loess might be a better alternative if I was better able to interpret the output. 
