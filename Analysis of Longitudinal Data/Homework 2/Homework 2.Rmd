@@ -74,10 +74,17 @@ $$
 
 # 3. $Var(L\hat{\beta})$
 
-It follows from the above equations that if X does not have full rank, $Var(\tilde\beta)=(X^tV^{-1}X)^-$ (see course notes page 143). Combining this fact with the property $Var(AY) = AVar(Y)A^t$, you get:
+It follows from the above equations that if X does not have full rank, $Var(\tilde\beta)=(X^tV^{-1}X)^-$ (see course notes page 143):
 
 $$
-Var(\tilde\beta) = (X^t V^{-1}X)^{-}(X^t V^{-1}X)(X^tV^{-1}X)^{-} = (X^tV^{-1}X)^- \\
+\tilde\beta = (X^t V^{-1}X)^{-}X^t V^{-1}Y\\
+Var(\tilde\beta) = (X^t V^{-1}X)^{-}X^t V^{-1}V((X^t V^{-1}X)^{-}X^t V^{-1})^t\\
+= (X^t V^{-1}X)^{-}X^t ((X^t V^{-1}X)^{-}X^t V^{-1})^t = (X^t V^{-1}X)^{-}\\
+$$
+
+So:
+
+$$
 Var(L\tilde\beta) = LVar(\tilde\beta)L^t = L(X^tV^{-1}X)^-L^t
 $$
 
@@ -125,7 +132,7 @@ I also contrasted the difference between group ch at time 0 and group co at time
 
 ## Confirm with emmeans
 
-```{r contrasts, warning=FALSE}
+```{r contrasts, warning=FALSE, message=FALSE}
 emm_group <- emmeans(dog_mod, specs = ~group)
 emm_time <- emmeans(dog_mod, specs = ~factor(time))
 emm_group_time <- emmeans(dog_mod, specs = ~group*factor(time))
@@ -137,21 +144,9 @@ contrast(emm_group, method = list("Group ch vs. group cl" = ch - cl))
 contrast(emm_time, method = list("Time 0 vs. time 120" = t0 - t120))
 ```
 
-Unfortunately I didn't have time to figure out the two row contrasts in R, but the estimates match, which is a good sign.
+Unfortunately I didn't have time to figure out the two row contrasts in R but the estimates match, which is a good sign.
 
 # 6.
-
-```{r number 6}
-# Create data
-six <- as.data.frame(matrix(nrow = 6*3,ncol = 4))
-colnames(six) <- c("subject","time","group","y")
-six$subject <- rep(1:6,each=3)
-six$time <- rep(1:3)
-six$group <- rep(1:3,each=6)
-six$y <- rnorm(18,mean = 10,sd=5)
-# Model
-six_mod <- lme(y~group*time,data = six,random = ~1|subject)
-```
 
 $$
 X = \begin{bmatrix}
