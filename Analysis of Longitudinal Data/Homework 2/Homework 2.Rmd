@@ -1,0 +1,125 @@
+---
+title: "Longitudinal Homework 2"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(nlme)
+library(emmeans)
+```
+
+# 1. Estimability
+
+If you have a matrix X which contains an intercept and each level of a categorical variable, then this matrix must be less than full rank (LTFR) because a column will be linearly dependent on all the other one. For example, take a matrix for a class variable with three levels:
+
+$$
+X_{ltfr} = \begin{bmatrix}
+    1 & 0 & 1 & 0 \\
+    1 & 0 & 1 & 0 \\
+    1 & 1 & 0 & 0 \\
+    1 & 0 & 0 & 1
+\end{bmatrix}
+$$
+
+When a matrix has linear dependencies like this, the specific inverse of X doesn't exist, which means that $\hat{\beta}=(X^tX)^{-1}X^tY$ is not unique. However, if you drop one level of the class variable, you can get a matrix that is full rank:
+
+$$
+X_{fr} = \begin{bmatrix}
+    1 & 1 & 0 \\
+    1 & 1 & 0 \\
+    1 & 0 & 0 \\
+    1 & 0 & 1
+\end{bmatrix}
+$$
+
+This matrix no longer has any linearly dependent columns, which means that $X_{fr}^tX_{fr}$ is full rank and the inverse can be computed. When fitting a LTFR model, SAS would use $X_{fr}^tX_{fr}$ to create the generalized inverse (essentially by filling $X_{fr}^tX_{fr}$ in with 0s so that it matches the dimensions of $X_{ltfr}^tX_{ltfr}$). This allows you to estimate the parameters for the class variable, although the beta estimates are not unique since you could use any level of the variable as the reference group.
+
+# 2. $Var(\hat{\beta})$ for full-rank linear mixed model
+
+The algebraic form of $\hat{\beta}$ from ML estimation is:
+
+$$
+\hat{\beta} = (X^t V^{-1}X)^{-1}X^t V^{-1}Y
+$$
+
+Using the general property $Var(AY) = AVar(Y)A^t$ we can set $A=(X^t V^{-1}X)^{-1}X^t V^{-1}$ and get:
+
+$$
+Var(\hat{\beta}) = AVar(Y)A^t=(X^t V^{-1}X)^{-1}X^t V^{-1}Var(Y)((X^t V^{-1}X)^{-1}X^t V^{-1})^t
+$$
+
+Because $V^{-1}$ is symmetric, $A^t$ can be re-written as 
+
+$$
+((X^t V^{-1}X)^{-1}X^t V^{-1})^t = V^{-1}X(X^tV^{-1}X)^{-1}
+$$
+
+Leaving us with: 
+
+$$
+Var(\hat{\beta}) = (X^t V^{-1}X)^{-1}(X^t V^{-1}Var(Y)V^{-1}X)(X^tV^{-1}X)^{-1}
+$$
+
+Finally, because $Var(Y)=V$, we get:
+
+$$
+Var(\hat{\beta}) = (X^t V^{-1}X)^{-1}(X^t V^{-1}VV^{-1}X)(X^tV^{-1}X)^{-1}\\
+= (X^t V^{-1}X)^{-1}(X^t V^{-1}X)(X^tV^{-1}X)^{-1}\\
+= (X^t V^{-1}X)^{-1}
+$$
+
+# 3. $Var(L\hat{\beta})$
+
+Similar to the problem above, you can start with the property $Var(AY) = AVar(Y)A^t$ to get:
+
+$$
+Var(L\beta) = LVar(\beta)L^t=L(X^t V^{-1}X)^-L^t
+$$
+
+Because $L\beta$ is estimable, $L=a^tX$, so:
+
+$$
+Var(L\beta) = LVar(\beta)L^t=a^tX(X^t V^{-1}X)^-(a^tX)^t\\
+=a^tX(X^t V^{-1}X)^-X^t a \\
+H = (X^tX)^-(X^tX) \\
+LH = L = L(X^tX)^-(X^tX)\\ 
+LVar(\beta)L^t = L(X^tX)^-(X^tX)(X^t V^{-1}X)^-(L(X^tX)^-(X^tX))^t
+$$
+
+# Where to go from here? 
+
+# 4. GLM vs. LMM
+
+The general linear model (GLM) is a special case of a linear mixed model (LMM). Basically, a GLM is a LMM with no random effects and a simple covariance structure ($R=\sigma^2I$). So you can write the GLM as $Y=X\beta+\epsilon$ and the LMM as $Y=X\beta+Zb+\epsilon$, where $b$ is the random effect term and Z is the associated design matrix of the random effects. Including the random effects can account for correlation within clusters (e.g using a random intercept to account for correlations between multiple measures on the same person). Adjusting the correlation structure in a linear model can also allow you to fine-tune the model based on how you believe the correlation between measures is affected by clustering (e.g. using AR(1) to model equally spaced time points). 
+
+# 5. Dog data
+
+## The model
+
+```{r dog model}
+# Read in data
+dogs <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/dog_data.csv")
+dog_mod <- lme(y ~ group*factor(time),random = ~1|id,data = dogs)
+```
+
+## Contrasts with emmeans
+
+```{r contrasts, warning=FALSE}
+emm_group <- emmeans(dog_mod, specs = ~group)
+emm_time <- emmeans(dog_mod, specs = ~factor(time))
+ch <- c(1,0,0)
+cl <- c(0,1,0)
+t0 <- c(1,0,0,0,0)
+t120 <- c(0,0,0,0,1)
+contrast(emm_group, method = list("Group ch compared to group cl" = ch - cl))
+contrast(emm_time, method = list("Time 0 compared to  time 120" = t0 - t120))
+```
+
+## Confirm with SAS
+
+![Contrast Code](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Code.png)
+
+![Contrast Results](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Contrasts.png)
