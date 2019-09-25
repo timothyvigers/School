@@ -32,6 +32,8 @@ class id group time;
 model y = group time group*time / solution;
 estimate 'group comp' group 1 -1 0/E;
 estimate 'time comp' time 1 0 0 0 -1 /E;
-contrast 'ch0 vs. co60 comp' group 1 0 -1 time 1 0 -1 0 0 group*time 1 0 0 0 0 0 0 0 0 0 0 0 -1 0 0/E;
-contrast 'ch0 vs. cl60 comp' group 1 -1 0 time 1 0 -1 0 0 group*time 1 0 0 0 0 0 0 -1 0 0 0 0 0 0 0/E;
+contrast 'ch0 vs. co60 and ch0 vs. cl60 comp' group 1 0 -1 time 1 0 -1 0 0 group*time 1 0 0 0 0 0 0 0 0 0 0 0 -1 0 0,
+		 					 group 1 -1 0 time 1 0 -1 0 0 group*time 1 0 0 0 0 0 0 -1 0 0 0 0 0 0 0/E;
+contrast 'ch0 vs. co90 and ch0 vs. cl90 comp' group 1 0 -1 time 1 0 0 -1 0 group*time 1 0 0 0 0 0 0 0 0 0 0 0 0 -1 0,
+		 					 group 1 -1 0 time 1 0 0 -1 0 group*time 1 0 0 0 0 0 0 0 -1 0 0 0 0 0 0/E;
 random intercept / subject=id(group); run;

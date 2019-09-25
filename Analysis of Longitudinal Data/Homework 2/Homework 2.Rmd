@@ -52,13 +52,13 @@ $$
 Var(\hat{\beta}) = AVar(Y)A^t=(X^t V^{-1}X)^{-1}X^t V^{-1}Var(Y)((X^t V^{-1}X)^{-1}X^t V^{-1})^t
 $$
 
-Because $V^{-1}$ is symmetric, $A^t$ can be re-written as 
+Because $V^{-1}$ is symmetric, $A^t$ can be re-written as
 
 $$
 ((X^t V^{-1}X)^{-1}X^t V^{-1})^t = V^{-1}X(X^tV^{-1}X)^{-1}
 $$
 
-Leaving us with: 
+Leaving us with:
 
 $$
 Var(\hat{\beta}) = (X^t V^{-1}X)^{-1}(X^t V^{-1}Var(Y)V^{-1}X)(X^tV^{-1}X)^{-1}
@@ -74,45 +74,56 @@ $$
 
 # 3. $Var(L\hat{\beta})$
 
-Similar to the problem above, you can start with the property $Var(AY) = AVar(Y)A^t$ to get:
+It follows from the above equations that if X does not have full rank, $Var(\tilde\beta)=(X^tV^{-1}X)^-$ (see course notes page 143). Combining this fact with the property $Var(AY) = AVar(Y)A^t$, you get:
 
 $$
-Var(L\beta) = LVar(\beta)L^t=L(X^t V^{-1}X)^-L^t
+Var(\tilde\beta) = (X^t V^{-1}X)^{-}(X^t V^{-1}X)(X^tV^{-1}X)^{-} = (X^tV^{-1}X)^- \\
+Var(L\tilde\beta) = LVar(\tilde\beta)L^t = L(X^tV^{-1}X)^-L^t
 $$
-
-Because $L\beta$ is estimable, $L=a^tX$, so:
-
-$$
-Var(L\beta) = LVar(\beta)L^t=a^tX(X^t V^{-1}X)^-(a^tX)^t\\
-=a^tX(X^t V^{-1}X)^-X^t a \\
-H = (X^tX)^-(X^tX) \\
-LH = L = L(X^tX)^-(X^tX)\\ 
-LVar(\beta)L^t = L(X^tX)^-(X^tX)(X^t V^{-1}X)^-(L(X^tX)^-(X^tX))^t
-$$
-
-# Where to go from here? 
 
 # 4. GLM vs. LMM
 
-The general linear model (GLM) is a special case of a linear mixed model (LMM). Basically, a GLM is a LMM with no random effects and a simple covariance structure ($R=\sigma^2I$). So you can write the GLM as $Y=X\beta+\epsilon$ and the LMM as $Y=X\beta+Zb+\epsilon$, where $b$ is the random effect term and Z is the associated design matrix of the random effects. Including the random effects can account for correlation within clusters (e.g using a random intercept to account for correlations between multiple measures on the same person). Adjusting the correlation structure in a linear model can also allow you to fine-tune the model based on how you believe the correlation between measures is affected by clustering (e.g. using AR(1) to model equally spaced time points). 
+The general linear model (GLM) is a special case of a linear mixed model (LMM). Basically, a GLM is a LMM with no random effects and a simple covariance structure ($R=\sigma^2I$). So you can write the GLM as $Y=X\beta+\epsilon$ and the LMM as $Y=X\beta+Zb+\epsilon$, where $b$ is the random effect term and Z is the associated design matrix of the random effects. Including the random effects can account for correlation within clusters (e.g using a random intercept to account for correlations between multiple measures on the same person). Adjusting the correlation structure in a linear model can also allow you to fine-tune the model based on how you believe the correlation between measures is affected by clustering (e.g. using AR(1) to model equally spaced time points).
 
 # 5. Dog data
+
+## The data format (first 10 rows)
+
+```{r dog data, echo=FALSE}
+# Read in data
+dogs <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/dog_data.csv")
+kable(head(dogs,n=10))
+```
 
 ## The model
 
 ```{r dog model}
-# Read in data
-dogs <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/dog_data.csv")
 dog_mod <- lme(y ~ group*factor(time),random = ~1|id,data = dogs)
 ```
 
-## Results
+## Model results
 
 ```{r dog summary, echo=FALSE}
 kable(summary(dog_mod)$tTable)
 ```
 
-## Contrasts with emmeans
+## Contrasts with SAS
+
+### Contrast code
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Code.png)
+
+### Contrast results
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Contrasts.png)
+
+For this problem I assumed that dogs were unique across groups.
+
+First, I compared the ch group to the cl group averaged across time. The estimated difference in gall bladder volume between the two groups is 2.59, but this difference is not statistically significant (p = 0.52). I also compared time 0 to time 120, to see if there was a significant difference in gall bladder size averaged across the groups. The estimated difference is 0.39, but this was also not statistically significant (p = 0.16).
+
+I also contrasted the difference between group ch at time 0 and group co at time 60 to the difference between group ch at time 0 and group cl at time 60. The difference between these differences was not statistically significant (p = 0.45). Similarly, I compared the difference between group ch at time 0 and group co at time 90 to the difference between group ch at time 0 and group cl at time 90. This contrast was also not statistically significant (p = 0.15).
+
+## Confirm with emmeans
 
 ```{r contrasts, warning=FALSE}
 emm_group <- emmeans(dog_mod, specs = ~group)
@@ -122,28 +133,13 @@ ch <- c(1,0,0)
 cl <- c(0,1,0)
 t0 <- c(1,0,0,0,0)
 t120 <- c(0,0,0,0,1)
-ch0 <- c(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-cl60 <- c(0,0,0,0,0,0,0,1,0,0,0,0,0,0,0)
-co60 <- c(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0)
 contrast(emm_group, method = list("Group ch vs. group cl" = ch - cl))
 contrast(emm_time, method = list("Time 0 vs. time 120" = t0 - t120))
-contrast(emm_group_time, 
-         method = list("Group ch, time 0 vs. group co, time 60" = ch0 - co60))
-contrast(emm_group_time, 
-         method = list("Group ch, time 0 vs. group cl, time 60" = ch0 - cl60))
 ```
 
-First, I compared the ch group to the cl group averaged across time. The estimated difference in gall bladder volume between the two groups is 2.59, but this difference is not statistically significant (p = 0.52). I also compared time 0 to time 120, to see if there was a significant difference in gall bladder size averaged across the groups. The estimated difference is 0.39, but this was also not statistically significant (p = 0.16). 
+Unfortunately I didn't have time to figure out the two row contrasts in R, but the estimates match, which is a good sign.
 
-I also contrasted group ch at time 0 to group co at time 60 and to group cl at time 60. Neither difference was statistically significant (p = 0.46 and p = 0.16, respectively).
-
-## Confirm with SAS
-
-![Contrast Code](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Code.png)
-
-![Contrast Results](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/Contrasts.png)
-
-# 6. 
+# 6.
 
 ```{r number 6}
 # Create data
@@ -156,3 +152,26 @@ six$y <- rnorm(18,mean = 10,sd=5)
 # Model
 six_mod <- lme(y~group*time,data = six,random = ~1|subject)
 ```
+
+$$
+X = \begin{bmatrix}
+    1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+    1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+    1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+    1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+\end{bmatrix}
+$$
