@@ -436,81 +436,6 @@ Var(L\tilde\beta) = LVar(\tilde\beta)L^t = L(X^tV^{-1}X)^-L^t
 </div>
 <div id="dog-data" class="section level1">
 <h1>5. Dog data</h1>
-<div id="the-data-format-first-10-rows" class="section level2">
-<h2>The data format (first 10 rows)</h2>
-<table>
-<thead>
-<tr class="header">
-<th align="left">group</th>
-<th align="right">id</th>
-<th align="right">time</th>
-<th align="right">y</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">ch</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">17.70</td>
-</tr>
-<tr class="even">
-<td align="left">ch</td>
-<td align="right">1</td>
-<td align="right">30</td>
-<td align="right">11.44</td>
-</tr>
-<tr class="odd">
-<td align="left">ch</td>
-<td align="right">1</td>
-<td align="right">60</td>
-<td align="right">12.68</td>
-</tr>
-<tr class="even">
-<td align="left">ch</td>
-<td align="right">1</td>
-<td align="right">90</td>
-<td align="right">14.64</td>
-</tr>
-<tr class="odd">
-<td align="left">ch</td>
-<td align="right">1</td>
-<td align="right">120</td>
-<td align="right">16.78</td>
-</tr>
-<tr class="even">
-<td align="left">ch</td>
-<td align="right">2</td>
-<td align="right">0</td>
-<td align="right">17.22</td>
-</tr>
-<tr class="odd">
-<td align="left">ch</td>
-<td align="right">2</td>
-<td align="right">30</td>
-<td align="right">13.28</td>
-</tr>
-<tr class="even">
-<td align="left">ch</td>
-<td align="right">2</td>
-<td align="right">60</td>
-<td align="right">14.74</td>
-</tr>
-<tr class="odd">
-<td align="left">ch</td>
-<td align="right">2</td>
-<td align="right">90</td>
-<td align="right">17.34</td>
-</tr>
-<tr class="even">
-<td align="left">ch</td>
-<td align="right">2</td>
-<td align="right">120</td>
-<td align="right">17.64</td>
-</tr>
-</tbody>
-</table>
-</div>
 <div id="the-model" class="section level2">
 <h2>The model</h2>
 <pre class="r"><code>dog_mod &lt;- lme(y ~ group*factor(time),random = ~1|id,data = dogs)</code></pre>
@@ -687,11 +612,20 @@ contrast(emm_group, method = list(&quot;Group ch vs. group cl&quot; = ch - cl))<
 ## 
 ## Results are averaged over the levels of: group 
 ## Degrees-of-freedom method: containment</code></pre>
-<p>Unfortunately I didn’t have time to figure out the two row contrasts in R, but the estimates match, which is a good sign.</p>
+<p>Unfortunately I didn’t have time to figure out the two row contrasts in R but the estimates match, which is a good sign.</p>
 </div>
 </div>
 <div id="section" class="section level1">
 <h1>6.</h1>
+<div id="a.-model-and-x-matrix" class="section level2">
+<h2>a. Model and X matrix</h2>
+<div id="i.-ltfr" class="section level3">
+<h3>i. LTFR</h3>
+<p>The statistical model is:</p>
+<p><span class="math display">\[
+Y_{ij}= \mu + \alpha_1 + \alpha_2 + \alpha_3 + \tau_1 + \tau_2 + \tau_3 + \gamma_{11} + \gamma_{12} + \gamma_{13} + \gamma_{21} + \gamma_{22} + \gamma_{23} + \gamma_{31} + \gamma_{32} + \gamma_{33} + b_{subject} +\epsilon
+\]</span> Where <span class="math inline">\(\alpha\)</span>s represent the effect of time, <span class="math inline">\(\tau\)</span>s represent the effect of group, and <span class="math inline">\(\gamma\)</span>s represent the interaction effects. <span class="math inline">\(b\)</span> represents a random intercept for subject, and <span class="math inline">\(\epsilon\)</span> is the error term.</p>
+<p>The X matrix is:</p>
 <p><span class="math display">\[
 X = \begin{bmatrix}
     1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
@@ -714,6 +648,152 @@ X = \begin{bmatrix}
     1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
 \end{bmatrix}
 \]</span></p>
+</div>
+<div id="ii.-with-a-set-to-0-restriction" class="section level3">
+<h3>ii. With a set-to-0 restriction</h3>
+<p>The statistical model is:</p>
+<p><span class="math display">\[
+Y_{ij}= \beta_0 + \beta_1x_{group1} + \beta_2x_{group2} + \beta_3x_{time1} + \beta_4x_{time2} + \beta_5x_{group1time1} + \beta_6x_{group1time2} + \beta_7x_{group2time1} + \beta_8x_{group2time2}+ b_{subject} +\epsilon
+\]</span></p>
+<p>The X matrix is:</p>
+<p><span class="math display">\[
+X = \begin{bmatrix}
+    1 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+    1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+    1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
+    1 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
+    1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+    1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+\end{bmatrix}
+\]</span></p>
+<p>This is the same as the matrix in i., but with the highest values of group and time removed.</p>
+</div>
+</div>
+<div id="b.-linear-trend-for-one-group-compared-to-another." class="section level2">
+<h2>b. Linear trend for one group compared to another.</h2>
+<p>The estimate for group 3, time 1 is:</p>
+<p><span class="math display">\[
+L_{13}=\begin{bmatrix}
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 
+\end{bmatrix}
+\]</span></p>
+<p>And the estimate for group 1, time 1 is:</p>
+<p><span class="math display">\[
+L_{11}=\begin{bmatrix}
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 
+\end{bmatrix}
+\]</span></p>
+<p>The linear trend is just the difference between the two:</p>
+<p><span class="math display">\[
+L_{trend}=\begin{bmatrix}
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; -1 &amp; 0 &amp; 1 &amp; -1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 
+\end{bmatrix}
+\]</span></p>
+<p>Using the LTFR design matrix (since the contrasts above are for the LTFR model), show that <span class="math inline">\(L=LH\)</span>:</p>
+<pre class="r"><code># Construct the design matrix
+x &lt;- matrix(c(1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+              1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+              1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+              1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+              1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+              1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+              1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+              1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+            nrow = 18,byrow = T)
+# Construct the hat matrix
+H &lt;- ginv((t(x)%*%x))%*%(t(x)%*%x)
+# Construct L
+L &lt;- c(0,0,0,0,-1,0,1,-1,0,1,0,0,0,0,0,0)
+# Test if L = LH (round to 1 digit because the ginv() function produces very 
+# small numbers that are essentially 0 but not quite, I think due to 
+# machine precision)
+round(L %*% H)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+## [1,]    0    0    0    0   -1    0    1   -1    0     1     0     0     0
+##      [,14] [,15] [,16]
+## [1,]     0     0     0</code></pre>
+<pre class="r"><code>round(L %*% H) == L</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+## [1,] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE  TRUE  TRUE  TRUE  TRUE
+##      [,14] [,15] [,16]
+## [1,]  TRUE  TRUE  TRUE</code></pre>
+<p>So, the linear trend above is estimable.</p>
+</div>
+<div id="c.-ar1" class="section level2">
+<h2>c. AR(1)</h2>
+<p>An AR(1) structure for R would allow the correlation between time 1 and time 3 to be lower than the correlation between time 1 and time 2. The distribution of the error term is <span class="math inline">\(\epsilon\text{ ~ }N(0,R_i)\)</span>, so this is the major change to the model.</p>
+</div>
+<div id="d.-time-as-continuous" class="section level2">
+<h2>d. Time as continuous</h2>
+<p>The statistical model is:</p>
+<p><span class="math display">\[
+Y_{ij}= \mu + \alpha + \tau_1 + \tau_2 + \tau_3 + \gamma_{1} + \gamma_{2} + \gamma_{3} + b_{subject} +\epsilon
+\]</span></p>
+<p>Where <span class="math inline">\(\alpha\)</span> is the effect for time, the <span class="math inline">\(\tau\)</span>s are the effects for group, and the <span class="math inline">\(\gamma\)</span>s are the interaction effects between time and group.</p>
+<p>And the X matrix is:</p>
+<p><span class="math display">\[
+X = \begin{bmatrix}
+    1 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 \\
+    1 &amp; 1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 1 \\
+    1 &amp; 2 &amp; 1 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 \\
+    1 &amp; 2 &amp; 1 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 \\
+    1 &amp; 2 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 2 &amp; 0 \\
+    1 &amp; 2 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 2 &amp; 0 \\
+    1 &amp; 2 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 2 \\
+    1 &amp; 2 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 2 \\
+    1 &amp; 3 &amp; 1 &amp; 0 &amp; 0 &amp; 3 &amp; 0 &amp; 0 \\
+    1 &amp; 3 &amp; 1 &amp; 0 &amp; 0 &amp; 3 &amp; 0 &amp; 0 \\
+    1 &amp; 3 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 3 &amp; 0 \\
+    1 &amp; 3 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 3 &amp; 0 \\
+    1 &amp; 3 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 3 \\
+    1 &amp; 3 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 3 \\
+\end{bmatrix}
+\]</span></p>
+</div>
+<div id="e.-unequally-spaced-times" class="section level2">
+<h2>e. Unequally spaced times</h2>
+<div id="i.-class-variable" class="section level3">
+<h3>i. Class variable</h3>
+<p>With unequally spaced time periods, it would not be appropriate to treat time as a categorical variable. Doing so would treat the difference between 0 and 1 month the same as the difference between 0 and 6 months, when in reality the correlation between 0 and 6 months is probably less than the correlation between 0 and 1 month.</p>
+</div>
+<div id="ii." class="section level3">
+<h3>ii.</h3>
+<p>In order to account for the unequal spacing of time, you could use a spatial power structure for r:</p>
+<p><span class="math display">\[
+R_i = \sigma^2 \begin{bmatrix}
+    1 &amp; \phi &amp; \phi^5 \\
+    \phi &amp; 1 &amp; \phi^3 \\
+    \phi^5 &amp; \phi^3 &amp; 1
+\end{bmatrix}
+\]</span></p>
+</div>
+</div>
 </div>
 
 

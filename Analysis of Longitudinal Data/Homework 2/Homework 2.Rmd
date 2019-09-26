@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(nlme)
+library(MASS)
 library(emmeans)
 ```
 
@@ -94,12 +95,9 @@ The general linear model (GLM) is a special case of a linear mixed model (LMM). 
 
 # 5. Dog data
 
-## The data format (first 10 rows)
-
 ```{r dog data, echo=FALSE}
 # Read in data
 dogs <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 2/dog_data.csv")
-kable(head(dogs,n=10))
 ```
 
 ## The model
@@ -148,6 +146,19 @@ Unfortunately I didn't have time to figure out the two row contrasts in R but th
 
 # 6.
 
+## a. Model and X matrix
+
+### i. LTFR
+
+The statistical model is:
+
+$$
+Y_{ij}= \mu + \alpha_1 + \alpha_2 + \alpha_3 + \tau_1 + \tau_2 + \tau_3 + \gamma_{11} + \gamma_{12} + \gamma_{13} + \gamma_{21} + \gamma_{22} + \gamma_{23} + \gamma_{31} + \gamma_{32} + \gamma_{33} + b_{subject} +\epsilon
+$$
+Where $\alpha$s represent the effect of time, $\tau$s represent the effect of group, and $\gamma$s represent the interaction effects. $b$ represents a random intercept for subject, and $\epsilon$ is the error term.
+
+The X matrix is:
+
 $$
 X = \begin{bmatrix}
     1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
@@ -168,5 +179,159 @@ X = \begin{bmatrix}
     1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
     1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
     1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+\end{bmatrix}
+$$
+
+### ii. With a set-to-0 restriction
+
+The statistical model is:
+
+$$
+Y_{ij}= \beta_0 + \beta_1x_{group1} + \beta_2x_{group2} + \beta_3x_{time1} + \beta_4x_{time2} + \beta_5x_{group1time1} + \beta_6x_{group1time2} + \beta_7x_{group2time1} + \beta_8x_{group2time2}+ b_{subject} +\epsilon
+$$
+
+The X matrix is:
+
+$$
+X = \begin{bmatrix}
+    1 & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+    1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+    1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 \\
+    1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 \\
+    1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{bmatrix}
+$$
+
+This is the same as the matrix in i., but with the highest values of group and time removed.
+
+## b. Linear trend for one group compared to another.
+
+The estimate for group 3, time 1 is:
+
+$$
+L_{13}=\begin{bmatrix}
+    1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 
+\end{bmatrix}
+$$
+
+And the estimate for group 1, time 1 is:
+
+$$
+L_{11}=\begin{bmatrix}
+    1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 
+\end{bmatrix}
+$$
+
+The linear trend is just the difference between the two:
+
+$$
+L_{trend}=\begin{bmatrix}
+    0 & 0 & 0 & 0 & -1 & 0 & 1 & -1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 
+\end{bmatrix}
+$$
+
+Using the LTFR design matrix (since the contrasts above are for the LTFR model), show that $L=LH$:
+
+```{r matrix multiplication}
+# Construct the design matrix
+x <- matrix(c(1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+              1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
+              1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+              1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 
+              1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+              1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
+              1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+              1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 
+              1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
+              1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+            nrow = 18,byrow = T)
+# Construct the hat matrix
+H <- ginv((t(x)%*%x))%*%(t(x)%*%x)
+# Construct L
+L <- c(0,0,0,0,-1,0,1,-1,0,1,0,0,0,0,0,0)
+# Test if L = LH (round to 1 digit because the ginv() function produces very 
+# small numbers that are essentially 0 but not quite, I think due to 
+# machine precision)
+round(L %*% H)
+round(L %*% H) == L
+```
+
+So, the linear trend above is estimable. 
+
+## c. AR(1)
+
+An AR(1) structure for R would allow the correlation between time 1 and time 3 to be lower than the correlation between time 1 and time 2. The distribution of the error term is $\epsilon\text{ ~ }N(0,R_i)$, so this is the major change to the model.
+
+## d. Time as continuous
+
+The statistical model is:
+
+$$
+Y_{ij}= \mu + \alpha + \tau_1 + \tau_2 + \tau_3 + \gamma_{1} + \gamma_{2} + \gamma_{3} + b_{subject} +\epsilon
+$$
+
+Where $\alpha$ is the effect for time, the $\tau$s are the effects for group, and the $\gamma$s are the interaction effects between time and group.
+
+And the X matrix is:
+
+$$
+X = \begin{bmatrix}
+    1 & 1 & 1 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 1 & 1 & 0 & 0 & 1 & 0 & 0 \\
+    1 & 1 & 0 & 1 & 0 & 0 & 1 & 0 \\
+    1 & 1 & 0 & 1 & 0 & 0 & 1 & 0 \\
+    1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 \\
+    1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 \\
+    1 & 2 & 1 & 0 & 0 & 2 & 0 & 0 \\
+    1 & 2 & 1 & 0 & 0 & 2 & 0 & 0 \\
+    1 & 2 & 0 & 1 & 0 & 0 & 2 & 0 \\
+    1 & 2 & 0 & 1 & 0 & 0 & 2 & 0 \\
+    1 & 2 & 0 & 0 & 1 & 0 & 0 & 2 \\
+    1 & 2 & 0 & 0 & 1 & 0 & 0 & 2 \\
+    1 & 3 & 1 & 0 & 0 & 3 & 0 & 0 \\
+    1 & 3 & 1 & 0 & 0 & 3 & 0 & 0 \\
+    1 & 3 & 0 & 1 & 0 & 0 & 3 & 0 \\
+    1 & 3 & 0 & 1 & 0 & 0 & 3 & 0 \\
+    1 & 3 & 0 & 0 & 1 & 0 & 0 & 3 \\
+    1 & 3 & 0 & 0 & 1 & 0 & 0 & 3 \\
+\end{bmatrix}
+$$
+
+## e. Unequally spaced times
+
+### i. Class variable
+
+With unequally spaced time periods, it would not be appropriate to treat time as a categorical variable. Doing so would treat the difference between 0 and 1 month the same as the difference between 0 and 6 months, when in reality the correlation between 0 and 6 months is probably less than the correlation between 0 and 1 month.
+
+### ii. 
+
+In order to account for the unequal spacing of time, you could use a spatial power structure for r:
+
+$$
+R_i = \sigma^2 \begin{bmatrix}
+    1 & \phi & \phi^5 \\
+    \phi & 1 & \phi^3 \\
+    \phi^5 & \phi^3 & 1
 \end{bmatrix}
 $$
