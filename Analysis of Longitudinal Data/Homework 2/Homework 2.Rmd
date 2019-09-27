@@ -15,7 +15,7 @@ library(emmeans)
 
 # 1. Estimability
 
-If you have a matrix X which contains an intercept and each level of a categorical variable, then this matrix must be less than full rank (LTFR) because a column will be linearly dependent on all the other one. For example, take a matrix for a class variable with three levels:
+If you have a matrix X which contains an intercept and each level of a categorical variable, then this matrix must be less than full rank (LTFR) because a column will have to be linearly dependent on another column. For example, take a matrix for a class variable with three levels:
 
 $$
 X_{ltfr} = \begin{bmatrix}
@@ -26,7 +26,7 @@ X_{ltfr} = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-When a matrix has linear dependencies like this, the specific inverse of X doesn't exist, which means that $\hat{\beta}=(X^tX)^{-1}X^tY$ is not unique. However, if you drop one level of the class variable, you can get a matrix that is full rank:
+When a matrix has linear dependencies like this, the specific inverse of X doesn't exist, which means that $\hat{\beta}=(X^tX)^{-1}X^tY$ is not unique. However, if you drop one level of the class variable, you can get a matrix with no linear dependencies:
 
 $$
 X_{fr} = \begin{bmatrix}
@@ -37,7 +37,7 @@ X_{fr} = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-This matrix no longer has any linearly dependent columns, which means that $X_{fr}^tX_{fr}$ is full rank and the inverse can be computed. When fitting a LTFR model, SAS would use $X_{fr}^tX_{fr}$ to create the generalized inverse (essentially by filling $X_{fr}^tX_{fr}$ in with 0s so that it matches the dimensions of $X_{ltfr}^tX_{ltfr}$). This allows you to estimate the parameters for the class variable, although the beta estimates are not unique since you could use any level of the variable as the reference group.
+This means that $X_{fr}^tX_{fr}$ is full rank and the specific inverse can be computed. When fitting a LTFR model, SAS would use $X_{fr}^tX_{fr}$ to create the generalized inverse (essentially by filling $X_{fr}^tX_{fr}$ in with 0s so that it matches the dimensions of $X_{ltfr}^tX_{ltfr}$). This allows you to estimate the parameters for the class variable.
 
 # 2. $Var(\hat{\beta})$ for full-rank linear mixed model
 
@@ -79,9 +79,16 @@ It follows from the above equations that if X does not have full rank, $Var(\til
 
 $$
 \tilde\beta = (X^t V^{-1}X)^{-}X^t V^{-1}Y\\
-Var(\tilde\beta) = (X^t V^{-1}X)^{-}X^t V^{-1}V((X^t V^{-1}X)^{-}X^t V^{-1})^t\\
-= (X^t V^{-1}X)^{-}X^t ((X^t V^{-1}X)^{-}X^t V^{-1})^t = (X^t V^{-1}X)^{-}\\
+Var(\tilde\beta) = (X^t V^{-1}X)^{-}X^t V^{-1}V((X^t V^{-1}X)^{-}X^t V^{-1})^t
 $$
+
+Using the M-P general inverse allows you to simplify and get:
+
+$$
+(X^t V^{-1}X)^{-}X^t ((X^t V^{-1}X)^{-}X^t V^{-1})^t = (X^t V^{-1}X)^{-}\\
+$$
+
+Because $(X^tV^{-1}X)^-X^t$ is unique in a LMM, any generalized inverse will give you the same result.
 
 So:
 
@@ -126,7 +133,7 @@ For this problem I assumed that dogs were unique across groups.
 
 First, I compared the ch group to the cl group averaged across time. The estimated difference in gall bladder volume between the two groups is 2.59, but this difference is not statistically significant (p = 0.52). I also compared time 0 to time 120, to see if there was a significant difference in gall bladder size averaged across the groups. The estimated difference is 0.39, but this was also not statistically significant (p = 0.16).
 
-I also contrasted the difference between group ch at time 0 and group co at time 60 to the difference between group ch at time 0 and group cl at time 60. The difference between these differences was not statistically significant (p = 0.45). Similarly, I compared the difference between group ch at time 0 and group co at time 90 to the difference between group ch at time 0 and group cl at time 90. This contrast was also not statistically significant (p = 0.15).
+I also contrasted the difference from time 0 to 60 for the ch group to the difference between 0 and 60 for the co group. The two trends were significantly different (p = <0.0001). Similarly, I compared the difference from time 0 to 90 for the ch group to the difference between 0 and 90 for the co group. This contrast was also statistically significant (p = 0.0002).
 
 ## Confirm with emmeans
 
@@ -142,7 +149,7 @@ contrast(emm_group, method = list("Group ch vs. group cl" = ch - cl))
 contrast(emm_time, method = list("Time 0 vs. time 120" = t0 - t120))
 ```
 
-Unfortunately I didn't have time to figure out the two row contrasts in R but the estimates match, which is a good sign.
+Unfortunately I didn't have time to figure out the double row contrasts in R but the ones I was able to do match the SAS estimates, which is a good sign.
 
 # 6.
 
@@ -153,9 +160,9 @@ Unfortunately I didn't have time to figure out the two row contrasts in R but th
 The statistical model is:
 
 $$
-Y_{ij}= \mu + \alpha_1 + \alpha_2 + \alpha_3 + \tau_1 + \tau_2 + \tau_3 + \gamma_{11} + \gamma_{12} + \gamma_{13} + \gamma_{21} + \gamma_{22} + \gamma_{23} + \gamma_{31} + \gamma_{32} + \gamma_{33} + b_{subject} +\epsilon
+Y_{hij}= \mu + \alpha_j + \tau_h + \gamma_{hj} + b_{i} +\epsilon_{hij}
 $$
-Where $\alpha$s represent the effect of time, $\tau$s represent the effect of group, and $\gamma$s represent the interaction effects. $b$ represents a random intercept for subject, and $\epsilon$ is the error term.
+Where i indexes subject, j indexes time, and h indexes group. Also, $\alpha$ represents the effect of time, $\tau$ represents the effect of group, $\gamma$ represents the interaction effect, $b$ represents a random intercept for subject, and $\epsilon$ is the error term.
 
 The X matrix is:
 
@@ -187,8 +194,10 @@ $$
 The statistical model is:
 
 $$
-Y_{ij}= \beta_0 + \beta_1x_{group1} + \beta_2x_{group2} + \beta_3x_{time1} + \beta_4x_{time2} + \beta_5x_{group1time1} + \beta_6x_{group1time2} + \beta_7x_{group2time1} + \beta_8x_{group2time2}+ b_{subject} +\epsilon
+Y_{hij}= \beta_0 + \beta_1x_{1ij} + \beta_2x_{2ij} + \beta_3x_{3ih} + \beta_4x_{4ih} + \beta_5x_{5hij} + \beta_6x_{6hij} + \beta_7x_{7hij} + \beta_8x_{8hij}+ b_{i} +\epsilon_{hij}
 $$
+
+Again, i indexes subject, j indexes time, and h indexes group. In this model $x_{pij}$ is a dummy variable indicating whether or not a subject is in a given group at a given time.
 
 The X matrix is:
 
@@ -215,7 +224,7 @@ X = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-This is the same as the matrix in i., but with the highest values of group and time removed.
+This is the same as the matrix in i, but with the highest values of group and time removed.
 
 ## b. Linear trend for one group compared to another.
 
@@ -277,21 +286,21 @@ round(L %*% H)
 round(L %*% H) == L
 ```
 
-So, the linear trend above is estimable. 
+So, the linear trend above is estimable because L=LH. 
 
 ## c. AR(1)
 
-An AR(1) structure for R would allow the correlation between time 1 and time 3 to be lower than the correlation between time 1 and time 2. The distribution of the error term is $\epsilon\text{ ~ }N(0,R_i)$, so this is the major change to the model.
+An AR(1) structure for R would allow the correlation between time 1 and time 3 to be lower than the correlation between time 1 and time 2. The distribution of the error term is $\epsilon\text{ ~ }N(0,R_i)$, so the major change to the model would be the form of $R_i$ which alters the distribution of the errors.
 
 ## d. Time as continuous
 
 The statistical model is:
 
 $$
-Y_{ij}= \mu + \alpha + \tau_1 + \tau_2 + \tau_3 + \gamma_{1} + \gamma_{2} + \gamma_{3} + b_{subject} +\epsilon
+Y_{hij}= \mu + \alpha + \tau_h + \gamma_{h} + b_{i} +\epsilon_{hij}
 $$
 
-Where $\alpha$ is the effect for time, the $\tau$s are the effects for group, and the $\gamma$s are the interaction effects between time and group.
+Where $\alpha$ is the effect for time, $\tau$ is the effect for group, and $\gamma$ is the interaction effects between time and group.
 
 And the X matrix is:
 
@@ -322,16 +331,16 @@ $$
 
 ### i. Class variable
 
-With unequally spaced time periods, it would not be appropriate to treat time as a categorical variable. Doing so would treat the difference between 0 and 1 month the same as the difference between 0 and 6 months, when in reality the correlation between 0 and 6 months is probably less than the correlation between 0 and 1 month.
+With unequally spaced time periods, it would be appropriate to treat time as a categorical variable, as long as you were only interested in the difference between each time point and baseline.
 
 ### ii. 
 
-In order to account for the unequal spacing of time, you could use a spatial power structure for r:
+In order to account for the unequal spacing of time, you could use a spatial power structure for $R_i$:
 
 $$
 R_i = \sigma^2 \begin{bmatrix}
-    1 & \phi & \phi^5 \\
-    \phi & 1 & \phi^3 \\
-    \phi^5 & \phi^3 & 1
+    1 & \phi & \phi^6 \\
+    \phi & 1 & \phi^5 \\
+    \phi^6 & \phi^5 & 1
 \end{bmatrix}
 $$
