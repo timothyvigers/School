@@ -418,6 +418,207 @@ Var(Y_i) = Z_iG_iZ_i^t + \sigma^2_\epsilon R_i \\
     \sigma^2_0+\phi^3\sigma^2_\epsilon &amp; \sigma^2_0+\phi^2\sigma^2_\epsilon &amp; \sigma^2_0+\phi\sigma^2_\epsilon &amp; \sigma^2_0+\sigma^2_\epsilon
 \end{bmatrix}
 \]</span></p>
+<p>Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When <span class="math inline">\(\sigma^2_0\)</span> is added, then this can’t happen, which is why the model is more flexible.</p>
+</div>
+<div id="mt.-kilimanjaro" class="section level1">
+<h1>2. Mt. Kilimanjaro</h1>
+</div>
+<div id="beta-carotene-data" class="section level1">
+<h1>3. Beta carotene data</h1>
+<p>Convert the data to long form and make a continuous time variable (using baseline 2 as time 0):</p>
+<pre class="r"><code># Read in
+carotene &lt;- read.csv(&quot;/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 3/beta_carotene_data.csv&quot;)
+# Wide to long
+long &lt;- melt(carotene,id.vars = c(&quot;Id&quot;,&quot;Prepar&quot;))
+# Use baseline 2 as time 0
+long &lt;- long %&gt;% filter(variable != &quot;Base1lvl&quot;) %&gt;% arrange(Id,variable)
+# Continuous time 
+long$time &lt;- long$variable
+long$time &lt;- plyr::mapvalues(long$time,
+          from = c(&quot;Base2lvl&quot;,&quot;Wk6lvl&quot;,&quot;Wk8lvl&quot;,&quot;Wk10lvl&quot;,&quot;Wk12lvl&quot;),
+          to = c(0,6,8,10,12))
+long$time &lt;- as.numeric(as.character(long$time))
+long$Prepar &lt;- as.factor(long$Prepar)
+kable(head(long,10))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Id</th>
+<th align="left">Prepar</th>
+<th align="left">variable</th>
+<th align="right">value</th>
+<th align="right">time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">71</td>
+<td align="left">1</td>
+<td align="left">Base2lvl</td>
+<td align="right">116</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">71</td>
+<td align="left">1</td>
+<td align="left">Wk6lvl</td>
+<td align="right">174</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">71</td>
+<td align="left">1</td>
+<td align="left">Wk8lvl</td>
+<td align="right">178</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="right">71</td>
+<td align="left">1</td>
+<td align="left">Wk10lvl</td>
+<td align="right">218</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="right">71</td>
+<td align="left">1</td>
+<td align="left">Wk12lvl</td>
+<td align="right">190</td>
+<td align="right">12</td>
+</tr>
+<tr class="even">
+<td align="right">72</td>
+<td align="left">3</td>
+<td align="left">Base2lvl</td>
+<td align="right">162</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">72</td>
+<td align="left">3</td>
+<td align="left">Wk6lvl</td>
+<td align="right">432</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="right">72</td>
+<td align="left">3</td>
+<td align="left">Wk8lvl</td>
+<td align="right">336</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="right">72</td>
+<td align="left">3</td>
+<td align="left">Wk10lvl</td>
+<td align="right">440</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="right">72</td>
+<td align="left">3</td>
+<td align="left">Wk12lvl</td>
+<td align="right">472</td>
+<td align="right">12</td>
+</tr>
+</tbody>
+</table>
+<p>Fit a polynomial model for time and compare AIC and BIC to determine the sufficient degree:</p>
+<pre class="r"><code># Models
+# Time polynomials
+lin_mod &lt;- gls(value ~ time*Prepar,
+            data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+quad_mod &lt;- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar, 
+            data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+cub_mod &lt;- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar + 
+                   I(time^3)*Prepar, 
+            data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+quart_mod &lt;- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar + 
+                   I(time^3)*Prepar + 
+                     I(time^4)*Prepar, 
+            data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+kable(AIC(lin_mod,quad_mod,cub_mod,quart_mod))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">df</th>
+<th align="right">AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>lin_mod</td>
+<td align="right">23</td>
+<td align="right">1251.998</td>
+</tr>
+<tr class="even">
+<td>quad_mod</td>
+<td align="right">27</td>
+<td align="right">1246.079</td>
+</tr>
+<tr class="odd">
+<td>cub_mod</td>
+<td align="right">31</td>
+<td align="right">1243.108</td>
+</tr>
+<tr class="even">
+<td>quart_mod</td>
+<td align="right">35</td>
+<td align="right">1245.336</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(BIC(lin_mod,quad_mod,cub_mod,quart_mod))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">df</th>
+<th align="right">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>lin_mod</td>
+<td align="right">23</td>
+<td align="right">1315.132</td>
+</tr>
+<tr class="even">
+<td>quad_mod</td>
+<td align="right">27</td>
+<td align="right">1320.192</td>
+</tr>
+<tr class="odd">
+<td>cub_mod</td>
+<td align="right">31</td>
+<td align="right">1328.201</td>
+</tr>
+<tr class="even">
+<td>quart_mod</td>
+<td align="right">35</td>
+<td align="right">1341.408</td>
+</tr>
+</tbody>
+</table>
+<p>The cubic model is slightly lower by AIC and definitely better by BIC, so we’ll continue with this model.</p>
+<div id="a.-compare-to-class-variable-model" class="section level2">
+<h2>a. Compare to class variable model</h2>
+<pre class="r"><code>class_mod &lt;- gls(value ~ factor(variable)*Prepar,
+            data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+AIC(cub_mod,class_mod)</code></pre>
+<pre><code>##           df      AIC
+## cub_mod   31 1243.108
+## class_mod 35 1245.336</code></pre>
+</div>
 </div>
 
 

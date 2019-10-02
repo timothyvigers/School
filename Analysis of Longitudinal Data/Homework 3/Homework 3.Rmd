@@ -7,6 +7,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(reshape2)
+library(lme4)
+library(nlme)
+library(tidyverse)
 ```
 
 # 1. Cell counts
@@ -64,3 +69,66 @@ $$
     \sigma^2_0+\phi^3\sigma^2_\epsilon & \sigma^2_0+\phi^2\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\sigma^2_\epsilon
 \end{bmatrix}
 $$
+
+Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When $\sigma^2_0$ is added, then this can't happen, which is why the model is more flexible. 
+
+# 2. Mt. Kilimanjaro 
+
+# 3. Beta carotene data
+
+Convert the data to long form and make a continuous time variable (using baseline 2 as time 0):
+
+```{r import and format data}
+# Read in
+carotene <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 3/beta_carotene_data.csv")
+# Wide to long
+long <- melt(carotene,id.vars = c("Id","Prepar"))
+# Use baseline 2 as time 0
+long <- long %>% filter(variable != "Base1lvl") %>% arrange(Id,variable)
+# Continuous time 
+long$time <- long$variable
+long$time <- plyr::mapvalues(long$time,
+          from = c("Base2lvl","Wk6lvl","Wk8lvl","Wk10lvl","Wk12lvl"),
+          to = c(0,6,8,10,12))
+long$time <- as.numeric(as.character(long$time))
+long$Prepar <- as.factor(long$Prepar)
+kable(head(long,10))
+```
+
+Fit a polynomial model for time and compare AIC and BIC to determine the sufficient degree:
+
+```{r time polynomial}
+# Models
+# Time polynomials
+lin_mod <- gls(value ~ time*Prepar,
+            data = long, method = "ML",correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+quad_mod <- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar, 
+            data = long, method = "ML",correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+cub_mod <- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar + 
+                   I(time^3)*Prepar, 
+            data = long, method = "ML",correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+quart_mod <- gls(value ~ time*Prepar + 
+                    I(time^2)*Prepar + 
+                   I(time^3)*Prepar + 
+                     I(time^4)*Prepar, 
+            data = long, method = "ML",correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+kable(AIC(lin_mod,quad_mod,cub_mod,quart_mod))
+kable(BIC(lin_mod,quad_mod,cub_mod,quart_mod))
+```
+
+The cubic model is slightly lower by AIC and definitely better by BIC, so we'll continue with this model. 
+
+## a. Compare to class variable model
+
+```{r class variable}
+class_mod <- gls(value ~ factor(variable)*Prepar,
+            data = long, method = "ML",correlation=corSymm(form = ~1|Id),
+            weights = varIdent(form = ~1|time))
+AIC(cub_mod,class_mod)
+```
