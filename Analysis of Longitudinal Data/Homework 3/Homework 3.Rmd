@@ -1,0 +1,66 @@
+---
+title: "Longitudinal Homework 3"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Cell counts
+
+Starting with the subject-level model, define Z, G, and R matrices:
+
+$$
+Z_i = \begin{bmatrix}
+    1 \\
+    1 \\
+    1 \\
+    1
+\end{bmatrix}
+$$
+
+$$
+G_i = \sigma^2_0
+$$
+
+$$
+R_i = \begin{bmatrix}
+    1 & \phi & \phi^2 & \phi^3 \\
+    \phi & 1 & \phi & \phi^2 \\
+    \phi^2 & \phi & 1 & \phi \\
+    \phi^3 & \phi^2 & \phi & 1
+\end{bmatrix}
+$$
+
+$V_i$ is the variance of $Y_i$, so:
+
+$$
+Var(Y_i) = Z_iG_iZ_i^t + \sigma^2_\epsilon R_i \\
+$$
+
+$$
+= \begin{bmatrix}
+    \sigma^2_0 & \sigma^2_0 & \sigma^2_0 & \sigma^2_0 \\
+    \sigma^2_0 & \sigma^2_0 & \sigma^2_0 & \sigma^2_0 \\
+    \sigma^2_0 & \sigma^2_0 & \sigma^2_0 & \sigma^2_0 \\
+    \sigma^2_0 & \sigma^2_0 & \sigma^2_0 & \sigma^2_0
+\end{bmatrix} +
+\begin{bmatrix}
+    \sigma^2_\epsilon & \phi\sigma^2_\epsilon & \phi^2\sigma^2_\epsilon & \phi^3\sigma^2_\epsilon \\
+    \phi\sigma^2_\epsilon & \sigma^2_\epsilon & \phi\sigma^2_\epsilon & \phi^2\sigma^2_\epsilon \\
+    \phi^2\sigma^2_\epsilon & \phi\sigma^2_\epsilon & \sigma^2_\epsilon & \phi\sigma^2_\epsilon \\
+    \phi^3\sigma^2_\epsilon & \phi^2\sigma^2_\epsilon & \phi\sigma^2_\epsilon & \sigma^2_\epsilon
+\end{bmatrix}\\
+$$
+
+$$
+=\begin{bmatrix}
+    \sigma^2_0+\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\phi^2\sigma^2_\epsilon & \sigma^2_0+\phi^3\sigma^2_\epsilon \\
+    \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\phi^2\sigma^2_\epsilon \\
+    \sigma^2_0+\phi^2\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon \\
+    \sigma^2_0+\phi^3\sigma^2_\epsilon & \sigma^2_0+\phi^2\sigma^2_\epsilon & \sigma^2_0+\phi\sigma^2_\epsilon & \sigma^2_0+\sigma^2_\epsilon
+\end{bmatrix}
+$$
