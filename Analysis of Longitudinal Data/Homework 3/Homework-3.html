@@ -418,7 +418,7 @@ Var(Y_i) = Z_iG_iZ_i^t + \sigma^2_\epsilon R_i \\
     \sigma^2_0+\phi^3\sigma^2_\epsilon &amp; \sigma^2_0+\phi^2\sigma^2_\epsilon &amp; \sigma^2_0+\phi\sigma^2_\epsilon &amp; \sigma^2_0+\sigma^2_\epsilon
 \end{bmatrix}
 \]</span></p>
-<p>Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When <span class="math inline">\(\sigma^2_0\)</span> is added, then this doesn’t happen, which is why the model is more flexible.</p>
+<p>Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When <span class="math inline">\(\sigma^2_0\)</span> is added this doesn’t happen.</p>
 </div>
 <div id="mt.-kilimanjaro" class="section level1">
 <h1>2. Mt. Kilimanjaro</h1>
@@ -472,9 +472,11 @@ V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
 2\sigma^2_{IS}+\sigma^2_I &amp; 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S &amp; 4\sigma^2_{IS}+\sigma^2_I+4\sigma^2_S+\sigma^2_e
 \end{pmatrix}
 \]</span></p>
-<p>In order to show this, you compare the covariance for times 0 and 1, and for times 0 and 2. If there’s more correlation between time 0 and 1 than there is between time 0 and 2, then cov(0,1) &gt; cov(0,2). This turns out to be fairly easy to rearrange, and shows that there can be decay as time between measurements increases, as long as the below conditions are met:</p>
+<p>In order to show this, you compare the covariance for times 0 and 1, and for times 0 and 2. If there’s more correlation between time 0 and 1 than there is between time 0 and 2, then cov(0,1) &gt; cov(0,2). Additionally you want cov(0,2) &lt; cov(1,2). This turns out to be fairly easy to rearrange, and shows that there can be decay as time between measurements increases, as long as the below conditions are met:</p>
 <p><span class="math display">\[
-\sigma^2_{IS}+ \sigma^2_I &gt; 2\sigma^2_{IS} + \sigma^2_I &lt; 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S\\
+\sigma^2_{IS}+ \sigma^2_I &gt; 2\sigma^2_{IS} + \sigma^2_I &lt; 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S
+\]</span></p>
+<p><span class="math display">\[
 0 &gt; \sigma^2_{IS}  &lt; 2\sigma^2_{IS}+2\sigma^2_S\\
 \]</span></p>
 <p>There must be an inverse relationship between the random effects (<span class="math inline">\(\sigma^2_{IS}&lt;0\)</span>) and <span class="math inline">\(\sigma^2_{IS}+2\sigma^2_S\)</span> must be greater than 0.</p>
@@ -726,7 +728,7 @@ kable(AIC(cub_mod,class_mod))</code></pre>
 </tr>
 </tbody>
 </table>
-<p>I think I would include the cubic model in the report, even though I’m not particularly comfortable interpreting polynomial models, and they can be really difficult to explain to investigators. Also, the categorical variable model includes a lot of parameters and the cubic model was slightly better by AIC and much better by BIC. That said, since the class model is slightly easier to interpret and not much worse by AIC, so I think there are good reasons to report either one.</p>
+<p>I think I would include the cubic model in the report, even though I’m not particularly comfortable interpreting polynomial models, and they can be really difficult to explain to investigators. Also, the categorical variable model includes a lot of parameters and the cubic model was slightly better by AIC and much better by BIC. That said, the class model is slightly easier to interpret and not much worse by AIC, so I think there are good reasons to report either one depending on the audience and question.</p>
 </div>
 <div id="b.-contrast" class="section level2">
 <h2>b. Contrast</h2>
@@ -758,10 +760,10 @@ contrast(emm_group, method = list(&quot;Group 1 vs. group 4&quot; = group4 - gro
 Y_{hij} = \text{fixed effects} + b_h + b_{i(h)} + \epsilon_{hij} 
 \]</span></p>
 <p><span class="math display">\[
-b_h\text{ ~ } N(0,\sigma^2_{s})
+b_h\text{ ~ } N(0,\sigma^2_{sch})
 \]</span></p>
 <p><span class="math display">\[
-b_{i(h)}\text{ ~ }N(0,\sigma^2_{i(s)}) 
+b_{i(h)}\text{ ~ }N(0,\sigma^2_{sub}) 
 \]</span></p>
 <p><span class="math display">\[
 \epsilon\text{ ~ }N(0,\sigma^2_{\epsilon})
