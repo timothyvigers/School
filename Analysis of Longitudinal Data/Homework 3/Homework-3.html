@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tim Vigers" />
 
-<meta name="date" content="2019-10-03" />
+<meta name="date" content="2019-10-04" />
 
 <title>Longitudinal Homework 3</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">Longitudinal Homework 3</h1>
 <h4 class="author">Tim Vigers</h4>
-<h4 class="date">03 October 2019</h4>
+<h4 class="date">04 October 2019</h4>
 
 </div>
 
@@ -418,7 +418,7 @@ Var(Y_i) = Z_iG_iZ_i^t + \sigma^2_\epsilon R_i \\
     \sigma^2_0+\phi^3\sigma^2_\epsilon &amp; \sigma^2_0+\phi^2\sigma^2_\epsilon &amp; \sigma^2_0+\phi\sigma^2_\epsilon &amp; \sigma^2_0+\sigma^2_\epsilon
 \end{bmatrix}
 \]</span></p>
-<p>Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When <span class="math inline">\(\sigma^2_0\)</span> is added, then this can’t happen, which is why the model is more flexible.</p>
+<p>Specifying a G and an R matrix gives a more flexible model that accounts for both within-subject correlation and the decaying correlation between time points. If you only used the AR(1) structure, then the variance will go to 0 as the time points get farther apart. When <span class="math inline">\(\sigma^2_0\)</span> is added, then this doesn’t happen, which is why the model is more flexible.</p>
 </div>
 <div id="mt.-kilimanjaro" class="section level1">
 <h1>2. Mt. Kilimanjaro</h1>
@@ -426,21 +426,29 @@ Var(Y_i) = Z_iG_iZ_i^t + \sigma^2_\epsilon R_i \\
 G_i = \begin{pmatrix}
 \sigma^2_I &amp; \sigma^2_{IS}\\
 \sigma^2_{IS} &amp; \sigma^2_S
-\end{pmatrix}\\
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
 Z_i = \begin{pmatrix}
 1 &amp; 0\\
 1 &amp; 1\\
 1 &amp; 2
-\end{pmatrix}\\
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
 Z_i^t = \begin{pmatrix}
 1 &amp; 1&amp;1\\
 0 &amp; 1&amp;2\\
-\end{pmatrix}\\
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
 R_i = \begin{pmatrix}
 \sigma^2_e &amp; 0 &amp; 0\\
 0 &amp; \sigma^2_e &amp; 0\\
 0 &amp; 0 &amp; \sigma^2_e
-\end{pmatrix}\\
+\end{pmatrix}
+\]</span></p>
+<p><span class="math display">\[
 V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
 1 &amp; 0\\
 1 &amp; 1\\
@@ -456,6 +464,8 @@ V_i = Var(Y_i) = Z_iG_iZ_i^t + R_i=\begin{pmatrix}
 0 &amp; \sigma^2_e &amp; 0\\
 0 &amp; 0 &amp; \sigma^2_e
 \end{pmatrix}\\
+\]</span></p>
+<p><span class="math display">\[
 = \begin{pmatrix}
 \sigma^2_I+\sigma^2_e &amp; \sigma^2_{IS} + \sigma^2_I &amp; 2\sigma^2_{IS} + \sigma^2_I\\
 \sigma^2_{IS} + \sigma^2_I &amp; 2\sigma^2_{IS}+\sigma^2_I+\sigma^2_S+\sigma^2_e &amp; 3\sigma^2_{IS}+\sigma^2_I+2\sigma^2_S\\
@@ -659,24 +669,64 @@ kable(AIC(lin_mod,quad_mod,cub_mod,quart_mod))</code></pre>
 <h2>a. Compare to class variable model</h2>
 <p>The cubic model can be written:</p>
 <p><span class="math display">\[
-Y_{hi} = \mu + \alpha_1 + \alpha_2 + \alpha_3 + \tau_h + \gamma_{1h}+ \gamma_{2h}+ \gamma_{3h} + b_i + \epsilon_{hi}\\
-b_i\text{ ~ iid }N(0,\sigma^2_b)\\
-\epsilon_{hi}\text{ ~ iid }N(0,\sigma^2_{\epsilon})\text{ and }\epsilon_{i}\text{ ~ iid }N(0,R_i)\text{ where }R_i\text{ is unstructured}\\
+Y_{hi} = \mu + \alpha_1 + \alpha_2 + \alpha_3 + \tau_h + \gamma_{1h}+ \gamma_{2h}+ \gamma_{3h} + b_i + \epsilon_{hi}
 \]</span></p>
-<p>Here h represents group and i represents subject. The way this model is written, <span class="math inline">\(\alpha_1,\alpha_2,\text{ and } \alpha_3\)</span> represent the effect of time, time squared, and time cubed respectively, and <span class="math inline">\(\gamma_{1h},\gamma_{2h},\text{ and } \gamma_{3h}\)</span> represent the interaction effects of group and time. <span class="math inline">\(b_i\)</span> is the random intercept for subject and <span class="math inline">\(\epsilon_{hi}\)</span> is the error term.</p>
+<p><span class="math display">\[
+b_i\text{ ~ iid }N(0,\sigma^2_b)
+\]</span></p>
+<p><span class="math display">\[
+\epsilon_{hi}\text{ ~ iid }N(0,\sigma^2_{\epsilon})\text{ and }\epsilon_{i}\text{ ~ iid }N(0,R_i)\text{ where }R_i\text{ is unstructured}
+\]</span></p>
+<p>Here h represents group and i represents subject. The way this model is written, <span class="math inline">\(\alpha_1,\alpha_2,\text{ and } \alpha_3\)</span> represent the effect of time, time squared, and time cubed respectively, and <span class="math inline">\(\tau_h\)</span> is the main effect of group. <span class="math inline">\(\gamma_{1h},\gamma_{2h},\text{ and } \gamma_{3h}\)</span> represent the interaction effects of group and time, time squared, and time cubed respectively. <span class="math inline">\(b_i\)</span> is the random intercept for subject and <span class="math inline">\(\epsilon_{hi}\)</span> is the error term.</p>
 <p>Now compare this to the linear model with group, time and group*time as categorical variables:</p>
 <pre class="r"><code>class_mod &lt;- gls(value ~ factor(variable)*Prepar,
             data = long, method = &quot;ML&quot;,correlation=corSymm(form = ~1|Id),
             weights = varIdent(form = ~1|time))
-AIC(cub_mod,class_mod)</code></pre>
-<pre><code>##           df      AIC
-## cub_mod   31 1243.108
-## class_mod 35 1245.336</code></pre>
-<pre class="r"><code>BIC(cub_mod,class_mod)</code></pre>
-<pre><code>##           df      BIC
-## cub_mod   31 1328.201
-## class_mod 35 1341.408</code></pre>
-<p>I think I would include the cubic model in the report, even though I’m not particularly comfortable interpreting polynomial models, and I think they can sometimes be difficult to interpret. However, in this case the class variable model includes a lot of parameters and the cubic model was slightly better by AIC and much better by BIC. That said, the class model is easier to interpret and not much worse by AIC, so I think there are good reasons to report either one.</p>
+kable(AIC(cub_mod,class_mod))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">df</th>
+<th align="right">AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cub_mod</td>
+<td align="right">31</td>
+<td align="right">1243.108</td>
+</tr>
+<tr class="even">
+<td>class_mod</td>
+<td align="right">35</td>
+<td align="right">1245.336</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(BIC(cub_mod,class_mod))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">df</th>
+<th align="right">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cub_mod</td>
+<td align="right">31</td>
+<td align="right">1328.201</td>
+</tr>
+<tr class="even">
+<td>class_mod</td>
+<td align="right">35</td>
+<td align="right">1341.408</td>
+</tr>
+</tbody>
+</table>
+<p>I think I would include the cubic model in the report, even though I’m not particularly comfortable interpreting polynomial models, and they can be really difficult to explain to investigators. Also, the categorical variable model includes a lot of parameters and the cubic model was slightly better by AIC and much better by BIC. That said, since the class model is slightly easier to interpret and not much worse by AIC, so I think there are good reasons to report either one.</p>
 </div>
 <div id="b.-contrast" class="section level2">
 <h2>b. Contrast</h2>
@@ -684,10 +734,10 @@ AIC(cub_mod,class_mod)</code></pre>
 emm_group &lt;- emmeans(cub_mod, specs = ~Prepar)
 emm_group</code></pre>
 <pre><code>##  Prepar emmean   SE   df lower.CL upper.CL
-##  1         256 45.5 22.8    162.3      351
-##  2         193 45.5 22.8     99.3      288
-##  3         318 49.9 22.8    215.0      421
-##  4         316 45.5 22.8    221.6      410
+##  1         256 45.5 22.6    162.2      351
+##  2         193 45.5 22.6     99.2      288
+##  3         318 49.9 22.6    214.9      421
+##  4         316 45.5 22.6    221.5      410
 ## 
 ## Degrees-of-freedom method: boot-satterthwaite 
 ## Confidence level used: 0.95</code></pre>
@@ -695,7 +745,7 @@ emm_group</code></pre>
 group4 &lt;- c(0,0,0,1)
 contrast(emm_group, method = list(&quot;Group 1 vs. group 4&quot; = group4 - group1))</code></pre>
 <pre><code>##  contrast            estimate   SE   df t.ratio p.value
-##  Group 1 vs. group 4     59.3 64.4 22.8 0.922   0.3664 
+##  Group 1 vs. group 4     59.3 64.4 22.6 0.922   0.3665 
 ## 
 ## Degrees-of-freedom method: boot-satterthwaite</code></pre>
 <p>The estimate above compares the group 1 mean to the group 4 mean at the average time (7.2). The difference between the two is not statistically significant (p=0.37).</p>
@@ -705,9 +755,15 @@ contrast(emm_group, method = list(&quot;Group 1 vs. group 4&quot; = group4 - gro
 <h1>4. Children and schools measured over time</h1>
 <p>Write out the model:</p>
 <p><span class="math display">\[
-Y_{hij} = \text{fixed effects} + b_h + b_{i(h)} + \epsilon_{hij} \\ 
-b_h\text{ ~ } N(0,\sigma^2_{s}) \\ 
-b_{i(h)}\text{ ~ }N(0,\sigma^2_{i(s)}) \\ 
+Y_{hij} = \text{fixed effects} + b_h + b_{i(h)} + \epsilon_{hij} 
+\]</span></p>
+<p><span class="math display">\[
+b_h\text{ ~ } N(0,\sigma^2_{s})
+\]</span></p>
+<p><span class="math display">\[
+b_{i(h)}\text{ ~ }N(0,\sigma^2_{i(s)}) 
+\]</span></p>
+<p><span class="math display">\[
 \epsilon\text{ ~ }N(0,\sigma^2_{\epsilon})
 \]</span></p>
 <p>Next write out the Z, G and matrices for a school h:</p>
@@ -721,26 +777,30 @@ Z_h = \begin{bmatrix}
     1 &amp; 0 &amp; 1 &amp; 0 \\
     1 &amp; 0 &amp; 0 &amp; 1 \\
     1 &amp; 0 &amp; 0 &amp; 1 \\
-\end{bmatrix} \\ 
+\end{bmatrix} 
+\]</span></p>
+<p><span class="math display">\[
 G_h = \begin{bmatrix}
-    \sigma^2_{h} &amp; 0 &amp; 0 &amp; 0\\
-    0 &amp; \sigma^2_{1(h)} &amp; 0 &amp;0 \\
-    0 &amp; 0&amp; \sigma^2_{2(h)} &amp; 0 \\
-    0 &amp; 0 &amp; 0 &amp; \sigma^2_{3(h)}
-\end{bmatrix}\\
+    \sigma^2_{sch} &amp; 0 &amp; 0 &amp; 0\\
+    0 &amp; \sigma^2_{sub} &amp; 0 &amp;0 \\
+    0 &amp; 0&amp; \sigma^2_{sub} &amp; 0 \\
+    0 &amp; 0 &amp; 0 &amp; \sigma^2_{sub}
+\end{bmatrix}
+\]</span></p>
+<p><span class="math display">\[
 R_h = \sigma^2_\epsilon I_{8x8}
 \]</span></p>
 <p>Then use <span class="math inline">\(V_h=Z_hG_hZ_h^t + R_h\)</span>:</p>
 <p><span class="math display">\[
 Z_hG_hZ_h^t = \begin{bmatrix}
-    \sigma^2_{h} &amp; \sigma^2_{1(h)} &amp; 0 &amp; 0 \\
-    \sigma^2_{h} &amp; \sigma^2_{1(h)} &amp; 0 &amp; 0 \\
-    \sigma^2_{h} &amp; \sigma^2_{1(h)} &amp; 0 &amp; 0 \\
-    \sigma^2_{h} &amp; 0 &amp; \sigma^2_{2(h)} &amp; 0 \\
-    \sigma^2_{h} &amp; 0 &amp; \sigma^2_{2(h)} &amp; 0 \\
-    \sigma^2_{h} &amp; 0 &amp; \sigma^2_{2(h)} &amp; 0 \\
-    \sigma^2_{h} &amp; 0 &amp; 0 &amp; \sigma^2_{3(h)} \\
-    \sigma^2_{h} &amp; 0 &amp; 0 &amp; \sigma^2_{3(h)} \\
+    \sigma^2_{sch} &amp; \sigma^2_{sub} &amp; 0 &amp; 0 \\
+    \sigma^2_{sch} &amp; \sigma^2_{sub} &amp; 0 &amp; 0 \\
+    \sigma^2_{sch} &amp; \sigma^2_{sub} &amp; 0 &amp; 0 \\
+    \sigma^2_{sch} &amp; 0 &amp; \sigma^2_{sub} &amp; 0 \\
+    \sigma^2_{sch} &amp; 0 &amp; \sigma^2_{sub} &amp; 0 \\
+    \sigma^2_{sch} &amp; 0 &amp; \sigma^2_{sub} &amp; 0 \\
+    \sigma^2_{sch} &amp; 0 &amp; 0 &amp; \sigma^2_{sub} \\
+    \sigma^2_{sch} &amp; 0 &amp; 0 &amp; \sigma^2_{sub} \\
 \end{bmatrix} * \begin{bmatrix}
     1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 \\
     1 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
@@ -750,26 +810,26 @@ Z_hG_hZ_h^t = \begin{bmatrix}
 \]</span></p>
 <p><span class="math display">\[
 Z_hG_hZ_h^t=\begin{bmatrix}
-    \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}   \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}   
+    \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub}   &amp; \sigma^2_{sch}+\sigma^2_{sub}   \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub}   &amp; \sigma^2_{sch}+\sigma^2_{sub}   
 \end{bmatrix}\\
 \]</span></p>
 <p><span class="math display">\[
 Z_hG_hZ_h^t +R_h=\begin{bmatrix}
-    \sigma^2_{h}+\sigma^2_{1(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)} &amp; \sigma^2_{h}+\sigma^2_{1(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)} &amp; \sigma^2_{h}+\sigma^2_{2(h)}+\sigma^2_\epsilon &amp; \sigma^2_{h} &amp; \sigma^2_{h} \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{3(h)} +\sigma^2_\epsilon&amp; \sigma^2_{h}+\sigma^2_{3(h)}   \\
-    \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}   &amp; \sigma^2_{h}+\sigma^2_{3(h)}+\sigma^2_\epsilon   
+    \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub} &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon &amp; \sigma^2_{sch} &amp; \sigma^2_{sch} \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub} +\sigma^2_\epsilon&amp; \sigma^2_{sch}+\sigma^2_{sub}   \\
+    \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}   &amp; \sigma^2_{sch}+\sigma^2_{sub}   &amp; \sigma^2_{sch}+\sigma^2_{sub}+\sigma^2_\epsilon   
 \end{bmatrix}
 \]</span></p>
 </div>
