@@ -1,0 +1,68 @@
+---
+title: "Longitudinal Homework 4"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(MASS)
+library(lme4)
+library(tidyverse)
+```
+
+```{r data, echo=FALSE}
+cereal <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 4/Cereal2.csv")
+cereal <- cereal %>% filter(FamMem == 3)
+cereal$id <- seq(1:nrow(cereal))
+cereal$FamIDNO <- as.factor(cereal$FamIDNO)
+```
+
+# 1. Cereal data
+
+## a. Poisson regression
+ 
+### Model
+
+$$
+logit(Y_i) = 
+$$
+
+### Results
+
+```{r echo=FALSE}
+pois_mod <- glm(Cond ~ C1 + Sex + Wt1, data = cereal, family = poisson(link=log))
+kable(summary(pois_mod)$coefficients)
+```
+
+## b. Overdispersion (quasilikelihood)
+
+### Model 
+
+$$
+logit
+$$
+
+### Results
+
+```{r echo=FALSE}
+quasi_pois_mod <- glm(Cond ~ C1 + Sex + Wt1, data = cereal, family = quasipoisson(link=log))
+kable(summary(quasi_pois_mod)$coefficients)
+```
+
+## b. Normal error in linear predictor
+
+### Model 
+
+$$
+logit
+$$
+
+### Results
+
+```{r echo=FALSE}
+norm_err_pois_mod <- glmer(Cond ~ C1 + Sex + Wt1 + (1|id), data = cereal, family = poisson(link=log))
+kable(summary(norm_err_pois_mod)$coefficients)
+```
