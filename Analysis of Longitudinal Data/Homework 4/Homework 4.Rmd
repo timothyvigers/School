@@ -2,7 +2,7 @@
 title: "Longitudinal Homework 4"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -70,7 +70,7 @@ pois_ses * scale
 summary(quasi_pois_mod)$coefficients[,2]
 ```
 
-The scale parameter above comes from SAS, but to determine it in R you would just divide the SEs from the quasilikelihood model by the SEs from the simple Poisson model. The point here is that the SEs have a linear relationship based on the scale parameter $\phi$.
+The scale parameter above ($\sqrt{\phi}$) comes from SAS, but to determine it in R you would just divide the SEs from the quasilikelihood model by the SEs from the simple Poisson model. The point here is that the SEs have a linear relationship based on the scale parameter $\phi$.
 
 ## c. Normal error in linear predictor
 
@@ -109,7 +109,7 @@ On average, the experimental program group ate cereal at a rate 2.35 times highe
 
 # 2. Model comparison
 
-```{r echo=FALSE,cache=TRUE}
+```{r echo=FALSE,include=FALSE}
 # Base
 chart <- as.data.frame(matrix(ncol = 4,nrow = 5))
 colnames(chart) <- c("Poisson Regression","Poisson QL","Poisson + Normal Error",
@@ -141,12 +141,33 @@ cis <- c(paste(round(exp(confint(quasi_pois_mod)[2,]),3),collapse = ", "),
          paste(round(exp(confint(quasi_pois_mod)[4,]),3),collapse = ", "))
 chart$`Poisson QL`[2:4] <- paste0(chart$`Poisson QL`[2:4]," (",cis,")")
 # Norm
-cis <- c(paste(round(exp(confint(norm_err_pois_mod)[2,]),3),collapse = ", "),
-         paste(round(exp(confint(norm_err_pois_mod)[3,]),3),collapse = ", "),
-         paste(round(exp(confint(norm_err_pois_mod)[4,]),3),collapse = ", "))
+times <- summary(norm_err_pois_mod)$coefficients[,2] * 1.96
+est <- summary(norm_err_pois_mod)$coefficients[,1]
+ll <- est - times
+ul <- est + times
+cis <- c(paste(round(exp(c(ll[2],ul[2])),3),collapse = ", "),
+         paste(round(exp(c(ll[3],ul[3])),3),collapse = ", "),
+         paste(round(exp(c(ll[4],ul[4])),3),collapse = ", "))
 chart$`Poisson + Normal Error`[2:4] <- paste0(chart$`Poisson + Normal Error`[2:4]," (",cis,")")
+# Neg Binom
+cis <- c(paste(round(exp(confint(neg_binom_mod)[2,]),3),collapse = ", "),
+         paste(round(exp(confint(neg_binom_mod)[3,]),3),collapse = ", "),
+         paste(round(exp(confint(neg_binom_mod)[4,]),3),collapse = ", "))
+chart$`Negative Binomial`[2:4] <- paste0(chart$`Negative Binomial`[2:4]," (",cis,")")
+# Other param
+chart[5,] <- c(NA,1.716,0.543,0.316)
 ```
+
+## a. Chart
 
 ```{r echo=FALSE}
 kable(chart)
 ```
+
+## b. Study results
+
+All four models agree that condition is significantly associated with cereal consumption (p < 0.001 for all models). On average, the experimental program group ate cereal at a rate approximately 2.4 times higher than the control group when adjusting for sex and weight.
+
+## c. 
+
+

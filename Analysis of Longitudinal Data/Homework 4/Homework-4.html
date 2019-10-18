@@ -432,9 +432,8 @@ Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
 <div id="model-1" class="section level3">
 <h3>Model</h3>
 <p><span class="math display">\[
-Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
+Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight}), \text{assuming that }Var(Y) = \phi\mu
 \]</span></p>
-<p>Assuming that <span class="math inline">\(Var(Y) = \phi\mu\)</span></p>
 </div>
 <div id="results-1" class="section level3">
 <h3>Results</h3>
@@ -492,7 +491,7 @@ pois_ses</code></pre>
 <pre class="r"><code>summary(quasi_pois_mod)$coefficients[,2]</code></pre>
 <pre><code>## (Intercept)        Cond         Sex         Wt1 
 ##   0.3410728   0.2316274   0.1411073   0.2270686</code></pre>
-<p>The scale parameter above comes from SAS, but to determine it in R you would just divide the SEs from the quasilikelihood model by the SEs from the simple Poisson model. The point here is that the SEs have a linear relationship based on the scale parameter <span class="math inline">\(\phi\)</span>.</p>
+<p>The scale parameter above (<span class="math inline">\(\sqrt{\phi}\)</span>) comes from SAS, but to determine it in R you would just divide the SEs from the quasilikelihood model by the SEs from the simple Poisson model. The point here is that the SEs have a linear relationship based on the scale parameter <span class="math inline">\(\phi\)</span>.</p>
 </div>
 </div>
 <div id="c.-normal-error-in-linear-predictor" class="section level2">
@@ -500,9 +499,8 @@ pois_ses</code></pre>
 <div id="model-2" class="section level3">
 <h3>Model</h3>
 <p><span class="math display">\[
-Y_i|\epsilon_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight+\epsilon_i})
+Y_i|\epsilon_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight+\epsilon_i})\text{, }\epsilon_i\text{ ~ N}(0,\sigma^2)
 \]</span></p>
-<p>with <span class="math inline">\(\epsilon_i\text{ ~ N}(0,\sigma^2)\)</span></p>
 </div>
 <div id="results-2" class="section level3">
 <h3>Results</h3>
@@ -607,54 +605,64 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 </div>
 <div id="model-comparison" class="section level1">
 <h1>2. Model comparison</h1>
+<div id="a.-chart" class="section level2">
+<h2>a. Chart</h2>
 <table>
 <thead>
 <tr class="header">
 <th></th>
-<th align="right">Poisson Regression</th>
-<th align="right">Poisson QL</th>
-<th align="right">Poisson + Normal Error</th>
-<th align="right">Negative Binomial</th>
+<th align="left">Poisson Regression</th>
+<th align="left">Poisson QL</th>
+<th align="left">Poisson + Normal Error</th>
+<th align="left">Negative Binomial</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Intercept</td>
-<td align="right">0.998</td>
-<td align="right">0.998</td>
-<td align="right">0.882</td>
-<td align="right">1.106</td>
+<td>Intercept (Beta (SE))</td>
+<td align="left">0.998 (0.199)</td>
+<td align="left">0.998 (0.341)</td>
+<td align="left">0.882 (0.324)</td>
+<td align="left">1.106 (0.323)</td>
 </tr>
 <tr class="even">
-<td>Condition</td>
-<td align="right">2.374</td>
-<td align="right">2.374</td>
-<td align="right">2.352</td>
-<td align="right">2.357</td>
+<td>Condition (RR (95% CI))</td>
+<td align="left">2.374 (1.838, 3.123)</td>
+<td align="left">2.374 (1.546, 3.852)</td>
+<td align="left">2.352 (1.598, 3.46)</td>
+<td align="left">2.357 (1.603, 3.469)</td>
 </tr>
 <tr class="odd">
-<td>Sex</td>
-<td align="right">0.820</td>
-<td align="right">0.820</td>
-<td align="right">0.858</td>
-<td align="right">0.843</td>
+<td>Sex (RR (95% CI))</td>
+<td align="left">0.82 (0.697, 0.962)</td>
+<td align="left">0.82 (0.62, 1.079)</td>
+<td align="left">0.858 (0.648, 1.136)</td>
+<td align="left">0.843 (0.638, 1.114)</td>
 </tr>
 <tr class="even">
-<td>Weight</td>
-<td align="right">1.218</td>
-<td align="right">1.218</td>
-<td align="right">1.178</td>
-<td align="right">1.105</td>
+<td>Weight (RR (95% CI))</td>
+<td align="left">1.218 (0.937, 1.575)</td>
+<td align="left">1.218 (0.774, 1.886)</td>
+<td align="left">1.178 (0.742, 1.871)</td>
+<td align="left">1.105 (0.689, 1.781)</td>
 </tr>
 <tr class="odd">
 <td>Other Parameter</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">1.716</td>
+<td align="left">0.543</td>
+<td align="left">0.316</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="b.-study-results" class="section level2">
+<h2>b. Study results</h2>
+<p>All four models agree that condition is significantly associated with cereal consumption. On average, the experimental program group ate cereal at a rate approximately 2.4 times higher than the control group when adjusting for sex and weight.</p>
+</div>
+<div id="c." class="section level2">
+<h2>c.</h2>
+</div>
 </div>
 
 
