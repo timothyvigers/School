@@ -2,7 +2,7 @@
 title: "Longitudinal Homework 4"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -26,9 +26,12 @@ cereal$id <- seq(1:nrow(cereal))
 ### Model
 
 $$
-Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
+Y_i\sim\text{Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
 $$
-Assuming that $Var(Y) = \mu$
+
+$$
+\text{Assuming that }Var(Y) = \mu
+$$
 
 Where $Y_i$ is the number of servings of breakfast cereal eaten in week one. The outcome is the same for all of the following models.
 
@@ -46,7 +49,11 @@ The results of Poisson models are interpreted as changes in rate ratio and are g
 ### Model 
 
 $$
-Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight}), \text{assuming that }Var(Y) = \phi\mu
+Y_i \sim\text{Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
+$$
+
+$$
+\text{Assuming that }Var(Y) = \phi\mu
 $$
 
 
@@ -77,7 +84,7 @@ The scale parameter above ($\sqrt{\phi}$) comes from SAS, but to determine it in
 ### Model 
 
 $$
-Y_i|\epsilon_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight+\epsilon_i})\text{, }\epsilon_i\text{ ~ N}(0,\sigma^2)
+Y_i|\epsilon_i \sim\text{Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight+\epsilon_i})\text{, }\epsilon_i\sim\text{N}(0,\sigma^2)
 $$
 
 ### Results
@@ -95,7 +102,7 @@ On average the experimental program group ate cereal at a rate 2.35 times higher
 ### Model 
 
 $$
-Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight},k)
+Y_i \sim\text{Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight},k)
 $$
 
 ### Results
@@ -112,15 +119,15 @@ On average, the experimental program group ate cereal at a rate 2.35 times highe
 ```{r echo=FALSE,include=FALSE}
 # Base
 chart <- as.data.frame(matrix(ncol = 4,nrow = 5))
-colnames(chart) <- c("Poisson Regression","Poisson QL","Poisson + Normal Error",
-                     "Negative Binomial")
-rownames(chart) <- c("Intercept (Beta (SE))","Condition (RR (95% CI))",
-                     "Sex (RR (95% CI))","Weight (RR (95% CI))",
+colnames(chart) <- c("Poisson Regression","Poisson QL","Poisson + NE",
+                     "Neg Binom")
+rownames(chart) <- c("Intercept (Beta (SE))","Cond (RR (95% CI))",
+                     "Sex (RR (95% CI))","Wt (RR (95% CI))",
                      "Other Parameter")
 chart$`Poisson Regression` <- c(coefficients(pois_mod),NA)
 chart$`Poisson QL` <- c(coefficients(quasi_pois_mod),NA)
-chart$`Poisson + Normal Error` <- c(summary(norm_err_pois_mod)$coefficients[,1],NA)
-chart$`Negative Binomial` <- c(summary(neg_binom_mod)$coefficients[,1],NA)
+chart$`Poisson + NE` <- c(summary(norm_err_pois_mod)$coefficients[,1],NA)
+chart$`Neg Binom` <- c(summary(neg_binom_mod)$coefficients[,1],NA)
 chart[2:4,] <- exp(chart[2:4,])
 chart <- round(chart,3)
 # Paste
@@ -148,14 +155,14 @@ ul <- est + times
 cis <- c(paste(round(exp(c(ll[2],ul[2])),3),collapse = ", "),
          paste(round(exp(c(ll[3],ul[3])),3),collapse = ", "),
          paste(round(exp(c(ll[4],ul[4])),3),collapse = ", "))
-chart$`Poisson + Normal Error`[2:4] <- paste0(chart$`Poisson + Normal Error`[2:4]," (",cis,")")
+chart$`Poisson + NE`[2:4] <- paste0(chart$`Poisson + NE`[2:4]," (",cis,")")
 # Neg Binom
 cis <- c(paste(round(exp(confint(neg_binom_mod)[2,]),3),collapse = ", "),
          paste(round(exp(confint(neg_binom_mod)[3,]),3),collapse = ", "),
          paste(round(exp(confint(neg_binom_mod)[4,]),3),collapse = ", "))
-chart$`Negative Binomial`[2:4] <- paste0(chart$`Negative Binomial`[2:4]," (",cis,")")
+chart$`Neg Binom`[2:4] <- paste0(chart$`Neg Binom`[2:4]," (",cis,")")
 # Other param
-chart[5,] <- c(NA,1.716,0.543,0.316)
+chart[5,] <- c(NA,"sqrt(phi) = 1.716",0.543,0.316)
 ```
 
 ## a. Chart
@@ -168,6 +175,10 @@ kable(chart)
 
 All four models agree that condition is significantly associated with cereal consumption (p < 0.001 for all models). On average, the experimental program group ate cereal at a rate approximately 2.4 times higher than the control group when adjusting for sex and weight.
 
-## c. 
+## c. Model fit
 
+Generally speaking the parameter estimates for these models are very close. 
 
+The Poisson regression with $\phi=1$ has the same estimates as the quasilikelihood regression with $\sqrt{\phi}=1.716$, but the standard errors are larger for the QL model as discussed in 1b. Because these data are overdispersed (mean of C1 = 6.55, var = 23.54), I would pick the QL model over the regular Poisson regression, because the scale parameter helps deal with the large variance. Also, sex is a significant covariate in the Poisson model, which is not the case in the other three models and suggests that the model isn't quite right. 
+
+The other three models are so close that I'm not sure how to pick between them, and all of the approaches make sense given the question of interest. The negative binomial model looks slightly better than the Poisson + normal error model by AIC, but I think these are all good models for these overdispersed data.

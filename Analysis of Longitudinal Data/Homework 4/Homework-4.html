@@ -377,7 +377,7 @@ summary {
 <div id="model" class="section level3">
 <h3>Model</h3>
 <p><span class="math display">\[
-Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
+Y_i ~ \text{ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
 \]</span> Assuming that <span class="math inline">\(Var(Y) = \mu\)</span></p>
 <p>Where <span class="math inline">\(Y_i\)</span> is the number of servings of breakfast cereal eaten in week one. The outcome is the same for all of the following models.</p>
 </div>
@@ -613,8 +613,8 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 <th></th>
 <th align="left">Poisson Regression</th>
 <th align="left">Poisson QL</th>
-<th align="left">Poisson + Normal Error</th>
-<th align="left">Negative Binomial</th>
+<th align="left">Poisson + NE</th>
+<th align="left">Neg Binom</th>
 </tr>
 </thead>
 <tbody>
@@ -626,7 +626,7 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 <td align="left">1.106 (0.323)</td>
 </tr>
 <tr class="even">
-<td>Condition (RR (95% CI))</td>
+<td>Cond (RR (95% CI))</td>
 <td align="left">2.374 (1.838, 3.123)</td>
 <td align="left">2.374 (1.546, 3.852)</td>
 <td align="left">2.352 (1.598, 3.46)</td>
@@ -640,7 +640,7 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 <td align="left">0.843 (0.638, 1.114)</td>
 </tr>
 <tr class="even">
-<td>Weight (RR (95% CI))</td>
+<td>Wt (RR (95% CI))</td>
 <td align="left">1.218 (0.937, 1.575)</td>
 <td align="left">1.218 (0.774, 1.886)</td>
 <td align="left">1.178 (0.742, 1.871)</td>
@@ -649,7 +649,7 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 <tr class="odd">
 <td>Other Parameter</td>
 <td align="left">NA</td>
-<td align="left">1.716</td>
+<td align="left">sqrt(phi) = 1.716</td>
 <td align="left">0.543</td>
 <td align="left">0.316</td>
 </tr>
@@ -658,10 +658,13 @@ Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3
 </div>
 <div id="b.-study-results" class="section level2">
 <h2>b. Study results</h2>
-<p>All four models agree that condition is significantly associated with cereal consumption. On average, the experimental program group ate cereal at a rate approximately 2.4 times higher than the control group when adjusting for sex and weight.</p>
+<p>All four models agree that condition is significantly associated with cereal consumption (p &lt; 0.001 for all models). On average, the experimental program group ate cereal at a rate approximately 2.4 times higher than the control group when adjusting for sex and weight.</p>
 </div>
-<div id="c." class="section level2">
-<h2>c.</h2>
+<div id="c.-model-fit" class="section level2">
+<h2>c. Model fit</h2>
+<p>Generally speaking the parameter estimates for these models are very close.</p>
+<p>The Poisson regression with <span class="math inline">\(\phi=1\)</span> has the same estimates as the quasilikelihood regression with <span class="math inline">\(\sqrt{\phi}=1.716\)</span>, but the standard errors are larger for the QL model as discussed in 1b. Because these data are overdispersed (mean of C1 = 6.55, var = 23.54), I would pick the QL model over the regular Poisson regression, because the scale parameter helps deal with the large variance. Also, sex is a significant covariate in the Poisson model, which is not the case in the other three models and suggests that the model isn’t quite right.</p>
+<p>The other three models are so close that I’m not sure how to pick between them, and all of the approaches make sense given the question of interest. The negative binomial model looks slightly better than the Poisson + normal error model by AIC, but I think these are all good models for these overdispersed data.</p>
 </div>
 </div>
 
