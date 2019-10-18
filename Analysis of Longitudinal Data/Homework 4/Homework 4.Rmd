@@ -2,7 +2,7 @@
 title: "Longitudinal Homework 4"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -17,7 +17,6 @@ library(tidyverse)
 cereal <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 4/Cereal2.csv")
 cereal <- cereal %>% filter(FamMem == 3)
 cereal$id <- seq(1:nrow(cereal))
-cereal$FamIDNO <- as.factor(cereal$FamIDNO)
 ```
 
 # 1. Cereal data
@@ -27,42 +26,127 @@ cereal$FamIDNO <- as.factor(cereal$FamIDNO)
 ### Model
 
 $$
-logit(Y_i) = 
+Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight})
 $$
+Assuming that $Var(Y) = \mu$
+
+Where $Y_i$ is the number of servings of breakfast cereal eaten in week one. The outcome is the same for all of the following models.
 
 ### Results
 
 ```{r echo=FALSE}
-pois_mod <- glm(Cond ~ C1 + Sex + Wt1, data = cereal, family = poisson(link=log))
+pois_mod <- glm(C1 ~ Cond + Sex + Wt1, data = cereal, family = poisson(link=log))
 kable(summary(pois_mod)$coefficients)
 ```
+
+The results of Poisson models are interpreted as changes in rate ratio and are given above on the log scale. The interpretation of these results is that on average the experimental program group ate cereal at a rate 2.73 times higher (95% CI: 1.84, 3.12, p < 0.0001) than the control group when adjusting for sex and weight, and women ate cereal at a rate of 0.82 times (95% CI: 0.70 0.96, p = 0.016) the men's rate after adjusting for experimental condition and weight.
 
 ## b. Overdispersion (quasilikelihood)
 
 ### Model 
 
 $$
-logit
+Y_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight}), \text{assuming that }Var(Y) = \phi\mu
 $$
 
+
+ 
 ### Results
 
 ```{r echo=FALSE}
-quasi_pois_mod <- glm(Cond ~ C1 + Sex + Wt1, data = cereal, family = quasipoisson(link=log))
+quasi_pois_mod <- glm(C1 ~ Cond + Sex + Wt1, data = cereal, family = quasipoisson(link=log))
 kable(summary(quasi_pois_mod)$coefficients)
 ```
 
-## b. Normal error in linear predictor
+On average, the experimental program group ate cereal at a rate 2.73 times higher (95% CI: 1.55, 3.85, p = 0.0003) than the control group when adjusting for sex and weight. 
+
+The estimates are the same as the Poisson model above, but the confidence intervals and p values have changed, because of the introduction of the scale parameter. The standard errors in this model are simply the standard errors from the Poisson model with $\phi=1$ multiplied by the scale factor in the quasilikelihood model:
+
+```{r}
+scale <- 1.716
+pois_ses <- summary(pois_mod)$coefficients[,2]
+pois_ses
+pois_ses * scale
+summary(quasi_pois_mod)$coefficients[,2]
+```
+
+The scale parameter above comes from SAS, but to determine it in R you would just divide the SEs from the quasilikelihood model by the SEs from the simple Poisson model. The point here is that the SEs have a linear relationship based on the scale parameter $\phi$.
+
+## c. Normal error in linear predictor
 
 ### Model 
 
 $$
-logit
+Y_i|\epsilon_i \text{ ~ Poisson}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight+\epsilon_i})\text{, }\epsilon_i\text{ ~ N}(0,\sigma^2)
 $$
 
 ### Results
 
 ```{r echo=FALSE}
-norm_err_pois_mod <- glmer(Cond ~ C1 + Sex + Wt1 + (1|id), data = cereal, family = poisson(link=log))
+norm_err_pois_mod <- glmer(C1 ~ Cond + Sex + Wt1 + (1|id),family = poisson,
+              data = cereal)
 kable(summary(norm_err_pois_mod)$coefficients)
+```
+
+On average the experimental program group ate cereal at a rate 2.35 times higher (95% CI: 1.60, 3.50, p < 0.0001) than the control group when adjusting for sex and weight.
+
+## d. Negative binomial
+
+### Model 
+
+$$
+Y_i \text{ ~ Negative Binomial}(e^{\beta_0+\beta_1*condition+\beta_2*sex+\beta_3*weight},k)
+$$
+
+### Results
+
+```{r echo=FALSE}
+neg_binom_mod <- glm.nb(C1 ~ Cond + Sex + Wt1, link=log, data=cereal)
+kable(summary(neg_binom_mod)$coefficients)
+```
+
+On average, the experimental program group ate cereal at a rate 2.35 times higher (95% CI: 1.60, 3.47, p < 0.0001) than the control group when adjusting for sex and weight.
+
+# 2. Model comparison
+
+```{r echo=FALSE,cache=TRUE}
+# Base
+chart <- as.data.frame(matrix(ncol = 4,nrow = 5))
+colnames(chart) <- c("Poisson Regression","Poisson QL","Poisson + Normal Error",
+                     "Negative Binomial")
+rownames(chart) <- c("Intercept (Beta (SE))","Condition (RR (95% CI))",
+                     "Sex (RR (95% CI))","Weight (RR (95% CI))",
+                     "Other Parameter")
+chart$`Poisson Regression` <- c(coefficients(pois_mod),NA)
+chart$`Poisson QL` <- c(coefficients(quasi_pois_mod),NA)
+chart$`Poisson + Normal Error` <- c(summary(norm_err_pois_mod)$coefficients[,1],NA)
+chart$`Negative Binomial` <- c(summary(neg_binom_mod)$coefficients[,1],NA)
+chart[2:4,] <- exp(chart[2:4,])
+chart <- round(chart,3)
+# Paste
+# Intercept
+chart[1,] <- paste0(paste(chart[1,],"("),
+                    round(c(summary(pois_mod)$coefficients[1,2],
+                            summary(quasi_pois_mod)$coefficients[1,2],
+                            summary(norm_err_pois_mod)$coefficients[1,2],
+                            summary(neg_binom_mod)$coefficients[1,2]),3),")")
+# Poisson
+cis <- c(paste(round(exp(confint(pois_mod)[2,]),3),collapse = ", "),
+         paste(round(exp(confint(pois_mod)[3,]),3),collapse = ", "),
+         paste(round(exp(confint(pois_mod)[4,]),3),collapse = ", "))
+chart$`Poisson Regression`[2:4] <- paste0(chart$`Poisson Regression`[2:4]," (",cis,")")
+# Poisson QL
+cis <- c(paste(round(exp(confint(quasi_pois_mod)[2,]),3),collapse = ", "),
+         paste(round(exp(confint(quasi_pois_mod)[3,]),3),collapse = ", "),
+         paste(round(exp(confint(quasi_pois_mod)[4,]),3),collapse = ", "))
+chart$`Poisson QL`[2:4] <- paste0(chart$`Poisson QL`[2:4]," (",cis,")")
+# Norm
+cis <- c(paste(round(exp(confint(norm_err_pois_mod)[2,]),3),collapse = ", "),
+         paste(round(exp(confint(norm_err_pois_mod)[3,]),3),collapse = ", "),
+         paste(round(exp(confint(norm_err_pois_mod)[4,]),3),collapse = ", "))
+chart$`Poisson + Normal Error`[2:4] <- paste0(chart$`Poisson + Normal Error`[2:4]," (",cis,")")
+```
+
+```{r echo=FALSE}
+kable(chart)
 ```

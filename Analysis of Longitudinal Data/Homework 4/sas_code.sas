@@ -6,9 +6,9 @@
 *   DESC:      Generated SAS Datastep Code
 *   TEMPLATE SOURCE:  (None Specified.)
 ***********************************************************************/
-   data WORK.cereal    ;
+   data WORK.CEREAL    ;
    %let _EFIERR_ = 0; /* set the ERROR detection macro variable */
-   infile '\\Mac\Home\Documents\GitHub\School\Analysis of Longitudinal Data\Homework 4\Cereal2.csv' delimiter = ',' MISSOVER DSD lrecl=32767 firstobs=2 ;
+   infile '\\Mac\Home\Documents\GitHub\School\Analysis of Longitudinal Data\Homework 4\cereal_sas.csv' delimiter = ',' MISSOVER DSD lrecl=32767 firstobs=2 ;
       informat Cond best32. ;
       informat FamIDNO best32. ;
       informat FamMem best32. ;
@@ -30,6 +30,7 @@
       informat Age1 best32. ;
       informat Ht1 best32. ;
       informat Wt1 best32. ;
+      informat id best32. ;
       format Cond best12. ;
       format FamIDNO best12. ;
       format FamMem best12. ;
@@ -51,6 +52,7 @@
       format Age1 best12. ;
       format Ht1 best12. ;
       format Wt1 best12. ;
+      format id best12. ;
    input
                Cond
                FamIDNO
@@ -73,19 +75,25 @@
                Age1
                Ht1
                Wt1
+               id
    ;
    if _ERROR_ then call symputx('_EFIERR_',1);  /* set ERROR detection macro variable */
    run;
 
+
 proc genmod data=cereal;
-model cond = c1 sex wt1/dist=poisson link=log;
+model c1 = cond sex wt1/dist=poisson link=log;
 run;
 
 proc genmod data=cereal;
-model cond = c1 sex wt1/dist=poisson link=log pscale;
+model c1 = cond sex wt1/dist=poisson link=log pscale;
 run;
 
 proc nlmixed data=cereal;
-  model cond ~ Poisson(exp(b0 + b1 * sex + b2 * wt1 + eps) );
-  random eps ~ normal( 0, sig*sig ) subject=famidno;
+  model c1 ~ Poisson( exp( b0 + b1 * cond + b2 * sex + b3 * wt1 + eps) );
+  random eps ~ normal( 0, sig*sig ) subject=id;
+run;
+
+proc genmod data=cereal;
+  model c1 = cond sex wt1 / dist = negbin link = log;
 run;
