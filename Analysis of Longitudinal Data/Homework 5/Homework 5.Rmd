@@ -1,0 +1,31 @@
+---
+title: "Longitudinal Homework 5"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(MASS)
+library(tidyverse)
+```
+
+```{r echo=FALSE}
+# Read in data
+ramus <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 5/ramus_uni.csv")
+# MAtt's code
+# Create X_i, the subject-level X matrix
+X_i=matrix(c(1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1),nrow=4,ncol=5)
+# Create X, the complete data X matrix
+X=NULL
+for(i in 1:20){X=rbind(X,X_i)}
+# Create V_i, the subject-level Var(Y) matrix.  
+# Note that covariance parameter estimates are given for part a.
+sigma_e_sq=6.8793;  phi=0.9527
+V_i=sigma_e_sq*matrix(c(1,phi,phi^2,phi^3,phi,1,phi,phi^2,phi^2,phi,1,phi,
+                        phi^3,phi^2,phi,1),nrow=4,ncol=4)
+#Create V, the complete data V matrix
+V=kronecker(diag(20),V_i)
+```
