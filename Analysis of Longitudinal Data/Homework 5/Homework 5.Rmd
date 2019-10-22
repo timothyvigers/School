@@ -8,14 +8,16 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
+library(nlme)
 library(MASS)
 library(tidyverse)
 ```
 
 ```{r echo=FALSE}
-# Read in data
+# Read in and format data
 ramus <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 5/ramus_uni.csv")
-# MAtt's code
+ramus <- ramus %>% arrange(boy,age)
+# Matt's code
 # Create X_i, the subject-level X matrix
 X_i=matrix(c(1,1,1,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1),nrow=4,ncol=5)
 # Create X, the complete data X matrix
@@ -29,3 +31,17 @@ V_i=sigma_e_sq*matrix(c(1,phi,phi^2,phi^3,phi,1,phi,phi^2,phi^2,phi,1,phi,
 #Create V, the complete data V matrix
 V=kronecker(diag(20),V_i)
 ```
+
+# 1. Slope of Age
+
+## a. Age as a Class Variable
+
+```{r echo=FALSE}
+# First level is the reference group
+X1 <- X[,c(1,3,4,5)]
+beta <- ginv((t(X1)%*%ginv(V)%*%X1)) %*% (t(X1) %*% ginv(V) %*% ramus$height)
+mod <- lme(height ~ factor(age),data = ramus,random = ~1|boy,correlation=corAR1(form=~1|boy))
+beta
+kable(summary(mod)$tTable)
+```
+
