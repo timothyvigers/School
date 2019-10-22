@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(nlme)
+library(emmeans)
 library(MASS)
 library(tidyverse)
 ```
@@ -36,12 +37,85 @@ V=kronecker(diag(20),V_i)
 
 ## a. Age as a Class Variable
 
-```{r echo=FALSE}
+Check that matrix multiplication matches a model fit with R:
+
+```{r}
 # First level is the reference group
 X1 <- X[,c(1,3,4,5)]
 beta <- ginv((t(X1)%*%ginv(V)%*%X1)) %*% (t(X1) %*% ginv(V) %*% ramus$height)
 mod <- lme(height ~ factor(age),data = ramus,random = ~1|boy,correlation=corAR1(form=~1|boy))
+# Compare to R model
 beta
 kable(summary(mod)$tTable)
 ```
 
+Get the test statistic and its SE for linear contrast:
+
+```{r}
+# Re-fit with full X
+beta <- ginv((t(X)%*%ginv(V)%*%X)) %*% (t(X) %*% ginv(V) %*% ramus$height)
+L <- c(0,-3,-1,1,3)
+# Estimate and SE
+lbeta <- L %*% beta
+lbeta
+selbeta <- sqrt(L%*%(ginv(t(X)%*%ginv(V)%*%X))%*%matrix(L))
+selbeta
+lbeta/selbeta
+```
+
+Compare:
+
+```{r}
+# Check with R
+emm <- emmeans(mod,specs = ~age)
+contrast(emm,method = list("linear" = c(-3,-1,1,3)))
+# Check statistic using DF from R
+2*pt(lbeta/selbeta,df = 57,lower.tail = FALSE)
+```
+
+They match!
+
+## b. Age as a Continuous Variable
+
+Check that matrix multiplication matches a model fit with R:
+
+```{r}
+# New V matrix
+sigma_e_sq=6.8783;  phi=0.9542
+V_i=sigma_e_sq*matrix(c(1,phi,phi^2,phi^3,phi,1,phi,phi^2,phi^2,phi,1,phi,
+                        phi^3,phi^2,phi,1),nrow=4,ncol=4)
+V=kronecker(diag(20),V_i)
+# New X matrix
+X_i=cbind(1,rep(c(8.0,8.5,9.0,9.5)))
+X=NULL
+for(i in 1:20){X=rbind(X,X_i)}
+# Manually
+beta <- ginv((t(X)%*%ginv(V)%*%X)) %*% (t(X) %*% ginv(V) %*% ramus$height)
+beta
+# R 
+mod <- lme(height ~ age,data = ramus,random = ~1|boy,correlation=corCAR1(form=~age|boy))
+kable(summary(mod)$tTable)
+```
+
+Get the SE:
+
+```{r}
+L <- c(0,1)
+lbeta <- L %*% beta
+lbeta
+selbeta <- sqrt(L%*%(ginv(t(X)%*%ginv(V)%*%X))%*%matrix(L))
+selbeta
+lbeta/selbeta
+```
+
+Hypothesis test check using DF from R:
+
+```{r}
+2* pt(lbeta/selbeta,df = 59,lower.tail = FALSE)
+```
+
+These match too! 
+
+# 2. Publishing the Results
+
+I don't think it particularly matters which approach you report in a journal. Both methods test for the same trend and the conclusion doesn't change depending on the method (both suggest that the linear trend is highly significant). I suppose that the continuous approach might be slightly more intuitive for many people, since they're probably used to the concept of testing whether regression coefficients are equal to 0. 
