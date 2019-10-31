@@ -20,9 +20,12 @@ library(tidyverse)
 source("./scrape.R")
 # Read in passing CSV
 passing <- read.csv("./passing_data.csv")
+# Colors
+source("./colors.R")
+
 ```
 
-There were lockout seasons in 1998 and 2011, so totals are much lower for those years for all teams. Probably best to use percentage of baskets assisted.
+There were lockout seasons in 1998 and 2011, so totals are much lower for those years for all teams. Probably best to use percentage of baskets assisted. Unfortunately, passing data only goes back 6 years. Assist data goes back to the 40s, but is significantly more subjective.
 
 ```{r plots,echo=FALSE,warning=FALSE,message=FALSE}
 # Season to starting year
@@ -40,7 +43,8 @@ ast_perc_plot <-
   ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
   geom_line(aes(color = Team)) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
-  ggtitle("Percentage of Baskets Assisted")
+  ggtitle("Percentage of Baskets Assisted") + 
+  scale_color_manual(values = primary_colors)
 ast_perc_plot
 # Facet wrap
 ast_perc_plot +
@@ -55,6 +59,22 @@ ast_perc_loess <-
 ast_perc_loess
 # Facet Loess
 ast_perc_loess +
+  facet_wrap(~Team) + 
+  theme(legend.position = "none")
+```
+
+```{r passing,echo=FALSE,warning=FALSE,message=FALSE}
+# Season to starting year
+passing$Season <- sub("-.*","",passing$Season)
+passing$Season <- as.numeric(as.character(passing$Season))
+# Passes made
+pass_plot <- 
+  ggplot(passing,aes(x = Season,y = Passes.Made,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 45),
+        axis.text.y = element_text(angle = 45))
+pass_plot
+pass_plot +
   facet_wrap(~Team) + 
   theme(legend.position = "none")
 ```
