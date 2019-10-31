@@ -1,8 +1,8 @@
 ---
-title: ""
-author: "Tim Vigers & Laura Pyle"
+title: "Longitudinal Final Project"
+author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -15,13 +15,44 @@ library(knitr)
 library(tidyverse)
 ```
 
-```{r scrape,echo=FALSE,cache=TRUE,include=FALSE}
+```{r import,echo=FALSE,cache=TRUE,include=FALSE}
 # Get data from basketball reference
 source("./scrape.R")
 # Read in passing CSV
 passing <- read.csv("./passing_data.csv")
 ```
 
-```{r import,echo=FALSE}
+There were lockout seasons in 1998 and 2011, so totals are much lower for those years for all teams. Probably best to use percentage of baskets assisted.
 
+```{r plots,echo=FALSE,warning=FALSE}
+# Season to starting year
+all_seasons$Season <- sub("-.*","",all_seasons$Season)
+# Convert column types
+numcols <- c("Season","AST","FG","3P")
+all_seasons[,numcols] <- lapply(all_seasons[,numcols], 
+                                function(x) as.numeric(as.character(x)))
+# Percentage of baskets assisted
+all_seasons <- all_seasons %>%
+  mutate(`AST%` = round(AST / FG,3)*100)
+# Plot assist percentage by year and team
+ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  ggtitle("Percentage of Baskets Assisted")
+ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  facet_wrap(~Team) + 
+  ggtitle("Percentage of Baskets Assisted") + 
+  theme(legend.position = "none")
+ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  geom_smooth(aes(color = Team),se = F) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  ggtitle("Percentage of Baskets Assisted, Loess Smoothing")
+ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  geom_smooth(aes(color = Team),se = F) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  facet_wrap(~Team) + 
+  ggtitle("Percentage of Baskets Assisted, Loess Smoothing") + 
+  theme(legend.position = "none")
 ```

@@ -19,12 +19,7 @@ for (team in teams) {
                     "3P%","2P","2PA","2P%","FT","FTA","FT%","ORB","DRB","TRB",
                     "AST","STL","BLK","TOV","PF","PTS")
   df$Team <- team
-  all_seasons <- rbind(all_seasons,df)
+  all_seasons <- rbind.data.frame(all_seasons,df)
 }
-# Convert columns
-all_seasons[,4:(ncol(all_seasons)-1)] <- 
-  lapply(all_seasons[,4:(ncol(all_seasons)-1)],as.numeric)
-all_seasons[,c(1,2,3,ncol(all_seasons))] <- 
-  lapply(all_seasons[,c(1,2,3,ncol(all_seasons))],as.factor)
 # Clean up
 rm(list = c("df","table","team","url"))
