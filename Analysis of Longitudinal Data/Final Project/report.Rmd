@@ -24,7 +24,7 @@ passing <- read.csv("./passing_data.csv")
 
 There were lockout seasons in 1998 and 2011, so totals are much lower for those years for all teams. Probably best to use percentage of baskets assisted.
 
-```{r plots,echo=FALSE,warning=FALSE}
+```{r plots,echo=FALSE,warning=FALSE,message=FALSE}
 # Season to starting year
 all_seasons$Season <- sub("-.*","",all_seasons$Season)
 # Convert column types
@@ -35,24 +35,26 @@ all_seasons[,numcols] <- lapply(all_seasons[,numcols],
 all_seasons <- all_seasons %>%
   mutate(`AST%` = round(AST / FG,3)*100)
 # Plot assist percentage by year and team
-ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+# All together
+ast_perc_plot <- 
+  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
   geom_line(aes(color = Team)) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted")
-ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
-  geom_line(aes(color = Team)) + theme_bw() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
+ast_perc_plot
+# Facet wrap
+ast_perc_plot +
   facet_wrap(~Team) + 
-  ggtitle("Percentage of Baskets Assisted") + 
   theme(legend.position = "none")
-ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+# Loess 
+ast_perc_loess <- 
+  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
   geom_smooth(aes(color = Team),se = F) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted, Loess Smoothing")
-ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
-  geom_smooth(aes(color = Team),se = F) + theme_bw() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
+ast_perc_loess
+# Facet Loess
+ast_perc_loess +
   facet_wrap(~Team) + 
-  ggtitle("Percentage of Baskets Assisted, Loess Smoothing") + 
   theme(legend.position = "none")
 ```
