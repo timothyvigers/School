@@ -1,0 +1,27 @@
+---
+title: ""
+author: "Tim Vigers & Laura Pyle"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Final Project")
+library(rvest)
+library(tableone)
+library(skimr)
+library(knitr)
+library(tidyverse)
+```
+
+```{r scrape,echo=FALSE,cache=TRUE,include=FALSE}
+# Get data from basketball reference
+source("./scrape.R")
+# Read in passing CSV
+passing <- read.csv("./passing_data.csv")
+```
+
+```{r import,echo=FALSE}
+
+```

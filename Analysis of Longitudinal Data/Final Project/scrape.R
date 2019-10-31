@@ -1,8 +1,7 @@
-library(rvest)
-library(tidyverse)
 teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
            "IND","LAC","LAL","MEM","MIA","MIL","MIN","NOH","NYK","OKC","ORL",
            "PHI","PHO","POR","SAC","SAS","TOR","UTA","WAS")
+# Scrape each team page
 all_seasons <- data.frame()
 for (team in teams) {
   url <- paste0("https://www.basketball-reference.com/teams/",team,"/stats_basic_totals.html")
@@ -14,5 +13,18 @@ for (team in teams) {
   df <- df[colnames(df) != ""] %>%
     filter(Season != "Season",Season != "2019-20")
   df[df == ""] <- NA
-  bind_rows(all_seasons,df)
+  df <- as.data.frame(lapply(df, as.character))
+  colnames(df) <- c("Season","Lg","Tm","W","L","Finish","Age","Ht.","Wt.",
+                    "G","MP","FG","FGA","FG%","3P","3PA",
+                    "3P%","2P","2PA","2P%","FT","FTA","FT%","ORB","DRB","TRB",
+                    "AST","STL","BLK","TOV","PF","PTS")
+  df$Team <- team
+  all_seasons <- rbind(all_seasons,df)
 }
+# Convert columns
+all_seasons[,4:(ncol(all_seasons)-1)] <- 
+  lapply(all_seasons[,4:(ncol(all_seasons)-1)],as.numeric)
+all_seasons[,c(1,2,3,ncol(all_seasons))] <- 
+  lapply(all_seasons[,c(1,2,3,ncol(all_seasons))],as.factor)
+# Clean up
+rm(list = c("df","table","team","url"))
