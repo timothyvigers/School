@@ -13,3 +13,6 @@ purrr
 dplyr
 stringr
 forcats
+Matrix
+lme4
+nlme

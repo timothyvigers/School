@@ -17,7 +17,7 @@ library(knitr)
 library(tidyverse)
 ```
 
-```{r import,echo=FALSE,cache=TRUE,include=FALSE}
+```{r import,echo=FALSE,include=FALSE,cache=TRUE}
 # Get data from basketball reference
 source("./Code/scrape.R")
 # Read in passing CSV
@@ -43,7 +43,7 @@ passing[,numcols] <- lapply(passing[,numcols],
 
 # Data
 
-I started out by downloading all the advanced passing data from `https://stats.nba.com/teams/passing/`. Unfortunately this only goes back 6 years, so I am going to have to look at assist data as well. The NBA has been counting assists since the 1940s, but these data are much more subjective than counting passes made. Whether a pass leads to a basket is entirely up to the scorekeepers' judgement, and there have been some famously questionable passes that were credited with an assist but probably should not have counted:
+I started out by downloading all the advanced passing data from `https://stats.nba.com/teams/passing/`. Unfortunately this only goes back 6 years, so I am going to have to look at assist data as well. The NBA has been counting assists since the 1940s, but these data are much more subjective. Whether a pass leads to a basket is entirely up to the scorekeepers' judgement, and there have been some famously questionable assists:
 
 <iframe width="560" height="315" src="https://streamable.com/s/edf3x/sgvaae" frameborder="0" allowfullscreen></iframe>
 
@@ -73,17 +73,22 @@ kable(t1)
 
 ## Passes Made
 
+Number of passes made each season per team:
+
 ```{r passes,echo=FALSE,warning=FALSE,message=FALSE}
 # Raw assist number plot
 pass_plot <- 
   ggplot(passing,aes(x = Season,y = Passes.Made,group = Team)) + 
-  geom_line(aes(color = Team)) + theme_bw()
+  geom_line(aes(color = Team)) + theme_bw() +
+  scale_color_manual(values = primary_colors)
 pass_plot
 ```
 
+Doesn't look like there's much here, but we'll see.
+
 ## Assists
 
-First I looked at raw assist numbers by team and season:
+Raw assist numbers by team and season:
 
 ```{r raw assists,echo=FALSE,warning=FALSE,message=FALSE}
 # Raw assist number plot
@@ -94,18 +99,18 @@ ast_plot <-
 ast_plot
 ```
 
-I forgot about the lockout seasons in 1998 and 2011, so I'll have to look at percentages or exclude those years. However, this is a good check that my data scraping function worked correctly. It does look like there could be an overall sinusoid trend though, which is interesting.
+I forgot about the lockout seasons in 1998 and 2011, so I'll have to look at percentages or exclude those years. However, suggests that my data scraping function worked correctly, which is good because it took forever. It does look like there could be an overall sinusoid trend though, which is interesting.
 
 Next, I plotted the percentage of baskets assisted. This time I also split the plot into individual teams:
 
 ```{r pct ast,echo=FALSE,warning=FALSE,message=FALSE}
 # Percentage of baskets assisted
 all_seasons <- all_seasons %>%
-  mutate(`AST%` = round(AST / FG,3)*100)
+  mutate(AST_perc = round(AST / FG,3)*100)
 # Plot assist percentage by year and team
 # All together
 ast_perc_plot <- 
-  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = AST_perc,group = Team)) + 
   geom_line(aes(color = Team)) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted Per Team") + 
@@ -117,13 +122,13 @@ ast_perc_plot +
   theme(legend.position = "none")
 ```
 
-These plots look a little bit flatter to me, but it still looks like there's an up and down trend. It would be worth checking for at least a cubic effect of time. Two random interesting things that stood out to me are the assist trends for the Utah Jazz and Golden State Warriors:
+These plots look a little bit flatter to me, but there could still be an up and down trend. It would be worth checking for at least a cubic effect of time. Two random interesting things that stood out to me are the assist trends for the Utah Jazz and Golden State Warriors:
 
 ```{r uta gsw,echo=FALSE,warning=FALSE,message=FALSE}
 # All together
 uta_gsw_plot <- 
   ggplot(all_seasons[all_seasons$Season > 1976 & all_seasons$Team %in% c("GSW","UTA"),],
-         aes(x = Season,y = `AST%`,group = Team)) + 
+         aes(x = Season,y = AST_perc,group = Team)) + 
   geom_line(aes(color = Team)) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted Per Team") + 
@@ -135,12 +140,12 @@ uta_gsw_plot
 
 Golden State has a sudden increase in assist percentage around 2012, which is close to when they began their dominant run. The numbers peak in 2016, when Stephen Curry was the unanimous MVP. In Utah, the percentage of assisted baskets is consistently high from about 1985 to the early 2000s, which corresponds with the career of John Stockton (the NBA's all-time leader in assists).
 
-Because line graphs can be messy and hard to read, I plotted using Loess smoothing as well:
+Because line graphs can be messy and hard to read, I tried plotting using Loess smoothing as well:
 
 ```{r pct ast loess,echo=FALSE,warning=FALSE,message=FALSE}
 # Loess 
 ast_perc_loess <- 
-  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`,group = Team)) + 
+  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = AST_perc,group = Team)) + 
   geom_smooth(aes(color = Team),se = F) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted Per Team, Loess Smoothing") + 
@@ -152,29 +157,29 @@ ast_perc_loess +
   theme(legend.position = "none")
 # Loess overall trend
 ast_perc_loess_overall <- 
-  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = `AST%`)) + 
+  ggplot(all_seasons[all_seasons$Season > 1976,],aes(x = Season,y = AST_perc)) + 
   geom_smooth() + theme_bw() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   ggtitle("Percentage of Baskets Assisted League-Wide, Loess Smoothing")
 ast_perc_loess_overall
 ```
 
-These are a little messy as well, but the cubic trend is pretty obvious in the league-wide plot.
+These are a little messy still, but the up-then-down trend is pretty obvious in the league-wide plot.
 
 # Models
 
 ## Passing
 
-I'm starting out with a very basic model, to see if overall passing has has changed since 2013. These models are adjusted for minutes played, since that likely has a large effect on total passes, but there isn't much fixed effect selection to do here. This model has a random intercept for team, but I'd like to check whether or not I should include an AR(1) structure for the repeated measures as well. 
+I'm starting out with a very basic model, to see if overall passing has has changed since 2013. I wondered if it would be necessary to adjust for minutes played, given that you'd expect this to affect the number of passes. However, there was no association and models adjusting for minutes played were no better by AIC. So, the models below have a single fixed effect for season. I'm including a random intercept for team, but I'd like to check whether or not I should include an AR(1) structure for the repeated measures as well. 
 
 ```{r}
-passing_mod <- lme(Passes.Made ~ poly(Season,3) + Min, random = ~1|Team,
-                   data = passing)
-passing_mod_ar1 <- lme(Passes.Made ~ poly(Season,3) + Min, random = ~1|Team,
-                       data = passing,correlation = corAR1())
+passing_mod <- lme(Passes.Made ~ Season, random = ~1|Team,
+                   data = passing,method = "ML")
+passing_mod_ar1 <- lme(Passes.Made ~ Season, random = ~1|Team,
+                       data = passing,correlation = corAR1(),method = "ML")
 ```
 
-The model with an AR(1) structure is better by AIC and the residuals look better as well. There still appears to be a pattern in the residuals for the model with random intercept only. It might be there in the standardized AR(1) model residuals as well, but they look a little better.
+The model with an AR(1) structure is better by AIC and the residuals look slightly better as well. There might be a sort of pattern in the standardized residuals for both models, but the AR(1) looks a little better.
 
 ```{r compare passing mods,echo=FALSE}
 kable(AIC(passing_mod,passing_mod_ar1))
@@ -186,10 +191,10 @@ plot(passing$Season,resid(passing_mod_ar1),xlab = "Season",
      ylab = "Residuals",main = "Random Intercept and AR(1), Residuals by Season")
 ```
 
-I wanted to try a locally smoothed model as well:
+I wanted to try a locally smoothed model as well (using the smallest span parameter that didn't produce a warning):
 
 ```{r}
-passing_loess <- loess(Passes.Made ~ Season + Min, data = passing, span = 0.28)
+passing_loess <- loess(Passes.Made ~ Season, data = passing, span = 0.51)
 ```
 
 ```{r echo=FALSE}
@@ -197,19 +202,77 @@ plot(passing$Season,resid(passing_loess),xlab = "Season",
      ylab = "Residuals",main = "Loess Residuals by Season")
 ```
 
-I think the AR(1) and Loess residuals look pretty comparable, and since I'm not sure how to interpret a Loess model, I think I'll stick with the AR(1) model. Based on this model, it appears that the number of passes made hasn't changed significantly over time:
+I think the AR(1) and Loess residuals look pretty comparable, and since I'm not sure how to interpret a Loess model, I think I'll stick with the AR(1) model. Based on the AR(1) model (refit using REML), it appears that the number of passes made hasn't changed significantly over time:
 
 ```{r echo=FALSE}
-kable(summary(passing_mod_ar1)$tTable)
+passing_mod_ar1 <- lme(Passes.Made ~ Season, random = ~1|Team,
+                       data = passing,correlation = corAR1())
+kable(broom::tidy(passing_mod_ar1,"fixed"))
 ```
+
+Since there could potentially be a cubic trend in the residuals by season, I tested up to a quartic polynomial as well:
+
+```{r, echo=FALSE}
+passing_mod_ar1_poly <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
+                       data = passing,correlation = corAR1())
+kable(broom::tidy(passing_mod_ar1_poly,"fixed"))
+```
+
+Still nothing, so I think it's safe to say that total passing rate hasn't changed significantly since 2013.
 
 ## Percentage of baskets assisted:
 
-Again, I'm starting out with a very basic model, to see if the percentage of baskets assisted has changed over time. This data goes all the way back to 1976, so there should be significantly more information 
+Again, I'm starting out with a very basic model, to see if the percentage of baskets assisted has changed over time. This data goes all the way back to 1976, so there should be significantly more information than for raw passing numbers. This time I'd like to compare the spatial power correlation structure as well:
 
 ```{r}
-passing_mod <- lme(Passes.Made ~ poly(Season,3) + Min, random = ~1|Team,
-                   data = passing)
-passing_mod_ar1 <- lme(Passes.Made ~ poly(Season,3) + Min, random = ~1|Team,
-                       data = passing,correlation = corAR1())
+ast_mod <- lme(AST_perc ~ Season, random = ~1|Team,
+                   data = all_seasons[all_seasons$Season > 1976,], method = "ML")
+ast_mod_ar1 <- lme(AST_perc ~ Season, random = ~1|Team,
+                   data = all_seasons[all_seasons$Season > 1976,], 
+                   method = "ML",correlation = corAR1())
+ast_mod_car1 <- lme(AST_perc ~ Season, random = ~1|Team,
+                   data = all_seasons[all_seasons$Season > 1976,], 
+                   method = "ML",correlation = corCAR1())
 ```
+
+```{r echo=FALSE}
+kable(AIC(ast_mod,ast_mod_ar1,ast_mod_car1))
+```
+
+The AR(1) structure and spatial power are better by AIC, so to keep things simple I'll go with the AR(1) model. Now compare its residuals to the random intercept only model:
+
+```{r echo=FALSE}
+plot(ast_mod,main = "Random Intercept Only, Standardized Residuals")
+plot(all_seasons[all_seasons$Season > 1976,"Season"],resid(ast_mod),xlab = "Season",
+     ylab = "Residuals",main = "Random Intercept Only, Residuals by Season")
+plot(ast_mod_ar1,main = "Random Intercept and AR(1), Standardized Residuals")
+plot(all_seasons[all_seasons$Season > 1976,"Season"],resid(ast_mod_ar1),xlab = "Season",
+     ylab = "Residuals",main = "Random Intercept and AR(1), Residuals by Season")
+```
+
+AR(1) residuals look a little bit better, but there still appears to be a pattern, so let's test a model with up to a quartic polynomial for season:
+
+```{r}
+ast_mod_ar1_poly <- lme(AST_perc ~ poly(Season,4), random = ~1|Team,
+                   data = all_seasons[all_seasons$Season > 1976,], 
+                   method = "ML",correlation = corAR1())
+```
+
+```{r echo=FALSE}
+kable(AIC(ast_mod_ar1,ast_mod_ar1_poly))
+```
+
+This is much better by AIC, so let's look at the results (model re-fit with REML):
+
+```{r echo=FALSE}
+ast_mod_ar1_poly <- lme(AST_perc ~ poly(Season,4), random = ~1|Team,
+                   data = all_seasons[all_seasons$Season > 1976,], 
+                   correlation = corAR1())
+kable(broom::tidy(ast_mod_ar1_poly,"fixed"))
+```
+
+There appears to be a quartic trend for time in the percentage of baskets assisted! 
+
+# Next steps
+
+There's still a lot to do for this project, but I didn't want this phase 2 report to get even longer than it already is. Next I'd like to test how the percentage of assisted baskets affects winning percentage. I know now that there's a quartic affect of time on assist percentage, but need to look into additional covariates as well. Obviously offense is only half of the game, so I imagine I'll need to adjust for team defensive statistics. Counting steals and blocks isn't the ideal way to measure defense though, so I may need to get additional data on more advanced stats like defensive rating. But I think this is a good start!
