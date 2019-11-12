@@ -14,7 +14,7 @@ library(nlme)
 ```
 
 ```{r data, echo=FALSE}
-df <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/albuterol.csv")
+df <- read.csv("//Mac/Home/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/albuterol.csv")
 ```
 
 # 1. Model planning
@@ -52,7 +52,8 @@ The R code would be something like:
 
 ```{r eval=FALSE}
 glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + pressure + humidity,
-        random = ~1|id, family = "poisson",correlation = corAR1(),data = df)
+        random = ~1|id, family = "poisson",correlation = corAR1(),
+        data = df)
 ```
 
 ### ii. FEV1
