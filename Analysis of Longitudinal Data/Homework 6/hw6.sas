@@ -3,7 +3,7 @@ proc import datafile = '\\Mac\Home\Documents\GitHub\School\Analysis of Longitudi
  dbms = CSV;
 run;
 
-proc glimmix data=albuterol method=mspl;
+proc glimmix data=albuterol;
 model albuterol_use = 
   friday ln_mmax_pm25 temperature pressure humidity / solution distribution=poisson;
 random intercept / subject=id;
