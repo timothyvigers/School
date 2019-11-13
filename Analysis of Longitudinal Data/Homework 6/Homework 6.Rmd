@@ -172,6 +172,10 @@ Drawbacks?
 
 ## 2. 
 
+### a. 
+
+What do SEs increase with a smaller scale parameter?
+
 ### b. 
 
 How do you compare apples to apples when fitting with RSPL? Or should I fit with MSPL?
