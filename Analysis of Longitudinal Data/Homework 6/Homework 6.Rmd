@@ -14,7 +14,7 @@ library(nlme)
 ```
 
 ```{r data, echo=FALSE}
-df <- read.csv("//Mac/Home/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/albuterol.csv")
+df <- read.csv("/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/albuterol.csv")
 ```
 
 # 1. Model planning
@@ -23,19 +23,46 @@ df <- read.csv("//Mac/Home/Documents/GitHub/School/Analysis of Longitudinal Data
 
 ### i. Medication use
 
-Correlated count data like this probably requires a generalized linear mixed model (GzLMM) where the outcome is modeled as Poisson-distributed, a random intercept for subject, and with an AR(1) or spatial power correlation for repeated measures. I think the best way to do this in SAS is to use PROC GLIMMIX, and in R glmmPQL() should work. 
-
-If there are a lot of zero counts then it might be necessary to use a zero-inflated Poisson model, which would require some complicated coding in PROC NLMIXED.
+In order to adapt a generalized linear model (GzLM) for serially correlated data, I would use a generalized estimating equation (GEE). This could be fit using PROC GENMOD in SAS, with a Poisson distribution since this is count data. There is also a package called "geepack" in R that can fit GEEs, but I've never used it and don't know much about it, so PROC GENMOD is probably safer.
 
 ### ii. FEV1
 
-I think you might be able to get away with a normal theory model for FEV1 data, unless it's really skewed. If so, I would use either PROC MIXED in SAS or lme() in R. If normal theory models won't work, then I would use PROC GLIMMIX or glmmPQL() to model the outcome with a non-normal distribution.
+I think you can probably get away with a normal theory model for FEV1 data, unless it's really skewed. If so, I would use either PROC MIXED in SAS or gls() in R. If normal theory models won't work, then I would use PROC GENMOD or geeglm() like above, to model the outcome with a non-normal distribution.
 
 ## b. Data
 
 ### i. Medication use
 
-Because we need a GzLMM for this outcome, I would set up the data so that each subject has a row for every day during the relevant timeframe. On days without an albuterol count the outcome would be filled in as missing (NA in R). 
+Because we need a GEE for this outcome, I would set up the data so that each subject has a row for every day during the relevant timeframe. On days without an albuterol count the outcome would be filled in as missing (NA in R), but the temporal spacing would be equal between rows within subject.
+
+The SAS code would look something like:
+
+```{sas eval=FALSE}
+proc genmod data=albuterol;
+class id friday;
+model albuterol_use = 
+  friday ln_mmax_pm25 temperature pressure humidity / solution dist=poisson;
+repeated subject=id / TYPE = AR(1);
+run;
+```
+
+## c. Binary outcome
+
+### i. Medication use
+
+In order to fit a GzLMM model with a random intercept for subject, I would use PROC GLIMMIX in SAS (with distribution = binary). PROC NLMIXED would also work, but I find it a little more confusing. The default in PROC GLIMMIX is to approximate the true likelihood using Laplace's method, but you can also specify method = quad to use Gaussian quadrature. This can also be done using glmer() in R. 
+
+### ii. FEV1
+
+Again assuming that the normal theory model is okay for FEV1, I would use PROC MIXED in SAS or lme() in R (or possible lmer() to be consistent with the model above). These models would be fit using ML or REML rather than Gaussian quadrature.
+
+for an AR(1) correlation structure in the repeated measures, but does not allow for the incorporation of random effects. GEEs can be fit (using the same data structure as above) with:
+
+##d. Random intercept and serial correlation
+
+### i. Medication use
+
+Correlated count data like this probably requires a generalized linear mixed model (GzLMM) where the outcome is modeled as Poisson-distributed, a random intercept for subject, and with an AR(1) or spatial power correlation for repeated measures. I think the best way to do this in SAS is to use PROC GLIMMIX, and in R glmmPQL() should work. 
 
 There isn't a REPEATED statement in PROC GLIMMIX, so you need to another random effect with the "_residual_" and the correlation structure:
 
@@ -58,7 +85,9 @@ glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + pressure +
 
 ### ii. FEV1
 
-I would keep the same data structure as above for this model. Assuming that it's okay to use normal theory models, the SAS code would be something like:
+These normal models could be fit using either PROC MIXED in SAS or lme() in R. I don't know how to include the AR(1) structure in lmer(), but I'm sure it's possible.
+
+The SAS code would be something like:
 
 ```{sas eval=FALSE}
 proc mixed data=albuterol;
@@ -77,38 +106,28 @@ lme(fev1 ~ friday + ln_mmax_pm25 + temperature + pressure + humidity,
     random = ~1|id,correlation = corAR1(),data = df,na.action = na.omit)
 ```
 
-## c. Between-subject differences
+# 2. Albuterol data
 
-Previously I was assuming above that we were including a random intercept for subject, which would help account for the differences between subjects. For the previous sections, you could also use generalized estimating equations (GEEs) to account for serial correlation in general linear models (GzLMs). The GEE approach would allow for an AR(1) correlation structure in the repeated measures, but does not allow for the incorporation of random effects. GEEs can be fit (using the same data structure as above) with:
+## a. GEE
 
-### i. Medication use
+The results of PROC GENMOD are below, with the scale parameter in the red box:
 
-PROC GENMOD for non-normal data 
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2a.png)
 
-```{sas eval=FALSE}
-proc genmod data=albuterol;
-class id friday;
-model albuterol_use = 
-  friday ln_mmax_pm25 temperature pressure humidity / solution dist=poisson;
-random intercept / subject=id;
-repeated subject=id / TYPE = AR(1) modelse;
-run;
-```
+Adding the scale parameter increases the standard errors.
 
-### ii. FEV1
-
-or PROC MIXED for a normal theory model
-
-```{sas eval=FALSE}
-proc mixed data=albuterol;
-class id friday;
-model fev1 = 
-  friday ln_mmax_pm25 temperature pressure humidity / solution;
-repeated / type=AR(1) subject=id;
-run;
-```
-
-The GzLMMs in sections 
+## b. GzLMM
 
 
-# This all needs to be re-organized
+
+# Questions
+
+## 1. 
+
+### What are the drawbacks to Guassian quad/approximating the true likelihood?
+
+### Gaussian quad vs. ML?
+
+## 2. 
+
+### How do you compare apples to apples when fitting with RSPL?
