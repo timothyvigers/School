@@ -46,25 +46,19 @@ repeated subject=id / TYPE = AR(1);
 run;
 ```
 
-## c. Binary outcome
+## c. Binary outcome for medication
 
-### i. Medication use
+In order to fit a GzLMM model with a random intercept for subject, I would use PROC GLIMMIX in SAS (with distribution = binary). PROC NLMIXED would also work, but I find it a little more confusing. The default in PROC GLIMMIX is to approximate the true likelihood using Laplace's method, but you can specify method = quad to use adaptive Gaussian quadrature. This can also be done using glmer() in R. 
 
-In order to fit a GzLMM model with a random intercept for subject, I would use PROC GLIMMIX in SAS (with distribution = binary). PROC NLMIXED would also work, but I find it a little more confusing. The default in PROC GLIMMIX is to approximate the true likelihood using Laplace's method, but you can also specify method = quad to use Gaussian quadrature. This can also be done using glmer() in R. 
+The drawback of quadrature is that it only approximates the true likelihood and there's a bias/variance tradeoff. Also, page 19 of the s13 says that "the GzLMM quadrature approach overestimates SE’s since it does not account for the underdispersion," although there was some debate about this in office hours. Finally, you may end up with a different number of quadtrature points using PROC NLMIXED vs. PROC GLIMMIX. This likely wouldn't make a big difference, but you do have to be a little careful.
 
-### ii. FEV1
-
-Again assuming that the normal theory model is okay for FEV1, I would use PROC MIXED in SAS or lme() in R (or possible lmer() to be consistent with the model above). These models would be fit using ML or REML rather than Gaussian quadrature.
-
-for an AR(1) correlation structure in the repeated measures, but does not allow for the incorporation of random effects. GEEs can be fit (using the same data structure as above) with:
-
-##d. Random intercept and serial correlation
+## d. Random intercept and serial correlation
 
 ### i. Medication use
 
 Correlated count data like this probably requires a generalized linear mixed model (GzLMM) where the outcome is modeled as Poisson-distributed, a random intercept for subject, and with an AR(1) or spatial power correlation for repeated measures. I think the best way to do this in SAS is to use PROC GLIMMIX, and in R glmmPQL() should work. 
 
-There isn't a REPEATED statement in PROC GLIMMIX, so you need to another random effect with the "_residual_" and the correlation structure:
+There isn't a REPEATED statement in PROC GLIMMIX, so you need to include another random effect with the "_residual_" keyword and the correlation structure. Something like:
 
 ```{sas eval=FALSE}
 proc glimmix data=albuterol;
@@ -82,6 +76,8 @@ glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + pressure +
         random = ~1|id, family = "poisson",correlation = corAR1(),
         data = df)
 ```
+
+Estimation using pseudolikelihoods can be biased, although this goes away with large sample sizes. Also, you cannot specify non-simple R matrices or have random effects at multiple levels.  
 
 ### ii. FEV1
 
@@ -106,6 +102,8 @@ lme(fev1 ~ friday + ln_mmax_pm25 + temperature + pressure + humidity,
     random = ~1|id,correlation = corAR1(),data = df,na.action = na.omit)
 ```
 
+\pagebreak
+
 # 2. Albuterol data
 
 ## a. GEE
@@ -120,11 +118,11 @@ Adding the scale parameter generally increases the standard errors (except for f
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2b.png)
 
-The residual estimate is equivalent to the square of the scale parameter, so $\sqrt{0.6630} = 0.814$. This is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close.  
+The residual estimate is equivalent to the square of the scale parameter, so $\sqrt{0.6619} = 0.814$. This is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close.  
 
 ## c. Dispersion
 
-These scale estimates suggest underdispersion because they are less than 1.
+These scale parameter estimates suggest underdispersion because they are less than 1.
 
 ## d. Slopes and SEs
 
@@ -140,15 +138,15 @@ GEE Empirical:
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2d Emp.png)
 
-The estimate from the GzLMM is pretty different from the GEE (about 30% smaller), but the standard error from the GzLMM is very close to the SE from the model-based GEE approach. The SE from the empirical GEE approach is smaller than both of the other approaches.
+The estimate from the GzLMM is about 14% smaller, but the standard error from the GzLMM is very close to the SE from the model-based GEE approach. The SE from the empirical GEE approach is smaller than both of the others.
 
-### e. Interpretation
+## e. Interpretation
 
-The SD of the pollution variable is 0.592, so for each 1 SD increase in pollution, the rate of children's albuterol use increases by 2.27% (95% CI: 0.04% - 4.55%, p = 0.0464).
+The SD of the pollution variable is 0.592, so for each 1 SD increase in pollution, the rate of children's albuterol use increases by about 2.76% (95% CI: 0.52% - 5.06%, p = 0.0215).
 
 ```{r include=FALSE}
 sd <- sd(df$ln_mmax_pm25,na.rm = T)
-est <- 0.03787
+est <- 0.04600
 exp(est * sd)
 ll <- est - 1.96*0.01901
 exp(ll*sd)
@@ -156,30 +154,31 @@ ul <- est + 1.96*0.01901
 exp(ul*sd)
 ```
 
-# Questions
+# 3. Exacerbation data
 
-## 1. 
+## a. Parameter estimates
 
-### c. 
+For each 1 unit increase in day, odds of an exacerbation are 1.009 times higher (95% CI: 1.004 - 1.014, p < 0.0001). Or, for each week odds of an exacerbation are 1.066 times higher (95% CI: 1.034 - 1.099, p < 0.0001) and for each month odds of an exacerbation are 1.316 times higher (95% CI: 1.156 - 1.497, p < 0.0001). 
 
-What are the drawbacks to Guassian quad/approximating the true likelihood?
+The odds of an exacerbation are 0.812 times lower (95% CI: 0.695 - 0.948, p = 0.0084) on the weekend compared to weekdays. 
 
-Gaussian quad vs. ML?
+I don't think the two approaches differ much, but it does sort of depend on what counts as a meaningful change in exacerbation odds. The approach with no repeated measures says that odds of exacerbation are 1.01 times higher per increase in day. which is very close to 1.009. However, the approach without AR(1) says that the odds of an exacerbation are 0.794 times lower on the weekend, which is a little lower than 0.812. It seems close enough to me, but I suppose it's possible that the difference is clincally meaningful.
 
-### d. 
+```{r include=FALSE}
+day_est <- 0.009147
+day_se <- 0.002195
+day_ll <- day_est - 1.96*day_se
+day_ul <- day_est + 1.96*day_se
+weekend_est <- -0.2085
+weekend_se <- 0.07911
+weekend_ll <- weekend_est - 1.96*weekend_se
+weekend_ul <- weekend_est + 1.96*weekend_se
+```
 
-Drawbacks?
+## b. SS vs. PA effects
 
-## 2. 
+The slope estimates have subject-specific interpretations, because MSPL was used to approximate the likelihood. This option means that instead of averaging the function over subjects, it determines the function for the average subject. The pseudodata is expanded around subjects as opposed to the population.
 
-### a. 
+## c. Estimates
 
-What do SEs increase with a smaller scale parameter?
-
-### b. 
-
-How do you compare apples to apples when fitting with RSPL? Or should I fit with MSPL?
-
-### e. 
-
-Do we need to go into detail about subject-specific vs. population-averaged interpretations?
+A GzLM/GEE will have population-averaged interpretations, which will generally be lower than the subject-specific beta estimates. The slope of the marginal mean is more attenuated (i.e. a flatter curve) than the conditional mean in a logistic model. This makes some intuitive sense, because if you're averaging the function across multiple subjects, it's impossible for the average to be steeper than the subject specific curves.
