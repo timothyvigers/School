@@ -18,3 +18,7 @@ model albuterol_use =
 random intercept / subject=id;
 random _residual_ / subject=id type=sp(exp)(date); 
 run;
+
+
+proc means data=albuterol;
+run;

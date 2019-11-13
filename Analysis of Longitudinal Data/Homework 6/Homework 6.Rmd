@@ -114,20 +114,68 @@ The results of PROC GENMOD are below, with the scale parameter in the red box:
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2a.png)
 
-Adding the scale parameter increases the standard errors.
+Adding the scale parameter generally increases the standard errors (except for friday = 0).
 
 ## b. GzLMM
 
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2b.png)
 
+The residual estimate is equivalent to the square of the scale parameter, so $\sqrt{0.6630} = 0.814$. This is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close.  
+
+## c. Dispersion
+
+These scale estimates suggest underdispersion because they are less than 1.
+
+## d. Slopes and SEs
+
+GzLMM:
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2d GzLMM.png)
+
+GEE MBSE:
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2d MBSE.png)
+
+GEE Empirical:
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2d Emp.png)
+
+The estimate from the GzLMM is pretty different from the GEE (about 30% smaller), but the standard error from the GzLMM is very close to the SE from the model-based GEE approach. The SE from the empirical GEE approach is smaller than both of the other approaches.
+
+### e. Interpretation
+
+The SD of the pollution variable is 0.592, so for each 1 SD increase in pollution, the rate of children's albuterol use increases by 2.27% (95% CI: 0.04% - 4.55%, p = 0.0464).
+
+```{r include=FALSE}
+sd <- sd(df$ln_mmax_pm25,na.rm = T)
+est <- 0.03787
+exp(est * sd)
+ll <- est - 1.96*0.01901
+exp(ll*sd)
+ul <- est + 1.96*0.01901
+exp(ul*sd)
+```
 
 # Questions
 
 ## 1. 
 
-### What are the drawbacks to Guassian quad/approximating the true likelihood?
+### c. 
 
-### Gaussian quad vs. ML?
+What are the drawbacks to Guassian quad/approximating the true likelihood?
+
+Gaussian quad vs. ML?
+
+### d. 
+
+Drawbacks?
 
 ## 2. 
 
-### How do you compare apples to apples when fitting with RSPL?
+### b. 
+
+How do you compare apples to apples when fitting with RSPL? Or should I fit with MSPL?
+
+### e. 
+
+Do we need to go into detail about subject-specific vs. population-averaged interpretations?
