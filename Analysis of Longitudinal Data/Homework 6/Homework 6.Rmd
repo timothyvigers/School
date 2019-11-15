@@ -46,15 +46,27 @@ repeated subject=id / TYPE = AR(1);
 run;
 ```
 
+### ii. FEV1
+
+Again, assuming that a normal mixed model will work, the PROC MIXED code would be something like:
+
+```{sas eval=FALSE}
+proc mixed data = albuterol;
+class id friday;
+model fev1 = date friday ln_mmax_pm25 temperature pressure humidity / solution;
+repeated / type = AR(1) subject = id; 
+run;
+```
+
+I'd use the same data structure as above for this outcome as well.
+
 ## c. Binary outcome for medication
 
-In order to fit a GzLMM model with a random intercept for subject, I would use PROC GLIMMIX in SAS (with distribution = binary). PROC NLMIXED would also work, but I find it a little more confusing. The default in PROC GLIMMIX is to approximate the true likelihood using Laplace's method, but you can specify method = quad to use adaptive Gaussian quadrature. This can also be done using glmer() in R. 
+In order to fit a GzLMM model with a random intercept for subject, I would use PROC GLIMMIX in SAS (pretty much the same code as above, but with distribution = binary). PROC NLMIXED would also work, but I find it a little more confusing. The default in PROC GLIMMIX is to approximate the true likelihood using Laplace's method, but you can specify method = quad to use adaptive Gaussian quadrature. This can also be done using glmer() in R. 
 
-The drawback of quadrature is that it only approximates the true likelihood and there's a bias/variance tradeoff. Also, page 19 of the s13 says that "the GzLMM quadrature approach overestimates SE’s since it does not account for the underdispersion," although there was some debate about this in office hours. Finally, you may end up with a different number of quadtrature points using PROC NLMIXED vs. PROC GLIMMIX. This likely wouldn't make a big difference, but you do have to be a little careful.
+One drawback of quadrature is that it only approximates the true likelihood and there's a bias/variance tradeoff. Also, page 19 of the s13 says that "the GzLMM quadrature approach overestimates SE’s since it does not account for the underdispersion," although there was some debate about this in office hours. Finally, you may end up with a different number of quadtrature points using PROC NLMIXED vs. PROC GLIMMIX. This likely wouldn't make a big difference, but you do have to be a little careful.
 
 ## d. Random intercept and serial correlation
-
-### i. Medication use
 
 Correlated count data like this probably requires a generalized linear mixed model (GzLMM) where the outcome is modeled as Poisson-distributed, a random intercept for subject, and with an AR(1) or spatial power correlation for repeated measures. I think the best way to do this in SAS is to use PROC GLIMMIX, and in R glmmPQL() should work. 
 
@@ -79,29 +91,6 @@ glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + pressure +
 
 Estimation using pseudolikelihoods can be biased, although this goes away with large sample sizes. Also, you cannot specify non-simple R matrices or have random effects at multiple levels.  
 
-### ii. FEV1
-
-These normal models could be fit using either PROC MIXED in SAS or lme() in R. I don't know how to include the AR(1) structure in lmer(), but I'm sure it's possible.
-
-The SAS code would be something like:
-
-```{sas eval=FALSE}
-proc mixed data=albuterol;
-class id friday;
-model fev1 = 
-  friday ln_mmax_pm25 temperature pressure humidity / solution;
-random intercept / subject=id;
-repeated / type=AR(1) subject=id; 
-run;
-```
-
-And the R code something like:
-
-```{r eval=FALSE}
-lme(fev1 ~ friday + ln_mmax_pm25 + temperature + pressure + humidity,
-    random = ~1|id,correlation = corAR1(),data = df,na.action = na.omit)
-```
-
 \pagebreak
 
 # 2. Albuterol data
@@ -112,13 +101,14 @@ The results of PROC GENMOD are below, with the scale parameter in the red box:
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2a.png)
 
-Adding the scale parameter generally increases the standard errors (except for friday = 0).
+Adding the scale parameter generally increases the standard errors (except for friday = 0 for some reason which I can't figure out).
 
 ## b. GzLMM
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2b.png)
 
-The residual estimate is equivalent to the square of the scale parameter, so $\sqrt{0.6619} = 0.814$. This is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close.  
+The residual estimate is equivalent to the scale parameter $\hat{\phi}$, while GEE reports $\sqrt{\hat{\phi}}$. So, to compare the two, $\sqrt{0.6619} = 0.814$ which is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close. In order to get this model to converge I had to use sp(exp)(date) rather than the spatial power structure and lower the convergence criteria, so I think that could be partially responsible for the difference. 
+
 
 ## c. Dispersion
 

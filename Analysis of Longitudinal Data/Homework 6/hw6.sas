@@ -3,6 +3,11 @@ proc import datafile = '\\Mac\Home\Documents\GitHub\School\Analysis of Longitudi
  dbms = CSV;
 run;
 
+proc mixed data = albuterol;
+class id friday;
+model albuterol_use = date friday ln_mmax_pm25 temperature pressure humidity / solution;
+repeated / type = AR(1) subject = id; 
+run;
 
 proc genmod data = albuterol;
 class id friday;
