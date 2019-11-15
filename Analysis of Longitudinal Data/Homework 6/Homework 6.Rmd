@@ -75,7 +75,7 @@ There isn't a REPEATED statement in PROC GLIMMIX, so you need to include another
 ```{sas eval=FALSE}
 proc glimmix data=albuterol;
 model albuterol_use = 
-  friday ln_mmax_pm25 temperature pressure humidity / solution distribution=poisson;
+  friday ln_mmax_pm25 temperature pressure humidity / solution distribution=binary;
 random intercept / subject=id;
 random _residual_ / subject=id type=ar(1); 
 run;
@@ -84,9 +84,9 @@ run;
 The R code would be something like:
 
 ```{r eval=FALSE}
-glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + pressure + humidity,
-        random = ~1|id, family = "poisson",correlation = corAR1(),
-        data = df)
+glmmPQL(fixed = albuterol_use ~ friday + ln_mmax_pm25 + temperature + 
+          pressure + humidity,random = ~1|id, family = "binomial",
+        correlation = corAR1(),data = df)
 ```
 
 Estimation using pseudolikelihoods can be biased, although this goes away with large sample sizes. Also, you cannot specify non-simple R matrices or have random effects at multiple levels.  
@@ -107,7 +107,7 @@ Adding the scale parameter generally increases the standard errors (except for f
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2b.png)
 
-The residual estimate is equivalent to the scale parameter $\hat{\phi}$, while GEE reports $\sqrt{\hat{\phi}}$. So, to compare the two, $\sqrt{0.6619} = 0.814$ which is a little bit lower than the scale parameter from the GEE (0.857), but I'd say they're pretty close. In order to get this model to converge I had to use sp(exp)(date) rather than the spatial power structure and lower the convergence criteria, so I think that could be partially responsible for the difference. 
+The residual estimate is equivalent to the scale parameter $\hat{\phi}$, while GEE reports $\sqrt{\hat{\phi}}$. So, to compare the two, $\sqrt{0.7659} = 0.87$ which is pretty close to the scale parameter from the GEE (0.857), although slightly higher. 
 
 
 ## c. Dispersion
@@ -128,19 +128,19 @@ GEE Empirical:
 
 ![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Homework 6/2d Emp.png)
 
-The estimate from the GzLMM is about 14% smaller, but the standard error from the GzLMM is very close to the SE from the model-based GEE approach. The SE from the empirical GEE approach is smaller than both of the others.
+The estimate from the GzLMM is slightly higher than from the model-based GEE approach and the SE is slightly lower, but they're very close. The SE from the empirical GEE approach is smaller than both of the others.
 
 ## e. Interpretation
 
-The SD of the pollution variable is 0.592, so for each 1 SD increase in pollution, the rate of children's albuterol use increases by about 2.76% (95% CI: 0.52% - 5.06%, p = 0.0215).
+The SD of the pollution variable is 0.592, so for each 1 SD increase in pollution, the rate of children's albuterol use increases by about 3.29% (95% CI: 1.09% - 5.55%, p = 0.0033).
 
 ```{r include=FALSE}
 sd <- sd(df$ln_mmax_pm25,na.rm = T)
-est <- 0.04600
+est <- 0.05471
 exp(est * sd)
-ll <- est - 1.96*0.01901
+ll <- est - 1.96*0.01861
 exp(ll*sd)
-ul <- est + 1.96*0.01901
+ul <- est + 1.96*0.01861
 exp(ul*sd)
 ```
 

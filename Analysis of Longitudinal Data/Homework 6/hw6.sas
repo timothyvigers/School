@@ -3,12 +3,6 @@ proc import datafile = '\\Mac\Home\Documents\GitHub\School\Analysis of Longitudi
  dbms = CSV;
 run;
 
-proc mixed data = albuterol;
-class id friday;
-model albuterol_use = date friday ln_mmax_pm25 temperature pressure humidity / solution;
-repeated / type = AR(1) subject = id; 
-run;
-
 proc genmod data = albuterol;
 class id friday;
 model albuterol_use = date friday ln_mmax_pm25 temperature pressure humidity / dist=poisson;
@@ -16,14 +10,12 @@ repeated subject = id / type = AR(1) modelse;
 run;
 
 
-proc glimmix data=albuterol pconv=0.000001;
+proc glimmix data=albuterol pconv=0.0000001;
 class id friday;
 model albuterol_use = date friday ln_mmax_pm25 temperature pressure humidity / dist=poisson solution;
-random intercept / subject=id;
-random _residual_ / subject=id type=sp(exp)(date); 
+random _residual_ / subject=id type=sp(pow)(date); 
 run;
 
 
 proc means data=albuterol;
 run;
-
