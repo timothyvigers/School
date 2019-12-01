@@ -194,9 +194,19 @@ format_nlme_out(mod_ar1,varnames = "Percentage of FG Assisted")
 ```{r w plot,echo=FALSE}
 ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) + 
   geom_point(aes(color = Team)) + 
-  geom_label_repel(data = post_merger[post_merger$AST_perc >= 70,],
+  xlim(40,85) + 
+  geom_label_repel(data = subset(post_merger,AST_perc >70 | w_perc > 85),
                    aes(label = team_season),
-                   segment.color = 'grey50') + 
+                   segment.color = 'grey50',
+                   direction = "y",
+                   nudge_x = 15,
+                   hjust = 0.5) + 
+  geom_label_repel(data = subset(post_merger,AST_perc < 48),
+                   aes(label = team_season),
+                   segment.color = 'grey50',
+                   direction = "y",
+                   nudge_x = -15,
+                   hjust = 0.5) +
   xlab("Percentage of FG Assisted") + ylab("Win %") + 
   scale_color_manual(values = primary_colors) + 
   theme_bw() +
