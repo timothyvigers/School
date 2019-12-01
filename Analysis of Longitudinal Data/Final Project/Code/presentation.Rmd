@@ -49,6 +49,8 @@ passing[,numcols] <- lapply(passing[,numcols],
 
 - Do assists correlate with winning percentage?
 
+# Passing
+
 ## Passes made per season
 
 ```{r pass plot,echo=FALSE,warning=FALSE,message=FALSE}
@@ -63,21 +65,45 @@ pass_plot
 
 ## Passing model selection
 
-I compared:
+- Random intercept (RI) for team only:
 
-- Random intercept for team only
+lme(Passes.Made ~ Season, random = ~1|Team,
+    data = passing,method = "ML")
 
-- Random intercept for team and random slope across season
+- RI for team and random slope (RS) across season:
 
-- Random intercept for team with AR(1) structure for repeated measures
+lme(Passes.Made ~ Season, random = ~Season|Team,
+    data = passing,method = "ML")
 
-- Random intercept for team and random slope across season with AR(1) structure for repeated measures
+- RI for team with AR(1) structure for repeated measures:
 
-- All models above adjusted for total minutes played
+lme(Passes.Made ~ Season, random = ~1|Team,data = passing,
+    correlation = corAR1(),method = "ML")
+
+- RI for team and RS across season with AR(1) structure for repeated measures:
+
+lme(Passes.Made ~ Season, random = ~Season|Team,data = passing,
+    correlation = corAR1(),method = "ML")
+
+## AIC
+
+```{r aic,echo=FALSE}
+passing_mod <- lme(Passes.Made ~ Season, random = ~1|Team,
+                   data = passing,method = "ML")
+passing_mod_ar1 <- lme(Passes.Made ~ Season, random = ~1|Team,
+                       data = passing,correlation = corAR1(),method = "ML")
+passing_mod_ar1_s <- lme(Passes.Made ~ Season, random = ~Season|Team,
+                       data = passing,correlation = corAR1(),method = "ML")
+aics <- as.data.frame(AIC(passing_mod,passing_mod_ar1,passing_mod_ar1_s))
+rownames(aics) <- c("RI Only","RI and AR(1)","RI, RS, and AR(1)")
+kable(aics)
+```
+
+The best model by AIC was random intercept for team with AR(1) structure for repeated measures (RI and RS did not converge without AR(1)). Minutes played did not affect the results.
 
 ## Passing results
 
-The best model by AIC was random intercept for team with AR(1) structure for repeated measures. Minutes played did not affect the results, and there were no polynomial effects for time:
+There were no polynomial effects for time:
 
 ```{r, echo=FALSE}
 passing_mod_ar1_poly <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
@@ -105,6 +131,8 @@ format_nlme_out(piecewise,varnames = c("Season","Change in Slope"))
 
 So, the overall passing rate doesn't appear to have changed since 2013.
 
+# Assists
+
 ## Raw assist numbers by team and season
 
 ```{r raw assists,echo=FALSE,warning=FALSE,message=FALSE}
@@ -122,7 +150,7 @@ ast_plot <-
 ast_plot
 ```
 
-Will need to use percentage of baskets assisted because of the lockout years in 1998 and 2011, but at least the data appear to be reasonable.
+There were lockouts in 1998 and 2011.
 
 ## Percent assisted
 
@@ -138,10 +166,7 @@ ast_perc_plot <-
 ast_perc_plot
 ```
 
-## The Warriors and John Stockton
-
-- Steph Curry was drafted in 2009 and unanimous MVP in the 2015-2016 season.
-- Stockton is the NBA all-time assist leader and played 1984–2003
+## Steph Curry and John Stockton
 
 ```{r gsw uta,echo=FALSE}
 # Facet wrap
@@ -168,72 +193,56 @@ hist(post_merger$w_perc,xlab = "Win %",main = "Histogram of Win %")
 
 ## Win model selection
 
-I compared:
+```{r echo=FALSE}
+mod <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger)
+mod_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger)
+mod_ar1 <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger,
+               correlation = corAR1())
+mod_ar1_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger,
+               correlation = corAR1())
+aics <- as.data.frame(AIC(mod,mod_s,mod_ar1,mod_ar1_s))
+rownames(aics) <- c("RI Only","RI and RS","RI and AR(1)","RI, RS, and AR(1)")
+kable(aics)
+```
 
-- Random intercept for team only
-
-- Random intercept for team and random slope across season
-
-- Random intercept for team with AR(1) structure for repeated measures
-
-- Random intercept for team and random slope across season with AR(1) structure for repeated measures
+Compared the same general model types as for the passing model.
 
 ## Win model results
 
 ```{r W selection,echo=FALSE}
-mod <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger)
-mod_ar1 <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger,
-               correlation = corAR1())
-mod_ar1_s <- lme(w_perc ~ AST_perc,random = ~1+Season|Team,data = post_merger,
-               correlation = corAR1())
-format_nlme_out(mod_ar1,varnames = "Percentage of FG Assisted")
+format_nlme_out(mod_ar1,varnames = "% of FG Assisted")
 ```
 
-## W
+An increase of 10 points in percentage of FGs assisted can lead to an approximately 6 point increase in winning percentage on the season. So, about 5 games per season. 
+
+## Wins by percentage assisted
 
 ```{r w plot,echo=FALSE}
 ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) + 
   geom_point(aes(color = Team)) + 
-  xlim(40,85) + 
-  geom_label_repel(data = subset(post_merger,AST_perc >70 | w_perc > 85),
-                   aes(label = team_season),
-                   segment.color = 'grey50',
-                   direction = "y",
-                   nudge_x = 15,
-                   hjust = 0.5) + 
-  geom_label_repel(data = subset(post_merger,AST_perc < 48),
-                   aes(label = team_season),
-                   segment.color = 'grey50',
-                   direction = "y",
-                   nudge_x = -15,
-                   hjust = 0.5) +
+  xlim(40,80) + 
+  geom_abline(aes(intercept = 12.609, slope = 0.612)) + 
   xlab("Percentage of FG Assisted") + ylab("Win %") + 
   scale_color_manual(values = primary_colors) + 
   theme_bw() +
   theme(legend.position = "none")
 ```
 
-## R Markdown
+## Wins by percentage assisted
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
-## Slide with Bullets
-
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+```{r w plot labels,echo=FALSE}
+ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) + 
+  geom_point(aes(color = Team)) + 
+  xlim(40,80) + 
+  geom_abline(aes(intercept = 12.609, slope = 0.612)) + 
+  geom_label_repel(data = subset(post_merger,AST_perc >70 | w_perc > 85),
+                   aes(label = team_season),
+                   segment.color = 'grey50',
+                   direction = "y",
+                   nudge_x = 5,
+                   hjust = 0.5) + 
+  xlab("Percentage of FG Assisted") + ylab("Win %") + 
+  scale_color_manual(values = primary_colors) + 
+  theme_bw() +
+  theme(legend.position = "none")
 ```
-
-## Slide with Plot
-
-```{r pressure}
-plot(pressure)
-```
-
