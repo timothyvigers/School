@@ -1,0 +1,229 @@
+---
+title: "Passing in the NBA"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Final Project")
+source("/Users/timvigers/Documents/GitHub/Tim-and-Laura/tim_r_functions.R")
+library(knitr)
+library(segmented)
+library(nlme)
+library(lme4)
+library(ggrepel)
+library(tidyverse)
+```
+
+```{r scrape,echo=FALSE,include=FALSE,cache=TRUE}
+# Get data from basketball reference
+source("./Code/scrape.R")
+```
+
+```{r data,echo=FALSE,include=FALSE}
+# Read in passing CSV
+passing <- read.csv("./Data/passing_data.csv")
+# Colors
+source("./Code/colors.R")
+# Season to starting year
+all_seasons$Season <- sub("-.*","",all_seasons$Season)
+# Convert column types - all seasons
+numcols <- c("Season","AST","FG","FGA","FG%","3P","3PA","3P%","STL",
+             "BLK","TOV","PF","PTS")
+all_seasons[,numcols] <- lapply(all_seasons[,numcols], 
+                                function(x) as.numeric(as.character(x)))
+# Team and season
+all_seasons$team_season <- paste(all_seasons$Team,all_seasons$Season)
+# Convert column types - passing
+passing$Season <- sub("-.*","",passing$Season)
+numcols <- c("Season","Passes.Made","Min")
+passing[,numcols] <- lapply(passing[,numcols], 
+                                function(x) as.numeric(as.character(x)))
+```
+
+## Questions
+
+- Has the passing rate increased in the NBA?
+
+- Do assists correlate with winning percentage?
+
+## Passes made per season
+
+```{r pass plot,echo=FALSE,warning=FALSE,message=FALSE}
+# Raw assist number plot
+pass_plot <- 
+  ggplot(passing,aes(x = Season,y = Passes.Made,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() +
+  scale_color_manual(values = primary_colors) + 
+  ylab("Passes Made")
+pass_plot
+```
+
+## Passing model selection
+
+I compared:
+
+- Random intercept for team only
+
+- Random intercept for team and random slope across season
+
+- Random intercept for team with AR(1) structure for repeated measures
+
+- Random intercept for team and random slope across season with AR(1) structure for repeated measures
+
+- All models above adjusted for total minutes played
+
+## Passing results
+
+The best model by AIC was random intercept for team with AR(1) structure for repeated measures. Minutes played did not affect the results, and there were no polynomial effects for time:
+
+```{r, echo=FALSE}
+passing_mod_ar1_poly <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
+                       data = passing,correlation = corAR1())
+format_nlme_out(passing_mod_ar1_poly)
+```
+
+## Break point
+
+The segmented package in R suggests there's a knot at 2015:
+
+```{r breakpoint}
+linmod <- lm(Passes.Made ~ Season,data = passing)
+segmented(linmod)
+```
+
+## Piecewise model
+
+```{r segmented,echo=FALSE}
+passing$season_star <- ifelse(passing$Season < 2015,0,passing$Season)
+piecewise <- lme(Passes.Made ~ Season + season_star, random = ~1|Team,
+                       data = passing,correlation = corAR1())
+format_nlme_out(piecewise,varnames = c("Season","Change in Slope"))
+```
+
+So, the overall passing rate doesn't appear to have changed since 2013.
+
+## Raw assist numbers by team and season
+
+```{r raw assists,echo=FALSE,warning=FALSE,message=FALSE}
+# Percentage of baskets assisted
+all_seasons <- all_seasons %>%
+  mutate(AST_perc = round(AST / FG,3)*100)
+# Since merger
+post_merger <- all_seasons[all_seasons$Season > 1976,]
+post_merger <- post_merger %>% arrange(Team,Season)
+# Raw assist number plot
+ast_plot <- 
+  ggplot(post_merger,aes(x = Season,y = AST,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() + ylab("Assists") +
+  scale_color_manual(values = primary_colors)
+ast_plot
+```
+
+Will need to use percentage of baskets assisted because of the lockout years in 1998 and 2011, but at least the data appear to be reasonable.
+
+## Percent assisted
+
+```{r pct ast,echo=FALSE,warning=FALSE,message=FALSE}
+# Plot assist percentage by year and team
+# All together
+ast_perc_plot <- 
+  ggplot(post_merger,aes(x = Season,y = AST_perc,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) +  
+  ylab("Percentage of FG Assisted") + 
+  scale_color_manual(values = primary_colors)
+ast_perc_plot
+```
+
+## The Warriors and John Stockton
+
+- Steph Curry was drafted in 2009 and unanimous MVP in the 2015-2016 season.
+- Stockton is the NBA all-time assist leader and played 1984–2003
+
+```{r gsw uta,echo=FALSE}
+# Facet wrap
+ast_perc_plot <- 
+  ggplot(post_merger[post_merger$Team %in% c("GSW","UTA"),],
+         aes(x = Season,y = AST_perc,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90)) +  
+  ylab("Percentage of FG Assisted") + 
+  scale_color_manual(values = primary_colors)
+ast_perc_plot +
+  facet_wrap(~Team) +
+  theme(legend.position = "none")
+```
+
+## Do assists help you win? 
+
+Modeled winning percentage using normal theory mixed models.
+
+```{r w hist,echo=FALSE}
+post_merger$w_perc <- (as.numeric(as.character(post_merger$W)) / 82)*100
+hist(post_merger$w_perc,xlab = "Win %",main = "Histogram of Win %")
+```
+
+## Win model selection
+
+I compared:
+
+- Random intercept for team only
+
+- Random intercept for team and random slope across season
+
+- Random intercept for team with AR(1) structure for repeated measures
+
+- Random intercept for team and random slope across season with AR(1) structure for repeated measures
+
+## Win model results
+
+```{r W selection,echo=FALSE}
+mod <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger)
+mod_ar1 <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger,
+               correlation = corAR1())
+mod_ar1_s <- lme(w_perc ~ AST_perc,random = ~1+Season|Team,data = post_merger,
+               correlation = corAR1())
+format_nlme_out(mod_ar1,varnames = "Percentage of FG Assisted")
+```
+
+## W
+
+```{r w plot,echo=FALSE}
+ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) + 
+  geom_point(aes(color = Team)) + 
+  geom_label_repel(data = post_merger[post_merger$AST_perc >= 70,],
+                   aes(label = team_season),
+                   segment.color = 'grey50') + 
+  xlab("Percentage of FG Assisted") + ylab("Win %") + 
+  scale_color_manual(values = primary_colors) + 
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+

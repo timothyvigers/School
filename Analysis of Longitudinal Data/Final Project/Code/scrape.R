@@ -1,3 +1,5 @@
+library(rvest)
+library(tidyverse)
 teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
            "IND","LAC","LAL","MEM","MIA","MIL","MIN","NOH","NYK","OKC","ORL",
            "PHI","PHO","POR","SAC","SAS","TOR","UTA","WAS")
