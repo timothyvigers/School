@@ -21,7 +21,7 @@ to_numeric <- c("TRB","Age","Ht.","Wt.")
 post_merger[,to_numeric] <- lapply(post_merger[,to_numeric], 
                                    function(x) as.numeric(as.character(x)))
 colnames(post_merger)[which(colnames(post_merger)=="FG%")] <- "FGP"
-mod <- lme(w_perc ~ AST_perc + Age + Ht. + Wt. + TRB + FGP + STL + BLK + TOV + PTS,
+mod <- lme(w_perc ~ AST_perc + Age + Ht. + Wt. + STL + BLK + TOV + PTS,
            random = ~1|Team,data = post_merger,correlation = corAR1(),method = "ML")
 stepAIC(mod)
 vif(mod)
