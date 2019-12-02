@@ -1,0 +1,28 @@
+---
+title: "Final Report"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(nlme)
+library(lme4)
+library(MASS)
+```
+
+```{r echo=FALSE}
+height <- str_split(post_merger$Ht.,"-")
+heightin <- as.numeric(sapply(temp, "[[", 1)) * 12
+post_merger$Ht. <- as.numeric(sapply(temp, "[[", 2)) + heightin
+to_numeric <- c("TRB","Age","Ht.","Wt.")
+post_merger[,to_numeric] <- lapply(post_merger[,to_numeric], 
+                                   function(x) as.numeric(as.character(x)))
+colnames(post_merger)[which(colnames(post_merger)=="FG%")] <- "FGP"
+mod <- lme(w_perc ~ AST_perc + Age + Ht. + Wt. + TRB + FGP + STL + BLK + TOV + PTS,
+           random = ~1|Team,data = post_merger,correlation = corAR1(),method = "ML")
+stepAIC(mod)
+vif(mod)
+```
