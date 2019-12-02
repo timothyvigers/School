@@ -108,7 +108,7 @@ There were no polynomial effects for time:
 ```{r, echo=FALSE}
 passing_mod_ar1_poly <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
                        data = passing,correlation = corAR1())
-format_nlme_out(passing_mod_ar1_poly)
+format_nlme_out(passing_mod_ar1_poly,caption = NULL)
 ```
 
 ## Break point
@@ -126,7 +126,7 @@ segmented(linmod)
 passing$season_star <- ifelse(passing$Season < 2015,0,passing$Season)
 piecewise <- lme(Passes.Made ~ Season + season_star, random = ~1|Team,
                        data = passing,correlation = corAR1())
-format_nlme_out(piecewise,varnames = c("Season","Change in Slope"))
+format_nlme_out(piecewise,varnames = c("Season","Change in Slope"),caption = NULL)
 ```
 
 So, the overall passing rate doesn't appear to have changed since 2013.
@@ -152,7 +152,7 @@ ast_plot
 
 There were lockouts in 1998 and 2011.
 
-## Percent assisted
+## Percentage of FG Assisted
 
 ```{r pct ast,echo=FALSE,warning=FALSE,message=FALSE}
 # Plot assist percentage by year and team
@@ -187,7 +187,9 @@ ast_perc_plot +
 Modeled winning percentage using normal theory mixed models.
 
 ```{r w hist,echo=FALSE}
-post_merger$w_perc <- (as.numeric(as.character(post_merger$W)) / 82)*100
+post_merger$w_perc <- (as.numeric(as.character(post_merger$W)) / 
+                         (as.numeric(as.character(post_merger$W)) + 
+                            as.numeric(as.character(post_merger$L))))*100
 hist(post_merger$w_perc,xlab = "Win %",main = "Histogram of Win %")
 ```
 
@@ -210,10 +212,10 @@ Compared the same general model types as for the passing model.
 ## Win model results
 
 ```{r W selection,echo=FALSE}
-format_nlme_out(mod_ar1,varnames = "% of FG Assisted")
+format_nlme_out(mod_ar1,varnames = "% of FG Assisted",caption = NULL)
 ```
 
-An increase of 10 points in percentage of FGs assisted can lead to an approximately 6 point increase in winning percentage on the season. So, about 5 games per season. 
+An increase of 10 points in percentage of FGs assisted can lead to an approximately 5 point increase in winning percentage (or about 4 games) on the season. 
 
 ## Wins by percentage assisted
 
@@ -246,3 +248,17 @@ ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) +
   theme_bw() +
   theme(legend.position = "none")
 ```
+
+## Conclusions
+
+- Passing hasn't increased since 2013.
+
+- Assists are helpful! But they won't necessarily win you a championship.
+
+## Limitations
+
+- Assists are a very subjective measure.
+- Assists also depend on the shooting percentage of the player receiving a pass.
+- These analyses were not adjusted for any defensive measures, which leaves out a big part of team success and winning percentage. 
+- They were also not adjusted for opponent defensive measures.
+- Passing data does not go back very far.
