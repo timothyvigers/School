@@ -1,7 +1,7 @@
 ---
 title: "Passing in the NBA"
 author: "Tim Vigers"
-date: "`r format(Sys.time(), '%d %B %Y')`"
+date: "02 December 2019"
 output: beamer_presentation
 ---
 
@@ -45,9 +45,9 @@ passing[,numcols] <- lapply(passing[,numcols],
 
 ## Questions
 
-- Has the passing rate increased in the NBA?
+1. Has the passing rate increased in the NBA?
 
-- Do assists correlate with winning percentage?
+2. Do assists correlate with winning percentage?
 
 # Passing
 
@@ -262,3 +262,7 @@ ggplot(post_merger,aes(x = AST_perc,y = w_perc,group = Team)) +
 - These analyses were not adjusted for any defensive measures, which leaves out a big part of team success and winning percentage. 
 - They were also not adjusted for opponent defensive measures.
 - Passing data does not go back very far.
+
+## Questions?
+
+![](/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Final Project/questions.jpg)
