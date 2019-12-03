@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Final Project")
 source("/Users/timvigers/Documents/GitHub/Tim-and-Laura/tim_r_functions.R")
+library(diagram)
 library(car)
 library(mediation)
 library(nlme)
@@ -69,7 +70,7 @@ Basketball has come a long way since James Naismith
 
 # The Data
 
-Team passing data were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. Traditional statistics going back to the beginning of the NBA and ABA were downloaded using an HTML scraping tool developed for this project (see Appendix). These data were also relatively clean, but teams which moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Utah Jazz data). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
+Team passing data were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. Traditional statistics going back to the beginning of the NBA and ABA were downloaded using an HTML scraping tool developed for this project (see Appendix for code). These data were also relatively clean, but teams which moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Utah Jazz data). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
 
 # Passing
 
@@ -148,7 +149,7 @@ $$
 
 ## Results
 
-### Linear Mixed Model
+### Table 1: The Effect of Time on Total Passes Made
 
 ```{r pass results,echo=FALSE,results='asis'}
 passing_mod_ar1 <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
@@ -160,7 +161,7 @@ kable(results)
 
 According to the linear mixed model, passing has not changed significantly since 2013. 
 
-### Spline Model
+### Table 2: Change in Total Passes Made After the 2015 Season
 
 ```{r segmented,echo=FALSE}
 passing$season_star <- ifelse(passing$Season < 2015,0,passing$Season)
@@ -169,7 +170,7 @@ piecewise <- lme(Passes.Made ~ Season + season_star, random = ~1|Team,
 format_nlme_out(piecewise,varnames = c("Season","Change in Slope"),caption = NULL)
 ```
 
-Passing appears to increase slightly after 2015, but the change in slope is not statistically significant (p = 0.24).
+Passing appears to increase slightly after 2015 according to the linear spline model, but the change in slope is not statistically significant (p = 0.24).
 
 # Assists
 
@@ -177,73 +178,42 @@ Passing appears to increase slightly after 2015, but the change in slope is not 
 
 Winning percentage appears to be reasonably normally distributed (Figure A3), so I used normal theory linear mixed models to determine whether increasing assists results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team and random intercept for team and random slope for season, both with and without an AR(1) structure for repeated measures. However, in these models the outcome is regular season win percentage and the fixed effects are average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and assists ("APG"), steals ("SPG"), blocks ("BPG"), and turnovers ("TPG") per game. Once again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC (Table A2).
 
-However, during model selection, I realized that there was a significant positive association between assists per game and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis to try and determine whether field goal percentage mediates the effect of assists on winning. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
+However, during model selection, I realized that there was a significant positive association between assists per game and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis (see Appendix for code) to try and determine whether field goal percentage mediates the effect of assists on winning [1]. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
 
 ## Results
 
+### Table 3: The Effect of Assists per Game on Winning Percentage
+
 ```{r with without fgp,echo=FALSE}
 mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game,
-           random = ~1|Team,data = post_merger,correlation = corAR1())
+           random = ~1|Team,data = post_merger)
 mod2 <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + FGP,
-           random = ~1|Team,data = post_merger,correlation = corAR1())
+           random = ~1|Team,data = post_merger)
 results <- format_nlme_out(mod,kable = F)
 results2 <- format_nlme_out(mod2,kable = F)
 format_nlme_out(mod,
-                varnames = c("APG","Age","Ht.","Wt.","SPG","BPG","TPG"),
-                caption = "Without FG%")
+                varnames = c("APG","Age","Ht.","Wt.","SPG","BPG","TPG"))
 ```
 
-Without adjusting for FG%, increasing assists by 5 per game can lead to a statistically significant (p = `r results["AST_game","p-value"]`) `r round(results["AST_game","Value"]*5,3)` point increase in winning percentage on the season (or about `r round(results["AST_game","Value"]*5/100 * 82,1)` games). After adjustment for FG%, this effect is no longer significant (Table A3).
+Without adjusting for FG%, on average increasing assists by 5 per game can lead to a statistically significant (p = `r results["AST_game","p-value"]`) increase in winning percentage of `r round(results["AST_game","Value"]*5,3)` points on the season (or about `r round(results["AST_game","Value"]*5/100 * 82,1)` games). After adjustment for FG%, this effect is no longer significant (Table A3).
 
-```{r mediation,echo=FALSE,include=FALSE,cache=TRUE}
-# Mediation with FGP as mediator
-mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
-                FGP + (1|Team),data = post_merger)
-mod.m <- lmer(FGP ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
-                (1|Team),data = post_merger)
-med_fgp <- mediate(mod.m,mod.y,treat = "AST_game",mediator = "FGP")
-# Mediation with AST as mediator
-mod.m <- lmer(AST_game ~ FGP + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
-                (1|Team),data = post_merger)
-med_ast <- mediate(mod.m,mod.y,treat = "FGP",mediator = "AST_game")
-# Mediation summary
-summary(med_fgp)
-summary(med_ast)
-```
+### Mediation Analysis
 
+There is a significant positive association between APG and FG%, FG% and winning, and  between APG and winning (Figure A4). So, FG% is mediating a signifcant proportion of the effect of assists on winning (p < 0.0001, see code in Appendix for detailed results). 
 
+# Discussion
+
+Passing hasn't changed, but assists help thorugh increasing FG%.
+
+\pagebreak
+
+# References
+
+1. Tingley D, Yamamoto T, Hirose K, Keele L, Imai K. mediation: R package for causal
+    mediation analysis. UCLA Stat Stat Assoc. August 2014. 
+    https://dspace.mit.edu/handle/1721.1/91154. Accessed December 2, 2019.
 
 # Appendix
-
-## HTML Scraping Tool
-
-```{r eval=FALSE}
-library(rvest)
-library(tidyverse)
-teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
-           "IND","LAC","LAL","MEM","MIA","MIL","MIN","NOH","NYK","OKC","ORL",
-           "PHI","PHO","POR","SAC","SAS","TOR","UTA","WAS")
-# Scrape each team page
-all_seasons <- data.frame()
-for (team in teams) {
-  url <- paste0("https://www.basketball-reference.com/teams/",team,"/stats_basic_totals.html")
-  table <- url %>%
-    read_html() %>%
-    html_nodes("table") %>%
-    html_table()
-  df <- as.data.frame(table[[1]]) 
-  df <- df[colnames(df) != ""] %>%
-    filter(Season != "Season",Season != "2019-20")
-  df[df == ""] <- NA
-  df <- as.data.frame(lapply(df, as.character))
-  colnames(df) <- c("Season","Lg","Tm","W","L","Finish","Age","Ht.","Wt.",
-                    "G","MP","FG","FGA","FG%","3P","3PA",
-                    "3P%","2P","2PA","2P%","FT","FTA","FT%","ORB","DRB","TRB",
-                    "AST","STL","BLK","TOV","PF","PTS")
-  df$Team <- team
-  all_seasons <- rbind.data.frame(all_seasons,df)
-}
-```
 
 ## Figure A1: Total Passes by Season
 
@@ -287,21 +257,88 @@ hist(post_merger$w_perc,xlab = "Win %",main = "")
 
 ## Table A2: AIC of Win Percentage Models
 
+All models fit using ML estimation.
+
 ```{r win aic,echo=FALSE}
-mod <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger)
-mod_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger)
-mod_ar1 <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger,
+mod <- lme(w_perc ~ AST_game,random = ~1|Team,data = post_merger,method = "ML")
+mod_s <- lme(w_perc ~ AST_game,random = ~Season|Team,data = post_merger,method = "ML")
+mod_ar1 <- lme(w_perc ~ AST_game,random = ~1|Team,data = post_merger,method = "ML",
                correlation = corAR1())
-mod_ar1_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger,
+mod_ar1_s <- lme(w_perc ~ AST_game,random = ~Season|Team,data = post_merger,
+                 method = "ML",
                correlation = corAR1())
 aics <- as.data.frame(AIC(mod,mod_s,mod_ar1,mod_ar1_s))
 rownames(aics) <- c("RI Only","RI and RS","RI and AR(1)","RI, RS, and AR(1)")
 kable(aics)
 ```
 
-## Table A3: Effect of Assists Adjusted for FG%
+## Table A3: Effect of Assists on Win Percentage, Adjusted for FG%
 
 ```{r echo=FALSE}
 format_nlme_out(mod2,varnames = c("APG","Age","Ht.","Wt.","SPG","BPG","TPG","FG%"))
 ```
 
+## Figure A4: Mediation Diagram
+
+```{r med diag,echo=FALSE}
+data <- c(0,"",0,
+          0,0,0, 
+          "","",0)
+M<- matrix (nrow=3, ncol=3, byrow = TRUE, data=data)
+plot<- plotmat (M, pos=c(1,2), 
+                name= c("Field Goal %","Assists per Game",
+                        "Win %"), 
+                box.type = "rect", box.size = 0.15, box.prop=0.5,  curve=0)
+```
+
+\pagebreak
+
+## Code
+
+### HTML Scraping Tool
+
+```{r eval=FALSE}
+library(rvest)
+library(tidyverse)
+teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
+           "IND","LAC","LAL","MEM","MIA","MIL","MIN","NOH","NYK","OKC","ORL",
+           "PHI","PHO","POR","SAC","SAS","TOR","UTA","WAS")
+# Scrape each team page
+all_seasons <- data.frame()
+for (team in teams) {
+  url <- paste0("https://www.basketball-reference.com/teams/",team,"/stats_basic_totals.html")
+  table <- url %>%
+    read_html() %>%
+    html_nodes("table") %>%
+    html_table()
+  df <- as.data.frame(table[[1]]) 
+  df <- df[colnames(df) != ""] %>%
+    filter(Season != "Season",Season != "2019-20")
+  df[df == ""] <- NA
+  df <- as.data.frame(lapply(df, as.character))
+  colnames(df) <- c("Season","Lg","Tm","W","L","Finish","Age","Ht.","Wt.",
+                    "G","MP","FG","FGA","FG%","3P","3PA",
+                    "3P%","2P","2PA","2P%","FT","FTA","FT%","ORB","DRB","TRB",
+                    "AST","STL","BLK","TOV","PF","PTS")
+  df$Team <- team
+  all_seasons <- rbind.data.frame(all_seasons,df)
+}
+```
+
+### Mediation
+
+```{r mediation,cache=TRUE}
+# Mediation with FGP as mediator
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
+                FGP + (1|Team),data = post_merger)
+mod.m <- lmer(FGP ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
+                (1|Team),data = post_merger)
+med_fgp <- mediate(mod.m,mod.y,treat = "AST_game",mediator = "FGP")
+# Mediation with AST as mediator
+mod.m <- lmer(AST_game ~ FGP + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
+                (1|Team),data = post_merger)
+med_ast <- mediate(mod.m,mod.y,treat = "FGP",mediator = "AST_game")
+# Mediation summary
+summary(med_fgp)
+summary(med_ast)
+```
