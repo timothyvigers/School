@@ -7,22 +7,73 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/Documents/GitHub/School/Analysis of Longitudinal Data/Final Project")
+source("/Users/timvigers/Documents/GitHub/Tim-and-Laura/tim_r_functions.R")
 library(car)
+library(mediation)
 library(nlme)
 library(lme4)
 library(MASS)
 ```
 
-```{r echo=FALSE}
-height <- str_split(post_merger$Ht.,"-")
-heightin <- as.numeric(sapply(temp, "[[", 1)) * 12
-post_merger$Ht. <- as.numeric(sapply(temp, "[[", 2)) + heightin
-to_numeric <- c("TRB","Age","Ht.","Wt.")
-post_merger[,to_numeric] <- lapply(post_merger[,to_numeric], 
-                                   function(x) as.numeric(as.character(x)))
-colnames(post_merger)[which(colnames(post_merger)=="FG%")] <- "FGP"
-mod <- lme(w_perc ~ AST_perc + Age + Ht. + Wt. + STL + BLK + TOV + PTS,
+```{r scrape,echo=FALSE,include=FALSE,cache=TRUE}
+# Get data from basketball reference
+source("./Code/scrape.R")
+```
+
+```{r data,echo=FALSE,include=FALSE}
+# Read in passing CSV
+passing <- read.csv("./Data/passing_data.csv")
+# Colors
+source("./Code/colors.R")
+# Season to starting year
+all_seasons$Season <- sub("-.*","",all_seasons$Season)
+# Column names
+colnames(all_seasons)[which(colnames(all_seasons)=="FG%")] <- "FGP"
+# Height
+all_seasons$Ht. <- as.numeric(sub(".*-","",all_seasons$Ht.)) + (6*12)
+# Convert column types - all seasons
+numcols <- c("Season","AST","FG","FGA","FGP","3P","3PA","3P%","STL",
+             "BLK","TOV","PF","PTS","W","L","Age","Wt.")
+all_seasons[,numcols] <- lapply(all_seasons[,numcols], 
+                                function(x) as.numeric(as.character(x)))
+# Team and season
+all_seasons$team_season <- paste(all_seasons$Team,all_seasons$Season)
+# Convert column types - passing
+passing$Season <- sub("-.*","",passing$Season)
+numcols <- c("Season","Passes.Made","Min")
+passing[,numcols] <- lapply(passing[,numcols], 
+                                function(x) as.numeric(as.character(x)))
+# Assists
+all_seasons <- all_seasons %>%
+  mutate(AST_perc = (AST / FG)*100,
+         AST_game = AST / (W+L))
+# Since merger
+post_merger <- all_seasons[all_seasons$Season > 1976,]
+post_merger <- post_merger %>% arrange(Team,Season)
+# Win percentage
+post_merger$w_perc <- (post_merger$W / (post_merger$W + post_merger$L))*100
+```
+
+```{r assists,echo=FALSE,include=FALSE}
+# nlme
+mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + FGP,
            random = ~1|Team,data = post_merger,correlation = corAR1(),method = "ML")
-stepAIC(mod)
-vif(mod)
+# Mediation with FGP as mediator
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + 
+                FGP + (1|Team),data = post_merger)
+mod.m <- lmer(FGP ~ AST_game + Age + `Ht.` + `Wt.` + STL + BLK + TOV +PTS + 
+                (1|Team),data = post_merger)
+med_fgp <- mediate(mod.m,mod.y,treat = "AST_game",mediator = "FGP")
+# Mediation with AST as mediator
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + 
+                FGP + (1|Team),data = post_merger)
+mod.m <- lmer(AST_game ~ FGP + Age + `Ht.` + `Wt.` + STL + BLK + TOV + 
+                PTS + (1|Team),data = post_merger)
+med_ast <- mediate(mod.m,mod.y,treat = "FGP",mediator = "AST_game")
+```
+
+```{r echo=FALSE}
+summary(med_fgp)
+summary(med_ast)
 ```
