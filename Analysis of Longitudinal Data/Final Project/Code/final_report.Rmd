@@ -124,7 +124,7 @@ $$
 
 The model with random intercept and random slope did not converge without the AR(1) structure for repeated measures, and the model with random intercept and AR(1) structure was the best by the Akaike information criterion (AIC) (Table A1). 
 
-Using loess smoothing to plotg total number of passes made suggested a potential cubic trend in the data. So once the final model was selected, I also tested the polynomial effects of season, up to a quadratic trend:
+Using loess smoothing to plot total number of passes made suggested a potential cubic trend in the data. So once the final model was selected, I also tested the polynomial effects of season, up to a quadratic term:
 
 $$
 Y_{ij} = \beta_0 + \beta_1x_{j} + \beta_2x_{j}^2 + \beta_3x_{j}^3 + \beta_4x_{j}^4 + b_{0i} + \epsilon_{ij}
@@ -175,30 +175,43 @@ Passing appears to increase slightly after 2015, but the change in slope is not 
 
 ## Model Selection
 
-The model selection process for the hypothesis that increasing assists results in more wins followed a similar process to the selection processing for the passing question. I compared models with random intercept for team and random intercept for team and random slope for season, both with and without an AR(1) structure for repeated measures. However, in these models the outcome is regular season win percentage and the fixed effects are average team age; average team height; average team weight; and assists, steals, blocks, and turnovers per game. Again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC.
+Winning percentage appears to be reasonably normally distributed (Figure A3), so I used normal theory linear mixed models to determine whether increasing assists results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team and random intercept for team and random slope for season, both with and without an AR(1) structure for repeated measures. However, in these models the outcome is regular season win percentage and the fixed effects are average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and assists ("APG"), steals ("SPG"), blocks ("BPG"), and turnovers ("TPG") per game. Once again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC (Table A2).
 
+However, during model selection, I realized that there was a significant positive association between assists per game and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis to try and determine whether field goal percentage mediates the effect of assists on winning. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
 
+## Results
+
+```{r with without fgp,echo=FALSE}
+mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game,
+           random = ~1|Team,data = post_merger,correlation = corAR1())
+mod2 <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + FGP,
+           random = ~1|Team,data = post_merger,correlation = corAR1())
+results <- format_nlme_out(mod,kable = F)
+results2 <- format_nlme_out(mod2,kable = F)
+format_nlme_out(mod,
+                varnames = c("APG","Age","Ht.","Wt.","SPG","BPG","TPG"),
+                caption = "Without FG%")
+```
+
+Without adjusting for FG%, increasing assists by 5 per game can lead to a statistically significant (p = `r results["AST_game","p-value"]`) `r round(results["AST_game","Value"]*5,3)` point increase in winning percentage on the season (or about `r round(results["AST_game","Value"]*5/100 * 82,1)` games). After adjustment for FG%, this effect is no longer significant (Table A3).
 
 ```{r mediation,echo=FALSE,include=FALSE,cache=TRUE}
-# nlme
-mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + FGP,
-           random = ~1|Team,data = post_merger,correlation = corAR1(),method = "ML")
 # Mediation with FGP as mediator
-mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + PTS_game + 
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
                 FGP + (1|Team),data = post_merger)
-mod.m <- lmer(FGP ~ AST_game + Age + `Ht.` + `Wt.` + STL_game + BLK_game + TOV_game +PTS_game + 
+mod.m <- lmer(FGP ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
                 (1|Team),data = post_merger)
 med_fgp <- mediate(mod.m,mod.y,treat = "AST_game",mediator = "FGP")
 # Mediation with AST as mediator
-mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + PTS_game + 
-                FGP + (1|Team),data = post_merger)
-mod.m <- lmer(AST_game ~ FGP + Age + `Ht.` + `Wt.` + STL_game + BLK_game + TOV_game + 
-                PTS_game + (1|Team),data = post_merger)
+mod.m <- lmer(AST_game ~ FGP + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + 
+                (1|Team),data = post_merger)
 med_ast <- mediate(mod.m,mod.y,treat = "FGP",mediator = "AST_game")
 # Mediation summary
 summary(med_fgp)
 summary(med_ast)
 ```
+
+
 
 # Appendix
 
@@ -265,3 +278,30 @@ aics <- as.data.frame(AIC(passing_mod,passing_mod_ar1,passing_mod_ar1_s))
 rownames(aics) <- c("RI Only","RI and AR(1)","RI, RS, and AR(1)")
 kable(aics)
 ```
+
+## Figure A3: Distribution of Win Percentage
+
+```{r win hist,echo=FALSE,warning=FALSE,message=FALSE}
+hist(post_merger$w_perc,xlab = "Win %",main = "")
+```
+
+## Table A2: AIC of Win Percentage Models
+
+```{r win aic,echo=FALSE}
+mod <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger)
+mod_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger)
+mod_ar1 <- lme(w_perc ~ AST_perc,random = ~1|Team,data = post_merger,
+               correlation = corAR1())
+mod_ar1_s <- lme(w_perc ~ AST_perc,random = ~Season|Team,data = post_merger,
+               correlation = corAR1())
+aics <- as.data.frame(AIC(mod,mod_s,mod_ar1,mod_ar1_s))
+rownames(aics) <- c("RI Only","RI and RS","RI and AR(1)","RI, RS, and AR(1)")
+kable(aics)
+```
+
+## Table A3: Effect of Assists Adjusted for FG%
+
+```{r echo=FALSE}
+format_nlme_out(mod2,varnames = c("APG","Age","Ht.","Wt.","SPG","BPG","TPG","FG%"))
+```
+
