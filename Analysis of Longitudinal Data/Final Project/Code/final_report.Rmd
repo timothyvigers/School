@@ -14,6 +14,8 @@ library(mediation)
 library(nlme)
 library(lme4)
 library(MASS)
+library(knitr)
+library(tidyverse)
 ```
 
 ```{r scrape,echo=FALSE,include=FALSE,cache=TRUE}
@@ -34,7 +36,7 @@ colnames(all_seasons)[which(colnames(all_seasons)=="FG%")] <- "FGP"
 all_seasons$Ht. <- as.numeric(sub(".*-","",all_seasons$Ht.)) + (6*12)
 # Convert column types - all seasons
 numcols <- c("Season","AST","FG","FGA","FGP","3P","3PA","3P%","STL",
-             "BLK","TOV","PF","PTS","W","L","Age","Wt.")
+             "BLK","TOV","PF","PTS","W","L","Age","Wt.","G")
 all_seasons[,numcols] <- lapply(all_seasons[,numcols], 
                                 function(x) as.numeric(as.character(x)))
 # Team and season
@@ -44,10 +46,16 @@ passing$Season <- sub("-.*","",passing$Season)
 numcols <- c("Season","Passes.Made","Min")
 passing[,numcols] <- lapply(passing[,numcols], 
                                 function(x) as.numeric(as.character(x)))
-# Assists
+passing <- passing %>% arrange(Team,Season)
+# Per game 
+all_seasons$G
 all_seasons <- all_seasons %>%
   mutate(AST_perc = (AST / FG)*100,
-         AST_game = AST / (W+L))
+         AST_game = AST / G,
+         STL_game = STL / G,
+         BLK_game = BLK / G,
+         TOV_game = TOV / G,
+         PTS_game = PTS / G)
 # Since merger
 post_merger <- all_seasons[all_seasons$Season > 1976,]
 post_merger <- post_merger %>% arrange(Team,Season)
@@ -55,25 +63,205 @@ post_merger <- post_merger %>% arrange(Team,Season)
 post_merger$w_perc <- (post_merger$W / (post_merger$W + post_merger$L))*100
 ```
 
-```{r assists,echo=FALSE,include=FALSE}
+# Introduction
+
+Basketball has come a long way since James Naismith 
+
+# The Data
+
+Team passing data were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. Traditional statistics going back to the beginning of the NBA and ABA were downloaded using an HTML scraping tool developed for this project (see Appendix). These data were also relatively clean, but teams which moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Utah Jazz data). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
+
+# Passing
+
+## Mixed Model Selection
+
+Prior to modeling the number of passes over time, I created a spaghetti plot of passes over time with a line for each team (see Figure A1). There did not appear to be much of an overall trend. The total number of passes in a season appears to follow a normal distribution (Figure A2), so this outcome was modeled using a linear mixed model.
+
+In order to test for a fixed effect of season on total number of passes made, I compared four linear mixed models. In the following models, i indexes team and j indexes season.
+
+### Model 1: Random Intercept Only
+
+$$
+Y_{ij} = \beta_0 + \beta_1x_{j} + b_{0i} + \epsilon_{ij}
+$$
+
+$$
+b_{0i}\sim N(0,\sigma^2_{Team})\text{ and }\epsilon_{ij}\sim N(0,\sigma^2_\epsilon)
+$$
+
+### Model 2: Random Intercept and AR(1) Structure for Repeated Measures
+
+$$
+Y_{ij} = \beta_0 + \beta_1x_{j} + b_{0i} + \epsilon_{ij}
+$$
+
+$$
+b_{0i}\sim N(0,\sigma^2_{Team})\text{ and }\epsilon_{ij}\sim N(0,R_i)
+$$
+$$
+R_i = \sigma^2_\epsilon\begin{bmatrix}
+    1 & \phi & \phi^2 & \phi^3 & \dots\\
+    \phi & 1 & \phi & \phi^2 & \\
+    \phi^2 & \phi & 1 & \phi \\
+    \phi^3 & \phi^2 & \phi & 1 \\
+     \vdots &  & & & \ddots
+\end{bmatrix}
+$$
+
+### Models 3 & 4: Random Slope for Season
+
+The last two models are the same as models 1 and 2, but with the addition of a random slope for season, so the random effects were
+
+$$
+b_{0i} + b_{1j}x_j
+$$
+
+with
+
+$$
+b_{0i}\sim N(0,\sigma^2_{Team})\text{ and }b_{1j}\sim N(0,\sigma^2_{Season})
+$$
+
+The model with random intercept and random slope did not converge without the AR(1) structure for repeated measures, and the model with random intercept and AR(1) structure was the best by the Akaike information criterion (AIC) (Table A1). 
+
+Using loess smoothing to plotg total number of passes made suggested a potential cubic trend in the data. So once the final model was selected, I also tested the polynomial effects of season, up to a quadratic trend:
+
+$$
+Y_{ij} = \beta_0 + \beta_1x_{j} + \beta_2x_{j}^2 + \beta_3x_{j}^3 + \beta_4x_{j}^4 + b_{0i} + \epsilon_{ij}
+$$
+
+$$
+b_{0i}\sim N(0,\sigma^2_{Team})\text{ and }\epsilon_{ij}\sim N(0,R_i)
+$$
+
+## Piecewise Model
+
+In addition to a linear mixed model, I also tried a linear spline model with a knot at 2015, including random intercept and AR(1) structure for repeated measures:
+
+$$
+Y_{ij} = \beta_0 + \beta_1x_{j} + \beta_2max(x_{j}-2015,0) + b_{0i} + \epsilon_{ij}
+$$
+
+$$
+b_{0i}\sim N(0,\sigma^2_{Team})\text{ and }\epsilon_{ij}\sim N(0,R_i)
+$$
+
+## Results
+
+### Linear Mixed Model
+
+```{r pass results,echo=FALSE,results='asis'}
+passing_mod_ar1 <- lme(Passes.Made ~ poly(Season,4), random = ~1|Team,
+                       data = passing,correlation = corAR1())
+results <- format_nlme_out(passing_mod_ar1,kable = F)
+rownames(results) <- c("(Intercept)","Season","Season^2","Season^3","Season^4")
+kable(results)
+```
+
+According to the linear mixed model, passing has not changed significantly since 2013. 
+
+### Spline Model
+
+```{r segmented,echo=FALSE}
+passing$season_star <- ifelse(passing$Season < 2015,0,passing$Season)
+piecewise <- lme(Passes.Made ~ Season + season_star, random = ~1|Team,
+                       data = passing,correlation = corAR1())
+format_nlme_out(piecewise,varnames = c("Season","Change in Slope"),caption = NULL)
+```
+
+Passing appears to increase slightly after 2015, but the change in slope is not statistically significant (p = 0.24).
+
+# Assists
+
+## Model Selection
+
+The model selection process for the hypothesis that increasing assists results in more wins followed a similar process to the selection processing for the passing question. I compared models with random intercept for team and random intercept for team and random slope for season, both with and without an AR(1) structure for repeated measures. However, in these models the outcome is regular season win percentage and the fixed effects are average team age; average team height; average team weight; and assists, steals, blocks, and turnovers per game. Again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC.
+
+
+
+```{r mediation,echo=FALSE,include=FALSE,cache=TRUE}
 # nlme
-mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + FGP,
+mod <- lme(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + FGP,
            random = ~1|Team,data = post_merger,correlation = corAR1(),method = "ML")
 # Mediation with FGP as mediator
-mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + 
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + PTS_game + 
                 FGP + (1|Team),data = post_merger)
-mod.m <- lmer(FGP ~ AST_game + Age + `Ht.` + `Wt.` + STL + BLK + TOV +PTS + 
+mod.m <- lmer(FGP ~ AST_game + Age + `Ht.` + `Wt.` + STL_game + BLK_game + TOV_game +PTS_game + 
                 (1|Team),data = post_merger)
 med_fgp <- mediate(mod.m,mod.y,treat = "AST_game",mediator = "FGP")
 # Mediation with AST as mediator
-mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL + BLK + TOV + PTS + 
+mod.y <- lmer(w_perc ~ AST_game + Age + Ht. + Wt. + STL_game + BLK_game + TOV_game + PTS_game + 
                 FGP + (1|Team),data = post_merger)
-mod.m <- lmer(AST_game ~ FGP + Age + `Ht.` + `Wt.` + STL + BLK + TOV + 
-                PTS + (1|Team),data = post_merger)
+mod.m <- lmer(AST_game ~ FGP + Age + `Ht.` + `Wt.` + STL_game + BLK_game + TOV_game + 
+                PTS_game + (1|Team),data = post_merger)
 med_ast <- mediate(mod.m,mod.y,treat = "FGP",mediator = "AST_game")
-```
-
-```{r echo=FALSE}
+# Mediation summary
 summary(med_fgp)
 summary(med_ast)
+```
+
+# Appendix
+
+## HTML Scraping Tool
+
+```{r eval=FALSE}
+library(rvest)
+library(tidyverse)
+teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
+           "IND","LAC","LAL","MEM","MIA","MIL","MIN","NOH","NYK","OKC","ORL",
+           "PHI","PHO","POR","SAC","SAS","TOR","UTA","WAS")
+# Scrape each team page
+all_seasons <- data.frame()
+for (team in teams) {
+  url <- paste0("https://www.basketball-reference.com/teams/",team,"/stats_basic_totals.html")
+  table <- url %>%
+    read_html() %>%
+    html_nodes("table") %>%
+    html_table()
+  df <- as.data.frame(table[[1]]) 
+  df <- df[colnames(df) != ""] %>%
+    filter(Season != "Season",Season != "2019-20")
+  df[df == ""] <- NA
+  df <- as.data.frame(lapply(df, as.character))
+  colnames(df) <- c("Season","Lg","Tm","W","L","Finish","Age","Ht.","Wt.",
+                    "G","MP","FG","FGA","FG%","3P","3PA",
+                    "3P%","2P","2PA","2P%","FT","FTA","FT%","ORB","DRB","TRB",
+                    "AST","STL","BLK","TOV","PF","PTS")
+  df$Team <- team
+  all_seasons <- rbind.data.frame(all_seasons,df)
+}
+```
+
+## Figure A1: Total Passes by Season
+
+```{r pass plot,echo=FALSE,warning=FALSE,message=FALSE}
+# Raw assist number plot
+pass_plot <- 
+  ggplot(passing,aes(x = Season,y = Passes.Made,group = Team)) + 
+  geom_line(aes(color = Team)) + theme_bw() +
+  scale_color_manual(values = primary_colors) + 
+  ylab("Passes Made")
+pass_plot
+```
+
+## Figure A2: Distribution of Total Passes
+
+```{r pass hist,echo=FALSE,warning=FALSE,message=FALSE}
+hist(passing$Passes.Made,xlab = "Passes Made",main = "")
+```
+
+### Table A1: AIC of Passes Made Models
+
+All models fit using ML estimation.
+
+```{r aic,echo=FALSE}
+passing_mod <- lme(Passes.Made ~ Season, random = ~1|Team,
+                   data = passing,method = "ML")
+passing_mod_ar1 <- lme(Passes.Made ~ Season, random = ~1|Team,
+                       data = passing,correlation = corAR1(),method = "ML")
+passing_mod_ar1_s <- lme(Passes.Made ~ Season, random = ~Season|Team,
+                       data = passing,correlation = corAR1(),method = "ML")
+aics <- as.data.frame(AIC(passing_mod,passing_mod_ar1,passing_mod_ar1_s))
+rownames(aics) <- c("RI Only","RI and AR(1)","RI, RS, and AR(1)")
+kable(aics)
 ```
