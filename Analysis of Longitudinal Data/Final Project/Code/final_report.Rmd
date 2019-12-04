@@ -67,15 +67,15 @@ post_merger$w_perc <- (post_merger$W / (post_merger$W + post_merger$L))*100
 
 # Introduction
 
-I've been watching basketball since 2011 and following the National Basketball Association (NBA) semi-obsessively since 2014. In that time the game has changed enormously with increased focus on the three point shot league-wide, a trend that has been well documented by analyst/journalists like Kirk Goldsberry and is part of a larger movement towards increased efficiency (i.e. taking good shots and avoiding bad ones) [1]. Based purely on the "eye test," it seems that teams across the league are passing the ball more than ever in order to create better, more open shots for their most efficient offensive players.
+I've been watching basketball since 2011 and following the National Basketball Association (NBA) semi-obsessively since 2014. In that time the game has changed enormously with increased focus on the three point shot league-wide, a trend that has been well documented by analyst/journalists like Kirk Goldsberry and is part of a larger movement towards increased efficiency (i.e. taking good shots and avoiding bad ones) [1]. Based purely on the "eye test," it seems that teams across the league are passing the ball more than ever in order to create better shots for their most efficient scorers.
 
-So, this project was split into two distinct questions of interest: 1) Has total passing rate increased over time? and 2) Do teams that pass more tend to win more (i.e. does passing actually help)? 
+So, this project was split into two distinct questions of interest: 1) Has the total passing rate increased over time? and 2) Do teams that pass more tend to win more (i.e. does passing actually help)? 
 
 # The Data
 
 Total number of passes made per season were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. 
 
-Traditional statistics, such as points, rebounds, etc. going back to the beginning of the NBA and ABA were downloaded using an HTML scraping tool developed for this project (see Appendix for code). These data were also relatively clean, but teams that moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Jazz data). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
+Traditional statistics, such as points, rebounds, etc. going back to the beginning of the NBA and the American Basketball Associatoin (ABA) were downloaded using an HTML scraping tool written for this project (see Appendix for code). These data were also relatively clean, but teams that moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Jazz data after their move to Salt Lake City). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
 
 # Passing
 
@@ -183,7 +183,7 @@ Passing appears to increase slightly after 2015 according to the linear spline m
 
 ## Model Selection
 
-Winning percentage appears to be reasonably normally distributed (Figure A4), so I used normal theory linear mixed models to determine whether increasing the percentage of baskets assisted results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team to models with random intercept for team and random slope, both with and without an AR(1) structure for repeated measures. However, in these models the outcome was regular season win percentage and the fixed effects were percetange of baskets assisted ("AST%"); average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and steals ("SPG"), blocks ("BPG"), points ("PPG"), and turnovers ("TPG") per game. I chose to use percentage of baskets assisted because it is a good indicator of how much a team passes compared to others (a team with lower AST% is relying more on isolation plays). 
+Winning percentage appears to be reasonably normally distributed (Figure A4), so I used normal theory linear mixed models to determine whether increasing the percentage of baskets assisted results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team to models with random intercept for team and random slope, both with and without an AR(1) structure for repeated measures. However, in these models the outcome was regular season win percentage and the fixed effects were percetange of baskets assisted ("AST%"); average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and steals ("SPG"), blocks ("BPG"), points ("PPG"), and turnovers ("TPG") per game. I chose to use percentage of baskets assisted because it should be a reasonable indicator of how much a team passes compared to others (a team with lower AST% is relying more on isolation plays). 
 
 Once again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC (Table A2). However, during model selection I realized that there was a significant positive association between AST% and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis (see Appendix for code, Figure A5 for mediation diagram) to try and determine whether field goal percentage mediates the effect of assists on winning [4]. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
 
@@ -203,7 +203,7 @@ results2 <- format_nlme_out(mod2,kable = F)
 format_nlme_out(mod,varnames = c("AST%","Age","Ht.","Wt.","SPG","BPG","TPG","PPG"))
 ```
 
-Without adjusting for FG%, increasing the number of baskets assisted by 10 percentage points can lead to a statistically significant (p = `r results["AST_perc","p-value"]`) increase in winning of `r round(results["AST_perc","Value"]*10,3)` percentage points on the season (or about `r round(results["AST_perc","Value"]/10 * 82,1)` games). After adjustment for FG%, this effect is no longer significant (Table A3).
+Without adjusting for FG%, increasing AST% by 10 points can lead to a statistically significant (p = `r results["AST_perc","p-value"]`) increase in winning of `r round(results["AST_perc","Value"]*10,3)` percentage points on the season (or about `r round(results["AST_perc","Value"]/10 * 82,1)` games). After adjustment for FG%, this effect is no longer significant (Table A3), although AST% still has a positive effect estimate.
 
 ### Mediation Analysis
 
@@ -213,9 +213,11 @@ There is a significant (p < 0.0001) mediation effect of FG% on the relationship 
 
 The passing analysis appears to indicate that the overall passing rate has not increased significantly since 2013. However, it's possible that the trend is more recent and there simply isn't enough data to parse it out yet. Also, it's possible that a subset of the elite teams have increased their passing rate, but this is being averaged out by teams without as many good passers. It would be interesting to look into passing trends among specific teams, rather than at a league-wide level.
 
-As one might expect, the percentage of baskets assisted has a significant positive association with winning percentage. On average a 10 point increase in AST% can lead to an additional 1 - 3 games won per season. This may not sound like a great return but for some teams, particularly in the competitive Western conference, this could be the difference between making the playoffs or not. Playoff games are an enormous source of revenue, with some teams earning as much as $2 million per game [5]. So those 1-3 extra wins could be worth millions of dollars, although increasing AST% by 10 points may be no easy task. 
+As one might expect, the percentage of baskets assisted has a significant positive association with winning percentage. On average a 10 point increase in AST% can lead to an additional 1 - 3 games won per season. This may not sound like a great return on investment but for some teams, particularly in the competitive Western conference, this could be the difference between making the playoffs or not. Playoff games are an enormous source of revenue, with some teams earning as much as $2 million per game [5]. So those 1-3 extra wins could be worth millions of dollars, although increasing AST% by 10 points may be no easy task (particularly for teams that already have a high AST%). 
 
-It's also remarkable that FG% mediates approximately two thirds of the postive effect of AST%. I repeated the mediation analysis with both FG% and AST% as the mediator, and the results suggest that FG% is mediating the positive effect of AST% and not the other way around. This is interesting because it implies in a general way that passing leads to better shooting, which in turn leads to increased wins. This makes some intuitive sense, because in general the "eye test" suggests that assisted baskets tend to come from more open shots than baskets scored in isolation plays. However, determining directionality in mediation analysis is difficult, particularly in the basic Baron and Kenny [6] framework that I used. There are likely better, more modern methods but they were beyond the scope of this work. Blah blah blah, need a little more here...
+It's also remarkable that FG% mediates approximately two thirds of the postive effect of AST%. I repeated the mediation analysis with both FG% and AST% as the mediator, and the results suggest that FG% is mediating the positive effect of AST% and not the other way around. This is interesting because it implies in a general way that passing leads to better shooting, which in turn leads to increased wins. This makes some intuitive sense. On the other hand, because the effect of AST% is no longer statistically significant after adjusting for FG%, one could argue that this is a case of complete mediation. This would imply that good shooting far outweighs passing in importance. Determining directionality in mediation analysis is difficult, particularly in the basic Baron and Kenny [6] framework that I used, so this relationship requires additional study. There are more modern methods available but they were beyond the scope of this work. 
+
+Finally, there are some general limitations to these analyses that would are important to address in future work. First, NBA teams do not play a balanced schedule, which means that playing bad teams more frequently should increase win percentage. It would have been helpful to adjust for strength of schedule, but these data were unfortunately not available to me. Perhaps most importantly though, looking at trends at a league-wide level probably results in vital information being averaged out. For example, average team height was not associated with increased wins (when we know that height is important in basketball), but this is probably because there isn't much variation in average team height across the whole league. To accurately determine the effects of passing, we really need much more detailed information than is currently available.  
 
 \pagebreak
 
@@ -239,8 +241,8 @@ It's also remarkable that FG% mediates approximately two thirds of the postive e
     http://wagesofwins.com/2013/03/28/the-best-nba-markets-of-2012-13/.
 
 6. Baron, R.M. and D.A. Kenny, The moderator–mediator variable distinction in social
-    psychological research: Conceptual, strategic, and statistical considerations. Journal
-    of personality and social psychology, 1986. 51(6): p. 1173.
+    psychological research: Conceptual, strategic, and statistical considerations.
+    Journal of personality and social psychology, 1986. 51(6): p. 1173.
 
 \pagebreak
 
@@ -353,7 +355,8 @@ teams <- c("ATL","BOS","NJN","CHA","CHI","CLE","DAL","DEN","DET","GSW","HOU",
 # Scrape each team page
 all_seasons <- data.frame()
 for (team in teams) {
-  url <- paste0("https://www.basketball-reference.com/teams/",team,"/stats_basic_totals.html")
+  url <- paste0("https://www.basketball-reference.com/teams/",team,
+                "/stats_basic_totals.html")
   table <- url %>%
     read_html() %>%
     html_nodes("table") %>%
