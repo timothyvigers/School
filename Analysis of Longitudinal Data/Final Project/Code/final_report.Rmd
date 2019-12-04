@@ -67,11 +67,13 @@ post_merger$w_perc <- (post_merger$W / (post_merger$W + post_merger$L))*100
 
 # Introduction
 
-Basketball has come a long way since James Naismith threw a soccer ball through a peach basket. Webster's dictionary defines basketball as...
+I've been watching basketball since 2011 and following the National Basketball Association (NBA) semi-obsessively since 2014. In that time the game has changed enormously with increased focus on the three point shot league-wide, a trend that has been well documented by analyst/journalists like Kirk Goldsberry and is part of a larger movement towards increased efficiency (i.e. taking good shots and avoiding bad ones) [1]. Based purely on the "eye test," it seems that teams across the league are passing the ball more than ever in order to create better, more open shots for their most efficient offensive players.
+
+So, this project was split into two distinct questions of interest: 1) Has total passing rate increased over time? and 2) Do teams that pass more tend to win more (i.e. does passing actually help)? 
 
 # The Data
 
-Total number of passes per season were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. 
+Total number of passes made per season were manually downloaded from `https://stats.nba.com/teams/passing/` and concatenated into a "long" dataset. These data were relatively well-organized to begin with and required minimal cleaning, but unfortunately only go back as far as 2013. 
 
 Traditional statistics, such as points, rebounds, etc. going back to the beginning of the NBA and ABA were downloaded using an HTML scraping tool developed for this project (see Appendix for code). These data were also relatively clean, but teams that moved or changed names were assigned a unique three letter code corresponding to their current location (e.g. observations from the New Orleans Jazz were given the code "UTA" in order to group them with the rest of the Jazz data). Also, seasons were designated using the numeric year of the first game of the season, (e.g. 2018 for the 2018-2019 season) in order to treat time as a continuous variable. There were no missing or excluded observations in these data, and counting statistics such as points, turnovers, etc. were converted to per-game measures in order to account for shortened seasons in 1998 and 2011. For these analyses I considered only data from after the ABA and NBA merger in 1976.
 
@@ -128,7 +130,7 @@ $$
 
 The model with random intercept and random slope did not converge without the AR(1) structure for repeated measures, and the model with random intercept and AR(1) structure was the best by the Akaike information criterion (AIC) (Table A1). 
 
-Using loess smoothing to plot total number of passes made suggested a potential cubic trend in the data. So once the final model was selected, I also tested the polynomial effects of season up to a quadratic term:
+Using loess smoothing to plot total number of passes suggested a potential cubic trend in the data (Figure A3). So once the final model was selected, I also tested the polynomial effects of season up to a quadratic term:
 
 $$
 Y_{ij} = \beta_0 + \beta_1x_{ij} + \beta_2x_{ij}^2 + \beta_3x_{ij}^3 + \beta_4x_{ij}^4 + b_{0i} + \epsilon_{ij}
@@ -150,7 +152,7 @@ $$
 b_{0i}\sim N(0,\sigma^2_{T})\text{ and }\epsilon_{ij}\sim N(0,R_i)
 $$
 
-The year 2015 was chosen based on the estimated break point according to Muggeo's method [1] and implemented using his R package "segmented" [2] (see Appendix for code).
+The year 2015 was chosen based on the estimated break point according to Muggeo's method [2] and implemented using his R package "segmented" [3] (see Appendix for code).
 
 ## Results
 
@@ -181,9 +183,9 @@ Passing appears to increase slightly after 2015 according to the linear spline m
 
 ## Model Selection
 
-Winning percentage appears to be reasonably normally distributed (Figure A3), so I used normal theory linear mixed models to determine whether increasing the percentage of baskets assisted results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team to models with random intercept for team and random slope, both with and without an AR(1) structure for repeated measures. However, in these models the outcome was regular season win percentage and the fixed effects were percetange of baskets assisted ("AST%"); average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and steals ("SPG"), blocks ("BPG"), points ("PPG"), and turnovers ("TPG") per game. Once again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC (Table A2).
+Winning percentage appears to be reasonably normally distributed (Figure A4), so I used normal theory linear mixed models to determine whether increasing the percentage of baskets assisted results in more wins. Model selection for this question followed a similar process to the passing question. I compared models with random intercept for team to models with random intercept for team and random slope, both with and without an AR(1) structure for repeated measures. However, in these models the outcome was regular season win percentage and the fixed effects were percetange of baskets assisted ("AST%"); average team age ("Age"); average team height ("Ht."); average team weight ("Wt."); team field goal percentage ("FG%"); and steals ("SPG"), blocks ("BPG"), points ("PPG"), and turnovers ("TPG") per game. I chose to use percentage of baskets assisted because it is a good indicator of how much a team passes compared to others (a team with lower AST% is relying more on isolation plays). 
 
-However, during model selection, I realized that there was a significant positive association between percentage of baskets assisted and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis (see Appendix for code) to try and determine whether field goal percentage mediates the effect of assists on winning [2]. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
+Once again, the model with random intercept for team and AR(1) structure for repeated measures was the best by AIC (Table A2). However, during model selection I realized that there was a significant positive association between AST% and winning percentage, but that this effect goes away when adjusting for field goal percentage (Table A3). So, I conducted a mediation analysis (see Appendix for code, Figure A5 for mediation diagram) to try and determine whether field goal percentage mediates the effect of assists on winning [4]. The "mediation" package in R requires models without the AR(1) structure for repeated measures, so the mediation analysis was conducted using only a random intercept for team.
 
 ## Results
 
@@ -207,22 +209,29 @@ Without adjusting for FG%, increasing the number of baskets assisted by 10 perce
 
 There is a significant (p < 0.0001) mediation effect of FG% on the relationship between AST% and winning percentage. Field goal percentage accounts for approximately 67.5% of the association, meaning that on average a 10 point increase in AST% directly results in closer to a `r round(0.1217*10,3)` point increase in winning percentage (about `r round(0.1217/10 * 82,1)` game) on the season.
 
-# Discussion
+# Discussion 
+
+
 
 Passing hasn't changed, but assists help thorugh increasing FG%. Weird that height wasn't a significant factor in winning. Mediation was done using a very simple Baron and Kenny approach, which may not be right.
+
+# Limitations
 
 \pagebreak
 
 # References
 
-1. Muggeo, V.M.R. (2003) Estimating regression models with unknown break-points.
+1. Goldsberry, Kirk. SPRAWLBALL: a Visual Tour of the New Era of the NBA. 
+    Mariner Books, 2020. 
+
+2. Muggeo, V.M.R. (2003) Estimating regression models with unknown break-points.
     Statistics in Medicine 22, 3055–3071.
 
-2. Vito M. R. Muggeo (2008). segmented: an R Package to Fit Regression Models with
+3. Vito M. R. Muggeo (2008). segmented: an R Package to Fit Regression Models with
     Broken-Line Relationships. R News, 8/1, 20-25. URL
     https://cran.r-project.org/doc/Rnews/.
 
-3. Tingley D, Yamamoto T, Hirose K, Keele L, Imai K. mediation: R package for causal
+4. Tingley D, Yamamoto T, Hirose K, Keele L, Imai K. mediation: R package for causal
     mediation analysis. UCLA Stat Stat Assoc. August 2014. 
     https://dspace.mit.edu/handle/1721.1/91154. Accessed December 2, 2019.
 
@@ -262,7 +271,19 @@ rownames(aics) <- c("RI Only","RI and AR(1)","RI, RS, and AR(1)")
 kable(aics)
 ```
 
-## Figure A3: Distribution of Win Percentage
+## Figure A3: Overall Trend in Total Passes by Season, Loess Smoothing
+
+```{r pass loess plot,echo=FALSE,warning=FALSE,message=FALSE}
+# Raw assist number plot
+pass_plot <- 
+  ggplot(passing,aes(x = Season,y = Passes.Made)) + 
+  geom_smooth() + theme_bw() +
+  scale_color_manual(values = primary_colors) + 
+  ylab("Passes Made")
+pass_plot
+```
+
+## Figure A4: Distribution of Win Percentage
 
 ```{r win hist,echo=FALSE,warning=FALSE,message=FALSE}
 hist(post_merger$w_perc,xlab = "Win %",main = "")
@@ -295,7 +316,7 @@ kable(aics)
 format_nlme_out(mod2,varnames = c("AST%","Age","Ht.","Wt.","SPG","BPG","TPG","PPG","FG%"))
 ```
 
-## Figure A4: Mediation Diagram
+## Figure A5: Mediation Diagram
 
 ```{r med diag,echo=FALSE}
 data <- c(0,"",0,
