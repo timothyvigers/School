@@ -235,9 +235,14 @@ It's also remarkable that FG% mediates approximately two thirds of the postive e
     mediation analysis. UCLA Stat Stat Assoc. August 2014. 
     https://dspace.mit.edu/handle/1721.1/91154. Accessed December 2, 2019.
     
-5. http://wagesofwins.com/2013/03/28/the-best-nba-markets-of-2012-13/
+5. Dignam, Devin, et al. “The Best NBA Markets of 2012-13.” The Wages of Wins Journal,
+    http://wagesofwins.com/2013/03/28/the-best-nba-markets-of-2012-13/.
 
-6. Baron and Kenny
+6. Baron, R.M. and D.A. Kenny, The moderator–mediator variable distinction in social
+    psychological research: Conceptual, strategic, and statistical considerations. Journal
+    of personality and social psychology, 1986. 51(6): p. 1173.
+
+\pagebreak
 
 # Appendix
 
