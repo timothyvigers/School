@@ -1,5 +1,5 @@
 ---
-title: "Final Report"
+title: "Passing in the NBA"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: pdf_document
