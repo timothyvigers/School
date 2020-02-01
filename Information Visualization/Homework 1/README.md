@@ -1,0 +1,13 @@
+# Manual Data Exploration and Analysis (adopted from John Stasko’s course at Georgia Tech)
+
+The purpose of this assignment is to provide you with some experience exploring and analyzing data without using a statistical or visualization system. Below is a data set (that can be imported into Excel) about cereals. You should explore and analyze this data using Excel (creating some basic plots is ok) or simply by hand (drawing pictures is fine), but do not use any visualization tools or statistical software packages. Your goal here is to perform an exploratory analysis of the data set, to better understand the data set and its characteristics, and to develop insights about the cereal data.
+
+Submit a pdf document that addresses the following items:
+
+1. A bulleted list of five analytics queries or questions that a person may have about this dataset. These would be questions that an analyst examining the data might be pondering. For example, an analyst at Consumer Reports may investigate which cereals to recommend. 
+2. Characterize and describe your queries/questions using the actions and target terms from VAD Chapter 3 “Why: Task Abstraction”.
+3. A bulleted list of five "insights", chunks of knowledge, or deeper questions that you either encountered or gained while exploring the data. An insight could be some understanding of the data and its characteristics that is not relatively obvious or intuitive. It is something that most people might not realize initially. Note that an insight or knowledge chunk simply may be a deeper question that arose in your mind while exploring the data. And your analysis may not have been sufficient to answer the question. 
+4. Write one paragraph about the process you used to do the exploration and analysis. Did you load the data into Excel, work manually, or do both? What did you do in Excel? Did you draw pictures? Just tell briefly what you did. You can add a photo of a drawing or screenshot of Excel.
+5. Write one paragraph about challenges or problems that you encountered in doing the analysis this way. Did anything limit or frustrate you? If nothing did, perhaps there was something that was more difficult than you thought it should be. Nothing is perfect, so you should be able to list some potential issues here.
+
+The data set should be pretty self-explanatory. The Manufacturer is a one letter code with the expected mapping (Q-Quaker Oats, P-Post, G-General Mills, K-Kelloggs, R-Ralston Purina, N-Nabisco) and Type is C (cold) or H (hot).
