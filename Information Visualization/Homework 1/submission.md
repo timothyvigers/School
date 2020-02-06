@@ -1,0 +1,27 @@
+# Questions
+
+1. Which cereal has the highest and lowest caloric density?
+	- This is a query of extremes (one attribute).
+2. Which cereal brand has the highest average caloric density?
+	- This requires computing a derived value (analysis) and querying for an extreme.
+3. Is there an association between shelf and manufacturer (i.e. does a particular brand tend to be on the top shelf)?
+	- This requires computing a derived value (analysis) for two attributes.
+4. What is the distribution of sodium content?
+	- This is a query across all values of an attribute.
+5. Which cereals are the most similar across all nutrients?
+	- This would be a derived attribute (some sort of distance metric) across many attributes. 
+
+# Insights
+
+1. There appears to be a slight correlation between sugars and calories. This is sort of what you'd expect, but it's nice to see it borne out in the data when visualized in a scatter plot (and would not have been obvious just looking at the data). One interesting thing I noticed, though, is that the correlation appears to be much stronger when you plot calories on the x axis and sugars on the y. I also noticed that there are negative sugar values after plotting these data.
+2. There appear to be slightly different distributions of calorie content by manufacturer. For example, most General Mills cereals contain 110 calories, whereas the other manufacturers seem to be somewhat more variable. However, I'm not really sure how to test this in Excel.
+3. General Mills and Kellog have approximately 60% of the "market share" in this dataset (which I noticed by making a pie chart). I may not have seen this without visualizing it, and am curious whether or not these samples are representative. But I'm not sure how to do that analysis without more data.
+4. There are quite a few 0 values for sodium, but the rest of the data appears to be fairly normally distributed. If I were doing this in R, I would test to 
+5. One thing I'm really curious about is which nutrients are different between hot and cold cereals. Unfortunately I'm not great at this sort of analysis in Excel (or by hand), and there are only 3 data points for hot cereals so it would be nice to gather more data.
+
+# The Process
+
+For this analysis I opened the data in Excel and did my best to plot it. I find some plots are difficult in Excel, like histograms for example, so I did those by hand. Eventually I figured out how to make a histogram in Excel though (see the second sheet of the uploaded Excel document), which was helpful in confirming my hand drawing. Also, I made X-Y scatterplots for variables that I thought might be correlated or was curious about. 
+
+# Limitations
+ 
