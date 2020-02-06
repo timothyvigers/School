@@ -24,4 +24,5 @@
 For this analysis I opened the data in Excel and did my best to plot it. I find some plots are difficult in Excel, like histograms for example, so I did those by hand. Eventually I figured out how to make a histogram in Excel though (see the second sheet of the uploaded Excel document), which was helpful in confirming my hand drawing. Also, I made X-Y scatterplots for variables that I thought might be correlated or was curious about. 
 
 # Limitations
- 
+
+I found using Excel for this assignment incredibly frustrating, although it was a good exercise in some ways. I have several go-to plots when I'm working in R, so using a program I'm less familiar with forced me to think a little more carefully about exactly what I was plotting. However, because it took me forever to figure out how to make even the most basic plots, I felt pretty limited in terms of what I could actually visualize.
