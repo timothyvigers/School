@@ -20,7 +20,7 @@ Whiskeys.xlsx
 
 You are free to pick the one set that is most interesting to you. Briefly scan the text of the file and familiarize yourself with the variables. Generate and write down (you will need to turn them in) a few hypotheses to be considered or questions to be asked about the data elements. Put yourself into the shoes of someone interested in that data (e.g. a student deciding where to go to college) and think about all the different kinds of analysis tasks that a person might want to perform in working with data sets such as these.
 
-As an example, referring back to the first assignemnt, someone working with a dataset about breakfast cereals might have tasks like:
+As an example, referring back to the first assignment, someone working with a dataset about breakfast cereals might have tasks like:
 
 Do the different companies producing cereals have different styles of cereal that they favor?
 Does high fat mean high calories?
