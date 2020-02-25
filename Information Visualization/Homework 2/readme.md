@@ -33,8 +33,6 @@ Don’t expect the datasets to be clean and perfect. There will be missing value
 ## Load and examine your selected dataset into the Tableau
 Load your chosen data set into Tableau, then consider your hypotheses, tasks, and questions. Also use the system to explore the data set and see if you can discover other interesting or unexpected findings in the data. Put yourself in the shoes of a data analyst and consider questions that such a person would confront.
 
- 
-
 ## Write a report about your findings (5 points)
 Your report should consist of three parts.
 
