@@ -12,25 +12,15 @@ The second page should contain three paragraphs describing your design process a
 
 This is just a short assignment, don't spend too much time on it. (It turns out that you could spend the rest of your life on it.) Create a reasonable layout and justify its design in your description. I will create an overview pictures of all the drawings and we will vote on the most liked design in class (voting results won’t influence grading).
 
-      1  2   3   4  5   6   7  8   9   10
-     ---------------------------------------
-
-  1 | 0  0   1   0  0   1   1  0   0   0
-
-  2 | 0  0   1   0  0   1   0  1   1   0
-
-  3 | 1  1   0   0   0  0   0   0  0   1
-
-  4 | 0  0   0   0  1   0   1  0   1   0
-
-  5 | 0  0   0   1  0   0   0  1   0   0
-
-  6 | 1  1   0   0  0   0   0  0   1   1
-
-  7 | 1  0   0   1  0   0   0  1   0   0
-
-  8 | 0  1   0   0  1   0   1  0   0   0
-
-  9 | 0  1   0   1  0   1   0  0   0   0
-
- 10 | 0  0   1   0  0   1   0  0   0   0
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|----|
+| 0 | 0 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0  |
+| 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0  |
+| 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1  |
+| 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0  |
+| 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0  |
+| 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1  |
+| 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0  |
+| 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0  |
+| 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0  |
+| 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0  |
