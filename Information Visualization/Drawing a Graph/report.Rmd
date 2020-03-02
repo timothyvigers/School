@@ -1,0 +1,20 @@
+---
+title: "Drawing a Graph"
+author: "Tim Vigers"
+date: "3/2/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Design Process
+
+My first step in creating the network graph was to draw an adjacency matrix on squared paper. This was easy to do since the data was essentially provided to us in an adjacency matrix format, so I just had to fill in squares that contain 1. I started with this because I hoped it would help me see node clusters, which I could then put close together in the final graph. Unfortunately I don't think this graph is big enough for an adjacency matrix to be really useful, but it did allow me to sum up the number of connections for each node, which helped in drawing the initial plot.
+
+My first plot was a bit of a mess, with the connection between nodes 5 and 8 tracing out a half circle and everything else a bit jumbled together in the middle. I started with nodes 2 and 6 in the center, because they were tied for the greatest number of connections (4). Then I went through the other nodes in order from 1 to 10, and placed them in semi-random positions around the two central nodes. Essentially, I just wanted to get a basic graph drawn to help me visualize the connections better. 
+
+Next, I tried to picture the first plot as a knotted string, and imagined moving the nodes around to untangle it a bit. However, after I made the second plot, I realized that it was even more tangled than before (I used the number of edge crossings as a measure of "tangledness"). However, it was more clear in this plot that there was a sort of outer "ring" of nodes, so I started the next plot with these. This made it much easier to place the remainder of the nodes in a way that looked nice to me. Once I could see the general structure of the graph, I re-drew it more carefully and played around a bit with the node placement (within the regions that I knew they needed to be in). These different node positions changed the appearance of the plot a tiny bit, and the process helped me confirm that the overall structure was the best I could come up with.
+
+My aproach was not particularly scientific, and the process of mentally untangling the network definitely wouldn't work with more complicated plots. Also, it was difficult to resist checking my layout in R!
