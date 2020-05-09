@@ -83,23 +83,24 @@ server <- function(input, output) {
             mutate(id_spline = as.numeric(predict(smooth.spline(sg))$y)) %>%
             ungroup()
 
-        smooth = loess(summ$sg~as.numeric(summ$agp))
+        summ$all_spline = loess(summ$sg~as.numeric(summ$agp))$fitted
 
-        summ %>% plotly::group_by(id) %>%
-            plot_ly(x = ~agp, y = ~id_spline,
-                    text=~paste0("ID: ",id,"\n","Time: ",label,"\n","Mean SG: ",round(sg))) %>%
-            add_lines(hoverinfo = 'text',
-                      line = list(color = 'rgb(31, 119, 180)'),opacity = 0.5) %>% plotly::ungroup() %>%
-            add_lines(y=smooth$fitted,text=~paste0("Time: ",label,"\n","Mean SG: ",round(sg)),
-                      hoverinfo = 'text',line=list(color = 'rgb(255, 127, 14)')) %>%
-            layout(
-                xaxis = list(
-                    type = 'date',
-                    tickformat = "%H:%M",
-                    title = "Time of Day"),
-                yaxis = list(
-                    title = "Mean Sensor Glusose (mg/dL)",
-                    range = c(0,400)))
+        ggplot(summ,aes(x = agp,y = id_spline,group = id)) + geom_line()
+        # summ %>% plotly::group_by(id) %>%
+        #     plot_ly(x = ~agp, y = ~id_spline,
+        #             text=~paste0("ID: ",id,"\n","Time: ",label,"\n","Mean SG: ",round(sg))) %>%
+        #     add_lines(hoverinfo = 'text',
+        #               line = list(color = 'rgb(31, 119, 180)'),opacity = 0.5) %>% plotly::ungroup() %>%
+        #     add_lines(y=smooth$fitted,text=~paste0("Time: ",label,"\n","Mean SG: ",round(sg)),
+        #               hoverinfo = 'text',line=list(color = 'rgb(255, 127, 14)')) %>%
+        #     layout(
+        #         xaxis = list(
+        #             type = 'date',
+        #             tickformat = "%H:%M",
+        #             title = "Time of Day"),
+        #         yaxis = list(
+        #             title = "Mean Sensor Glusose (mg/dL)",
+        #             range = c(0,400)))
     })
     
     # p <- reactive({
@@ -110,7 +111,7 @@ server <- function(input, output) {
     #     ggplot(summ,aes(x = agp, y = sg, group = id)) + geom_line()
     # })
     
-    output$agp = renderPlotly({plot_ly(p)})
+    output$agp = renderPlot({p()})
     output$summary = DT::renderDataTable({as.data.frame(table())})
 }
 
