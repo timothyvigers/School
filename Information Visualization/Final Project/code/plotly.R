@@ -26,7 +26,7 @@ df$timestamp = lubridate::ymd_hms(df$timestamp)
 df = df[complete.cases(df),]
 df$id = as.factor(df$id)
 df$agp = lubridate::round_date(df$timestamp,unit = "5 minutes")
-df$agp = as.POSIXct(strftime(df$agp,format = "%H:%M"),format = "%H:%M")
+df$agp = as.POSIXct(strftime(df$agp,format = "%H:%M"),format = "%H:%M",tz = 'UTC')
 # Sumarize
 summ = df %>% arrange(id,agp) %>% dplyr::group_by(id,agp) %>%
   summarise(sg = mean(sensorglucose,na.rm = T)) %>%
@@ -69,10 +69,17 @@ agptraces[[(length(agptraces) + 1)]] <- list(
   line = list(color = 'rgb(255, 127, 14)')
 )
 
-# dccSlider starts from 5;
+# Dash layout
 app$layout(
   htmlDiv(
     list(
+      # Title
+      htmlH1('cgmViz: A web application for visualizing continuous glucose monitor data.'),
+      # Tabs
+      dccTabs(id="tabs-example", value='tab-1-example', children=list(
+        dccTab(label='Tab One', value='tab-1-example'),
+        dccTab(label='Tab Two', value='tab-2-example')
+      )),
       # Regular AGP
       dccGraph(id = 'agp',
                figure = list(data = agptraces,
@@ -80,34 +87,24 @@ app$layout(
                                xaxis = list(
                                  type = 'date',
                                  tickformat = "%H:%M",
-                                 title = "Time of Day"),
+                                 title = "Time of Day",
+                                 fixedrange = T),
                                yaxis = list(
                                  title = "Mean Sensor Glusose (mg/dL)",
                                  range = c(0,400)),
-                               clickmode = 'event+select'
+                               clickmode = 'event+select',
+                               shapes = list(type = "rect",
+                                             fillcolor = "green", line = list(color = "green"), opacity = 0.3,
+                                             x0 = min(summ$agp), x1 = max(summ$agp), xref = "x",
+                                             y0 = 70, y1 = 180, yref = "y")
                              )
+                             
                )
       )
     )
   )
 )
 
-# agp <- summ %>% plotly::group_by(id) %>%
-#   plot_ly(x = ~agp, y = ~id_spline,
-#           text=~paste0("ID: ",id,"\n","Time: ",label,"\n","Mean SG: ",round(sg))) %>%
-#   add_lines(hoverinfo = 'text',
-#             line = list(color = 'rgb(31, 119, 180)'),opacity = 0.5) %>% plotly::ungroup() %>%
-#   add_lines(y=smooth$fitted,text=~paste0("Time: ",label,"\n","Mean SG: ",round(sg)),
-#             hoverinfo = 'text',line=list(color = 'rgb(255, 127, 14)')) %>%
-#   layout(
-#     xaxis = list(
-#       type = 'date',
-#       tickformat = "%H:%M",
-#       title = "Time of Day"),
-#     yaxis = list(
-#       title = "Mean Sensor Glusose (mg/dL)",
-#       range = c(0,400)))
-# 
 # # Radial AGP
 # summ$t = as.numeric((summ$agp - min(summ$agp)))
 # summ$t = summ$t/(max(summ$t)/360)
