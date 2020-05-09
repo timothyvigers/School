@@ -9,7 +9,7 @@ app <- Dash$new()
 files = list.files("/home/tim/Desktop/CGMs",full.names = T)
 # Combine into one df
 l = lapply(files, function(x){
-  id = sub(".*_","",tools::file_path_sans_ext(basename(x)))
+  id = paste(sample(letters,6),collapse = "")
   df = read.csv(x,stringsAsFactors = F,na.strings = "")
   df = df[,c(2,8)]
   colnames(df) = c("timestamp","sensorglucose")
@@ -25,48 +25,71 @@ df$sensorglucose = suppressWarnings(as.numeric(df$sensorglucose))
 df$timestamp = lubridate::ymd_hms(df$timestamp)
 df = df[complete.cases(df),]
 df$id = as.factor(df$id)
+df$agp = lubridate::round_date(df$timestamp,unit = "5 minutes")
+df$agp = as.POSIXct(strftime(df$agp,format = "%H:%M"),format = "%H:%M")
+# Sumarize
+summ = df %>% arrange(id,agp) %>% dplyr::group_by(id,agp) %>%
+  summarise(sg = mean(sensorglucose,na.rm = T)) %>%
+  mutate(label = format(agp,format = "%H:%M")) %>% ungroup()
+# Smooth with splines
+summ = summ %>% group_by(id) %>%
+  mutate(id_spline = as.numeric(predict(smooth.spline(sg))$y)) %>% ungroup()
+# Mean for overall cohort
+overall = summ %>% group_by(agp) %>%
+  summarise(sg = mean(sg)) %>% 
+  mutate(all_spline = as.numeric(predict(smooth.spline(sg))$y)) %>% ungroup()
+# IDs for traces
+ids = unique(df$id)
+# Regular AGP
+agptraces <- lapply(ids,function(id) {
+  name = as.character(id)
+  which_id <- which(summ$id == id)
+  df_sub <- summ[which_id, ]
+  with(
+    df_sub,
+    list(
+      x = agp,
+      y = id_spline,
+      name = name,
+      text = paste0("ID: ",id,"<br>","Time: ",label,"<br>","Mean SG: ",round(sg)),
+      hoverinfo = 'text',
+      mode = 'lines',
+      opacity=0.3,
+      line = list(color = 'rgb(31, 119, 180)')
+    )
+  )
+})
+agptraces[[(length(agptraces) + 1)]] <- list(
+  x = overall$agp,
+  y = overall$all_spline,
+  name = "Cohort Mean",
+  text = paste0("Time: ",summ$label,"<br>","Mean SG: ",round(summ$sg)),
+  hoverinfo = 'text',
+  mode = 'lines',
+  line = list(color = 'rgb(255, 127, 14)')
+)
 
 # dccSlider starts from 5;
 app$layout(
   htmlDiv(
     list(
-      dccGraph(id = 'agp-with-slider'),
-      dccSlider(
-        id = 'time-slider',
-        value = 5,
-        min = 5,
-        max = 60,
-        step = 5
+      # Regular AGP
+      dccGraph(id = 'agp',
+               figure = list(data = agptraces,
+                             layout = list(
+                               xaxis = list(
+                                 type = 'date',
+                                 tickformat = "%H:%M",
+                                 title = "Time of Day"),
+                               yaxis = list(
+                                 title = "Mean Sensor Glusose (mg/dL)",
+                                 range = c(0,400)),
+                               clickmode = 'event+select'
+                             )
+               )
       )
     )
   )
-)
-
-app$callback(
-  output = list(id='agp-with-slider', property='figure'),
-  params = list(input(id='time-slider', property='value')),
-  
-  function(minutes) {
-    t = paste(minutes,"minutes")
-    df$agp = lubridate::round_date(df$timestamp,unit = t)
-    df$agp = as.POSIXct(strftime(df$agp,format = "%H:%M"),format = "%H:%M")
-    # Sumarize
-    summ = df %>% arrange(id,agp) %>% dplyr::group_by(id,agp) %>%
-      summarise(sg = mean(sensorglucose,na.rm = T)) %>%
-      mutate(label = format(agp,format = "%H:%M")) %>% ungroup()
-    # Smooth with splines
-    summ = summ %>% group_by(id) %>%
-      mutate(id_spline = as.numeric(predict(smooth.spline(sg))$y)) %>% ungroup()
-    # LOESS for overall cohort
-    smooth = loess(summ$sg~as.numeric(summ$agp))
-    # Plotly
-    # Regular AGP
-    list(data = list(x = summ$agp, 
-                     y = summ$id_spline,
-                     type = 'scatter'),        
-      layout = list(title = minutes)
-    )
-  }
 )
 
 # agp <- summ %>% plotly::group_by(id) %>%
