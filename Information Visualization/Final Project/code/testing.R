@@ -42,9 +42,9 @@ summ = summ %>% group_by(id) %>%
 # Radio button options
 gender_options = lapply(c(unique(df$gender)[order(unique(df$gender))]), 
                         function(x){
-  list(label = x,
-       value = x)
-})
+                          list(label = x,
+                               value = x)
+                        })
 
 ethnicity_options = lapply(c(unique(df$ethnicity)[order(unique(df$ethnicity))]), function(x){
   list(label = x,
@@ -61,15 +61,15 @@ app$layout(
                textAlign = 'center'
              )),
       htmlH5("Demographic filters"),
+      htmlH6("Ethnicity"),
       dccChecklist(
         id = 'ethnicity',
-        options = ethnicity_options,
-        value = 'All ethnicities'
+        options = ethnicity_options
       ),
+      htmlH6("Gender"),
       dccChecklist(
         id = 'gender',
-        options = gender_options,
-        value = 'All genders'
+        options = gender_options
       ),
       htmlH5('Time in range selector'),
       dccRangeSlider(
@@ -96,6 +96,10 @@ app$layout(
         # TIR
         dccTab(label='Time in Range', value='tir',children = list(
           dccGraph(id = 'tir')
+        )),
+        # Table
+        dccTab(label='Summary Measures', value='table',children = list(
+          dccGraph(id = 'table')
         ))
       ))
     )
@@ -109,15 +113,7 @@ app$callback(
                 input(id='tir-slider', property='value'),
                 input(id = 'show-agp',property = 'value')),
   function(ethnicity,gender,values,show) {
-    if(ethnicity == 'All ethnicities' & gender == "All genders"){
-      summ_plot = summ
-    } else if (ethnicity == 'All ethnicities' & gender != "All genders") {
-      summ_plot = summ[summ$gender == gender,]
-    } else if (ethnicity != 'All ethnicities' & gender == "All genders") {
-      summ_plot = summ[summ$ethnicity == ethnicity,]
-    } else {
-      summ_plot = summ[summ$ethnicity == ethnicity & summ$gender == gender,]
-    }
+    summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender,]
     # IDs for traces
     ids = unique(summ_plot$id)
     # Regular AGP
@@ -149,14 +145,14 @@ app$callback(
       yaxis = list(
         title = "Mean Sensor Glusose (mg/dL)",
         range = c(0,400))
-      )
-    if(show == 'yes') {
+    )
+    if('yes' %in% show) {
       fig <- layout(fig,shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.2,
              x0 = (as.numeric(min(df$agp))+21600) * 1000, 
              x1 = (as.numeric(max(df$agp))+21600) * 1000, xref = "x",
-             y0 = 70, y1 = 180, yref = "y")))
+             y0 = as.numeric(values[1]), y1 = as.numeric(values[2]), yref = "y")))
       return(fig)
     } else {
       return(fig)
@@ -168,15 +164,7 @@ app$callback(
   params = list(input(id='ethnicity', property='value'),
                 input(id='gender', property='value')),
   function(ethnicity,gender) {
-    if(ethnicity == 'All ethnicities' & gender == "All genders"){
-      summ_plot = summ
-    } else if (ethnicity == 'All ethnicities' & gender != "All genders") {
-      summ_plot = summ[summ$gender == gender,]
-    } else if (ethnicity != 'All ethnicities' & gender == "All genders") {
-      summ_plot = summ[summ$ethnicity == ethnicity,]
-    } else {
-      summ_plot = summ[summ$ethnicity == ethnicity & summ$gender == gender,]
-    }
+    summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender,]
     # IDs for traces
     ids = unique(summ_plot$id)
     # Radial AGP
@@ -204,20 +192,24 @@ app$callback(
                      text = ~paste0("Time: ",overall_plot$label,"<br>","Overall Mean SG: ",round(overall_plot$sg)),
                      hoverinfo = 'text')
     # Layout
-    fig <- layout(fig,radialaxis = list(
-      visible = TRUE,
-      ticks = "outside",
-      angle = 90,
-      tickangle = 90,
-      range = c(0,400)),
-      angularaxis = list(
-        rotation = 90,
-        direction = 'clockwise',
-        tickvals = c(90,180,270),
-        ticktext = c("06:00","12:00","18:00")
+    fig <- layout(fig,
+      showlegend = T,
+      polar = list(
+        angularaxis = list(
+          rotation = 90,
+          direction = 'clockwise',
+          tickvals = c(90,180,270),
+          ticktext = c("06:00","12:00","18:00")
+        ),
+        radialaxis = list(
+          visible = TRUE,
+          ticks = "outside",
+          angle = 90,
+          tickangle = 90,
+          range = c(0,400))
       )
     )
-return(fig)
+    return(fig)
   })
 
 app$callback(
@@ -226,15 +218,7 @@ app$callback(
                 input(id='ethnicity', property='value'),
                 input(id='gender', property='value')),
   function(values,ethnicity,gender) {
-    if(ethnicity == 'All ethnicities' & gender == "All genders"){
-      df_plot = df
-    } else if (ethnicity == 'All ethnicities' & gender != "All genders") {
-      df_plot = df[df$gender == gender,]
-    } else if (ethnicity != 'All ethnicities' & gender == "All genders") {
-      df_plot = df[df$ethnicity == ethnicity,]
-    } else {
-      df_plot = df[df$ethnicity == ethnicity & df$gender == gender,]
-    }
+    df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
     # Calculate TIR
     tir <- df_plot %>% group_by(id) %>% 
       summarise(perc_time_low = length(which(sensorglucose < values[1]))/n() * 100,
@@ -259,6 +243,43 @@ app$callback(
                           xaxis = list(title = "ID",categoryorder = "array",
                                        categoryarray = ~id))
     return(fig)
+  })
+
+app$callback(
+  output = list(id='table', property='figure'),
+  params = list(input(id='tir-slider', property='value'),
+                input(id='ethnicity', property='value'),
+                input(id='gender', property='value')),
+  function(values,ethnicity,gender) {
+    df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
+    # Summary table
+    t <- df_plot %>% group_by(id) %>% 
+      summarise(Mean = mean(sensorglucose),
+                SD = sd(sensorglucose),
+                CV = SD/Mean,
+                `Percent Time Low` = length(which(sensorglucose < values[1]))/n() * 100,
+                `Percent Time in Range` = length(which(sensorglucose >= values[1] & 
+                                                         sensorglucose < values[2]))/n() * 100,
+                `Percent Time High` = length(which(sensorglucose >= values[2]))/n() * 100)
+    
+    t[,2:ncol(t)] <- lapply(t[,2:ncol(t)], function(x){round(x,2)})
+    
+    table <- plot_ly(t,
+                     type = 'table',
+                     header = list(
+                       values = names(t),
+                       align = rep('center', ncol(t)),
+                       line = list(width = 1, color = 'black'),
+                       fill = list(color = '#1f77b4'),
+                       font = list(color = c("black"))
+                     ),
+                     cells = list(
+                       values = t(as.matrix(unname(t))),
+                       align = c('left', rep('center', ncol(t))),
+                       line = list(color = "black", width = 1),
+                       font = list(color = c("black"))
+                     ))
+    return(table)
   })
 
 app$run_server(showcase = T)
