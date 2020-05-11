@@ -41,6 +41,12 @@ summ = summ %>% group_by(id) %>%
   mutate(id_spline = as.numeric(predict(smooth.spline(sg))$y)) %>% ungroup()
 # Table names
 t1 <- c("id","Mean","SD","CV","Percent Time Low","Percent Time in Range","Percent Time High")
+# Participant means
+means = df %>% group_by(id) %>% summarise(mean = mean(sensorglucose))
+# Colors
+lowcol = '#1f77b4'
+ircol = '#2ca02c'
+highcol = '#d62728'
 # Radio button options
 gender_options = lapply(c(unique(df$gender)[order(unique(df$gender))]), 
                         function(x){
@@ -75,6 +81,12 @@ app$layout(
         id = 'gender',
         options = gender_options,value = sapply(gender_options, "[[", 2)
       ),
+      htmlH5("Data filters"),
+      dccChecklist(
+        id = 'mean-filter',
+        options = list(list(label = "Show only participants with mean in range",
+                            value = "In range"))
+      ),
       htmlH5('Time in range selector'),
       dccRangeSlider(
         id = 'tir-slider',
@@ -97,6 +109,8 @@ app$layout(
       # Summary boxplots
       dccGraph(id = 'toprow'),
       dccGraph(id = 'bottomrow'),
+      htmlH5("Summary table"),
+      htmlH6("Cells with > 30% time high are colored red, > 10% low are colored blue, and > 80% in range are colored green."),
       # Table
       dashDataTable(
         id = 'table',
@@ -108,6 +122,26 @@ app$layout(
                              deletable = TRUE
                            )
                          }),
+        style_data_conditional = list(
+          list(
+            'if' = list(column_id = 'Percent Time High', 
+                        filter_query = '{Percent Time High} > 30'),
+            backgroundColor = highcol,
+            color = 'white'
+          ),
+          list(
+            'if' = list(column_id = 'Percent Time Low', 
+                        filter_query = '{Percent Time Low} > 10'),
+            backgroundColor = lowcol,
+            color = 'white'
+          ),
+          list(
+            'if' = list(column_id = 'Percent Time in Range', 
+                        filter_query = '{Percent Time in Range} > 80'),
+            backgroundColor = ircol,
+            color = 'white'
+          )
+        ),
         page_current = 0,
         page_size = page_size,
         page_action = 'custom',
@@ -125,11 +159,23 @@ app$callback(
                 input(id='gender', property='value'),
                 input(id='tir-slider', property='value'),
                 input(id = 'show-agp',property = 'value'),
-                input(id = 'rad-agp',property = 'value')),
-  function(ethnicity,gender,values,show,radagp) {
+                input(id = 'rad-agp',property = 'value'),
+                input(id = 'mean-filter',property = 'value')),
+  function(ethnicity,gender,values,show,radagp,meanfilter) {
     # Filter
-    summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender,]
-    df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
+    # Data
+    if ("In range" %in% meanfilter){
+      keep = as.character(means$id[which(means$mean >= values[1] & means$mean <= values[2])])
+      summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender &
+                         summ$id %in% keep,]
+      df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender &
+                     df$id %in% keep,]
+    } else {
+      summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender,]
+      df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
+    }
+    # Demographics
+    
     # Mean for cohort
     overall_plot = summ_plot %>% group_by(agp) %>%
       summarise(sg = mean(sg),ethnicity = ethnicity[1],gender = gender[1],
@@ -209,10 +255,6 @@ app$callback(
              y0 = as.numeric(values[1]), y1 = as.numeric(values[2]), yref = "y"))
       )
     }
-    # Colors
-    lowcol = '#1f77b4'
-    ircol = '#2ca02c'
-    highcol = '#d62728'
     # Calculate TIR
     tir <- df_plot %>% group_by(id) %>% 
       summarise(perc_time_low = length(which(sensorglucose < values[1]))/n() * 100,
@@ -288,6 +330,7 @@ app$callback(
     toprow <- subplot(meanbox,sdbox,cvbox)
     bottomrow <- subplot(lowbox,irbox,highbox,shareY = T,titleY = F)
     
+    # Table
     t[,2:ncol(t)] <- lapply(t[,2:ncol(t)], function(x){round(x,2)})
     t$id <- as.character(t$id)
     
