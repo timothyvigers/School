@@ -70,24 +70,24 @@ app$layout(
              style = list(
                textAlign = 'center'
              )),
-      htmlH5("Demographic filters"),
-      htmlH6("Ethnicity"),
+      htmlH4("Demographic filters"),
+      htmlH5("Ethnicity"),
       dccChecklist(
         id = 'ethnicity',
         options = ethnicity_options,value = sapply(ethnicity_options, "[[", 2)
       ),
-      htmlH6("Gender"),
+      htmlH5("Gender"),
       dccChecklist(
         id = 'gender',
         options = gender_options,value = sapply(gender_options, "[[", 2)
       ),
-      htmlH5("Data filters"),
+      htmlH4("Data filters"),
       dccChecklist(
         id = 'mean-filter',
         options = list(list(label = "Show only participants with mean in range",
                             value = "In range"))
       ),
-      htmlH5('Time in range selector'),
+      htmlH4('Time in range selector'),
       dccRangeSlider(
         id = 'tir-slider',
         min = 40,
@@ -101,25 +101,25 @@ app$layout(
                    value = "yes"),
       dccChecklist(id = 'rad-agp',
                    options = list(list(label = "Radial AGP",value = "yes"))),
-      htmlH3('Aggregate Glucose Profile (AGP)',
+      htmlH2('Aggregate Glucose Profile (AGP)',
              style = list(
                textAlign = 'center'
              )),
       # Regular AGP
       dccGraph(id = 'agp'),
-      htmlH3('Time in Range',
+      htmlH2('Time in Range',
              style = list(
                textAlign = 'center'
              )),
       # TIR
       dccGraph(id = 'tir'),
-      htmlH3('Summary Measures',
+      htmlH2('Summary Measures',
              style = list(
                textAlign = 'center'
              )),
       # Boxplot options
-      htmlH5("Boxplots"),
-      htmlH6("Split boxplot by:"),
+      htmlH4("Boxplots"),
+      htmlH5("Split boxplot by:"),
       dccRadioItems(
         id = 'boxoptions',
         options = list(list(label = 'None',value = 'None'),
@@ -130,8 +130,8 @@ app$layout(
       # Summary boxplots
       dccGraph(id = 'toprow'),
       dccGraph(id = 'bottomrow'),
-      htmlH5("Summary table"),
-      htmlH6("Cells with > 30% time high are colored red, > 10% low are colored blue, and > 80% in range are colored green."),
+      htmlH4("Summary table"),
+      htmlH5("Cells with > 30% time high are colored red, > 10% low are colored blue, and > 80% in range are colored green."),
       # Table
       dashDataTable(
         id = 'table',
