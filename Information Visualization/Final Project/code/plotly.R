@@ -85,21 +85,18 @@ app$layout(
                    value = "yes"),
       # Tabs
       dccTabs(id="tabs",children=list(
-        # Regular AGP
-        dccTab(label='AGP', value='agp', children = list(
-          dccGraph(id = 'agp')
+        # Main page
+        dccTab(label='Main page', value='mainpage', children = list(
+          # Regular AGP
+          dccGraph(id = 'agp'),
+          # TIR
+          dccGraph(id = 'tir'),
+          # Table
+          dccGraph(id = 'table')
         )),
         # Radial AGP
         dccTab(label='Radial AGP', value='radagp', children = list(
           dccGraph(id = 'radagp')
-        )),
-        # TIR
-        dccTab(label='Time in Range', value='tir',children = list(
-          dccGraph(id = 'tir')
-        )),
-        # Table
-        dccTab(label='Summary Measures', value='table',children = list(
-          dccGraph(id = 'table')
         ))
       ))
     )
@@ -107,7 +104,8 @@ app$layout(
 )
 
 app$callback(
-  output = list(id='agp', property='figure'),
+  output = list(output(id='agp', property='figure'),
+                output(id='agp', property='figure')),
   params = list(input(id='ethnicity', property='value'),
                 input(id='gender', property='value'),
                 input(id='tir-slider', property='value'),
