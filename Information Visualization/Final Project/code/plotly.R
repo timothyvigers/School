@@ -101,11 +101,32 @@ app$layout(
                    value = "yes"),
       dccChecklist(id = 'rad-agp',
                    options = list(list(label = "Radial AGP",value = "yes"))),
-      # Tabs
+      htmlH3('Aggregate Glucose Profile (AGP)',
+             style = list(
+               textAlign = 'center'
+             )),
       # Regular AGP
       dccGraph(id = 'agp'),
+      htmlH3('Time in Range',
+             style = list(
+               textAlign = 'center'
+             )),
       # TIR
       dccGraph(id = 'tir'),
+      htmlH3('Summary Measures',
+             style = list(
+               textAlign = 'center'
+             )),
+      # Boxplot options
+      htmlH5("Boxplots"),
+      htmlH6("Split boxplot by:"),
+      dccRadioItems(
+        id = 'boxoptions',
+        options = list(list(label = 'None',value = 'None'),
+                       list(label = 'Gender',value = 'Gender'),
+                       list(label = 'Ethnicity',value = "Ethnicity")),
+        value = 'Gender'
+      ),
       # Summary boxplots
       dccGraph(id = 'toprow'),
       dccGraph(id = 'bottomrow'),
@@ -174,8 +195,6 @@ app$callback(
       summ_plot = summ[summ$ethnicity %in% ethnicity & summ$gender %in% gender,]
       df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
     }
-    # Demographics
-    
     # Mean for cohort
     overall_plot = summ_plot %>% group_by(agp) %>%
       summarise(sg = mean(sg),ethnicity = ethnicity[1],gender = gender[1],
@@ -207,8 +226,7 @@ app$callback(
     agp <- layout(agp,xaxis = list(
       type = 'date',
       tickformat = "%H:%M",
-      title = "Time of Day",
-      fixedrange = T),
+      title = "Time of Day"),
       yaxis = list(
         title = "Mean Sensor Glusose (mg/dL)",
         range = c(0,400))
@@ -295,10 +313,12 @@ app$callback(
                 input(id='tir-slider', property='value'),
                 input(id = 'table', property = 'page_current'),
                 input(id = 'table', property = 'page_size'),
-                input(id = 'table', property = 'sort_by')),
-  function(ethnicity,gender,values,page_current, page_size, sort_by) {
+                input(id = 'table', property = 'sort_by'),
+                input(id = 'boxoptions',property = 'value')),
+  function(ethnicity,gender,values,page_current, page_size, sort_by,box) {
     # Filter
     df_plot = df[df$ethnicity %in% ethnicity & df$gender %in% gender,]
+    
     # Summary table
     t <- df_plot %>% group_by(id) %>% 
       summarise(Mean = mean(sensorglucose),
@@ -307,29 +327,86 @@ app$callback(
                 `Percent Time Low` = length(which(sensorglucose < values[1]))/n() * 100,
                 `Percent Time in Range` = length(which(sensorglucose >= values[1] & 
                                                          sensorglucose < values[2]))/n() * 100,
-                `Percent Time High` = length(which(sensorglucose >= values[2]))/n() * 100)
+                `Percent Time High` = length(which(sensorglucose >= values[2]))/n() * 100,
+                gender = gender[1],ethnicity = ethnicity[1])
     # Boxplots
-    meanbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~Mean,line = list(color = 'black'),opacity = 0.5,name = "Mean SG")
-    sdbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~SD,line = list(color = 'black'),opacity = 0.5,name = "SD")
-    cvbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~CV,line = list(color = 'black'),opacity = 0.5,name = "CV")
-    lowbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~`Percent Time Low`,line = list(color = 'black'),
-                name = "% Time Low",fillcolor = lowcol,opacity = 0.5) %>%
-      layout(yaxis = list(range = c(0,100)))
-    irbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~`Percent Time in Range`,line = list(color = 'black'),
-                name = "% Time in Range",fillcolor = ircol,opacity = 0.5) %>%
-      layout(yaxis = list(range = c(0,100)))
-    highbox <- plot_ly(t,type = 'box',showlegend = F) %>% 
-      add_trace(y=~`Percent Time High`,line = list(color = 'black'),
-                name = "% Time High",fillcolor = highcol,opacity = 0.5) %>%
-      layout(yaxis = list(range = c(0,100)))
+    meanbox <- plot_ly(t,type = 'box')
+    if (box == 'None') {
+      meanbox <- add_trace(meanbox,y=~Mean,line = list(color = 'black'),opacity = 0.5,name = "Mean SG")
+    } else if (box == "Gender") {
+      meanbox <- add_trace(meanbox,y=~Mean,x=~gender,line = list(color = 'black'),opacity = 0.5,name = "Mean SG")
+    } else {
+      meanbox <- add_trace(meanbox,y=~Mean,x=~ethnicity,line = list(color = 'black'),opacity = 0.5,name = "Mean SG")
+    }
+    meanbox <- layout(meanbox,yaxis = list(title = ""),xaxis = list(title = ""))
+    
+    sdbox <- plot_ly(t,type = 'box')
+    if (box == 'None'){
+      sdbox <- add_trace(sdbox,y=~SD,line = list(color = 'black'),opacity = 0.5,name = "SD")
+    }else if (box == "Gender") {
+      sdbox <- add_trace(sdbox,y=~SD,x=~gender,line = list(color = 'black'),opacity = 0.5,name = "SD")
+    } else {
+      sdbox <- add_trace(sdbox,y=~SD,x=~ethnicity,line = list(color = 'black'),opacity = 0.5,name = "SD")
+    }
+    sdbox <- layout(sdbox,yaxis = list(title = ""),xaxis = list(title = ""))
+    
+    cvbox <- plot_ly(t,type = 'box')
+    if (box == 'None'){
+      cvbox <- add_trace(cvbox,y=~CV,line = list(color = 'black'),opacity = 0.5,name = "CV")
+    }else if (box == "Gender") {
+      cvbox <- add_trace(cvbox,y=~CV,x=~gender,line = list(color = 'black'),opacity = 0.5,name = "CV")
+    } else {
+      cvbox <- add_trace(cvbox,y=~CV,x=~ethnicity,line = list(color = 'black'),opacity = 0.5,name = "CV")
+    }
+    cvbox <- layout(cvbox,yaxis = list(title = ""),xaxis = list(title = ""))
+    
+    lowbox <- plot_ly(t,type = 'box') 
+      if (box == 'None'){
+        lowbox <- add_trace(lowbox,y=~`Percent Time Low`,line = list(color = 'black'),
+                           name = "% Time Low",fillcolor = lowcol,opacity = 0.5)
+      }else if (box == "Gender") {
+        lowbox <- add_trace(lowbox,y=~`Percent Time Low`,x=~gender,line = list(color = 'black'),
+                            name = "% Time Low",fillcolor = lowcol,opacity = 0.5)
+      } else {
+        lowbox <- lowbox <- add_trace(lowbox,y=~`Percent Time Low`,x=~ethnicity,line = list(color = 'black'),
+                                      name = "% Time Low",fillcolor = lowcol,opacity = 0.5)
+      }
+    lowbox <- layout(lowbox,yaxis = list(range = c(0,100),title = ""),
+                     xaxis = list(title = ""))
+    
+    irbox <- plot_ly(t,type = 'box')
+    if (box == 'None'){
+      irbox <- add_trace(irbox,y=~`Percent Time in Range`,line = list(color = 'black'),
+                         name = "% Time in Range",fillcolor = ircol,opacity = 0.5)
+    }else if (box == "Gender") {
+      irbox <- add_trace(irbox,y=~`Percent Time in Range`,x=~gender,line = list(color = 'black'),
+                         name = "% Time in Range",fillcolor = ircol,opacity = 0.5)
+    } else {
+      irbox <- add_trace(irbox,y=~`Percent Time in Range`,x=~ethnicity,line = list(color = 'black'),
+                         name = "% Time in Range",fillcolor = ircol,opacity = 0.5)
+    }
+    irbox <- layout(irbox,yaxis = list(range = c(0,100),title = ""),
+                    xaxis = list(title = ""))
+    
+    highbox <- plot_ly(t,type = 'box')
+    if (box == 'None'){
+      highbox <- add_trace(highbox,y=~`Percent Time High`,line = list(color = 'black'),
+                           name = "% Time High",fillcolor = highcol,opacity = 0.5)
+    }else if (box == "Gender") {
+      highbox <- add_trace(highbox,y=~`Percent Time High`,x=~gender,line = list(color = 'black'),
+                           name = "% Time High",fillcolor = highcol,opacity = 0.5)
+    } else {
+      highbox <- add_trace(highbox,y=~`Percent Time High`,x=~ethnicity,line = list(color = 'black'),
+                           name = "% Time High",fillcolor = highcol,opacity = 0.5)
+    }
+    highbox <- layout(highbox,yaxis = list(range = c(0,100),title = ""),
+                      xaxis = list(title = ""))
+    # Arrange
     toprow <- subplot(meanbox,sdbox,cvbox)
     bottomrow <- subplot(lowbox,irbox,highbox,shareY = T,titleY = F)
     
+    # Summary table
+    t <- t[,1:7]
     # Table
     t[,2:ncol(t)] <- lapply(t[,2:ncol(t)], function(x){round(x,2)})
     t$id <- as.character(t$id)
