@@ -84,10 +84,10 @@ app$layout(
       htmlH4("Data filters"),
       dccChecklist(
         id = 'mean-filter',
-        options = list(list(label = "Show only participants with mean in range",
+        options = list(list(label = "Show only participants with mean in selected range",
                             value = "In range"))
       ),
-      htmlH4('Time in range selector'),
+      htmlH4('Range selector'),
       dccRangeSlider(
         id = 'tir-slider',
         min = 40,
