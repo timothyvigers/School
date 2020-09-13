@@ -15,18 +15,25 @@
 
 \section{BD 1.1.1}
 \begin{enumerate}
-  \item Example 1.1.1
+  \item Example (a)
   \begin{enumerate}
-     \item Density
-     \item Parameter space
-     \item Parametric model?
+     \item $X$ is assumed to have a hypergeometric distribution:
+        $$P[X=k]=\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$ for $k=0,1,...,n$
+     \item In this example we are interested in $\theta$, which is the number of defective items in the sampled population. So, $\theta$ can take any value in $[0,N]$.
+     \item This is a parametric model because we are assuming a distribution for the R.V. $X$.
    \end{enumerate}
-  \item Example 1.1.2
+  \item Example (b)
   \begin{enumerate}
-     \item Density
-     \item Parameter space
-     \item Parametric model?
+     \item For this example where $X\sim F$, we are unable to write the density or frequency function because $F$ is unknown.
+     \item Here we are interested in the population distribution $F$, so the parameter space is the set of possible distributions $\mathcal{F}$.
+     \item I think this is a semi-parametric model because we have not yet specified a distribution for $F$ and are not making many assumptions about it. However, the end result will still be a distribution function we can specify, so the model isn't completely non-parametric.
    \end{enumerate}
+   \item Example (c)
+   \begin{enumerate}
+      \item The density function for the model $X_i=\mu+\epsilon_i$, $1\leq i \leq n$ depends on the assumptions we make about the distribution of the errors $\epsilon_i$. If we assume that the $\epsilon_i$ are i.i.d. $\mathcal{N}(0,\sigma^2)$, which is common for these kinds of model, then $$F(x)=\mathcal{N}(\mu-x,\sigma^2)$$
+      \item In the above example there are two unknown quantities: $\mu$ and $\sigma^2$. For the case where $\epsilon_i\sim\mathcal{N}(0,\sigma^2)$, we assume that $\sigma>0$ and $\mu\in R$.
+      \item This is a parametric model when we make an assumption about the distribution of the errors. 
+    \end{enumerate}
 \end{enumerate}
 
 
