@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.7) (preloaded format=pdflatex 2020.9.11)  13 SEP 2020 14:12
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.7) (preloaded format=pdflatex 2020.9.11)  13 SEP 2020 14:17
 entering extended mode
 **./hw2.tex
 (hw2.tex
@@ -73,7 +73,7 @@ This may cause the page layout to be inconsistent, however.
 Here is how much of TeX's memory you used:
  521 strings out of 481199
  8320 string characters out of 2915349
- 245111 words of memory out of 3000000
+ 246111 words of memory out of 3000000
  16197 multiletter control sequences out of 15000+200000
  537511 words of font info for 37 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -81,7 +81,7 @@ Here is how much of TeX's memory you used:
 <C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.p
 fb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Progra
 m Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on hw2.pdf (2 pages, 41761 bytes).
+Output written on hw2.pdf (2 pages, 41230 bytes).
 PDF statistics:
  21 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

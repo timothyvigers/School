@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1600027944 "hw2.tex" "hw2.pdf" "hw2" 1600027945
+["pdflatex"] 1600028220 "hw2.tex" "hw2.pdf" "hw2" 1600028221
   "C:/Program Files/MiKTeX/fonts/tfm/public/cm/cmbx12.tfm" 1136768653 1324 c910af8c371558dc20f2d7822f66fe64 ""
   "C:/Program Files/MiKTeX/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
   "C:/Program Files/MiKTeX/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
@@ -14,9 +14,9 @@
   "C:/Users/timbv/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1599883943 10050586 9e4c8cea8b78a31f4b89c9afac1ebe7e ""
   "C:/Users/timbv/AppData/Local/MiKTeX/pdftex/config/pdftex.map" 1599884479 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/timbv/AppData/Roaming/MiKTeX/tex/latex/fancyhdr/fancyhdr.sty" 1549027316 11403 a53805799bebfed6358fc1658a18e41f ""
-  "hw2.aux" 1600027945 304 f6fd79ea9320006bcffaf70a270bcb14 "pdflatex"
-  "hw2.tex" 1600027940 1586 d28ba151a8cc8d077e4ccf31ccec3cfb ""
+  "hw2.aux" 1600028221 304 f6fd79ea9320006bcffaf70a270bcb14 "pdflatex"
+  "hw2.tex" 1600028215 1582 408f11a297fd4c99a4709edc992b9663 ""
   (generated)
   "hw2.aux"
-  "hw2.log"
   "hw2.pdf"
+  "hw2.log"
