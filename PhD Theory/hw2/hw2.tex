@@ -17,33 +17,23 @@
 \begin{enumerate}
   \item Example (a)
   \begin{enumerate}
-     \item $X$ is assumed to have a hypergeometric distribution:
-        $$P[X=k]=\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$ for $k=0,1,...,n$
-     \item In this example we are interested in $\theta$, which is the number of defective items in the sampled population. So, $\theta$ can take any value in $[0,N]$.
-     \item This is a parametric model because we are assuming a distribution for the R.V. $X$.
+     \item Here let $X$ be a R.V. indicating the diameter of a pebble and $Y=log(X)$. The logarithm of the diameter is normally distributed, so: $$P_Y(Y)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{y-\mu}{\sigma})^2}$$
+     To find the distribution of $X$, we can do a simple transformation using $\frac{d}{dx}Y=\frac{1}{X}$ and see that $$P_X(X)=\frac{1}{x\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{log(x)-\mu}{\sigma})^2}$$
+     \item Pebble diameters must be $X\in (0,\infty)$, so $-\infty<log(X)<\infty$. Because we are assuming $log(X)\sim \mathcal{N}(\mu,\sigma^2)$, $-\infty<\mu<\infty$ and $\sigma>0$.
+     \item This is a parametric model because we are assuming a distribution for the pebble diameters.
    \end{enumerate}
   \item Example (b)
   \begin{enumerate}
-     \item For this example where $X\sim F$, we are unable to write the density or frequency function because $F$ is unknown.
-     \item Here we are interested in the population distribution $F$, so the parameter space is the set of possible distributions $\mathcal{F}$.
-     \item I think this is a semi-parametric model because we have not yet specified a distribution for $F$ and are not making many assumptions about it. However, the end result will still be a distribution function we can specify, so the model isn't completely non-parametric.
+     \item For this example we have the model $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(0.1,\sigma^2)$. Therefore $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+0.1}{\sigma})^2}$$
+     \item In this case the variance of the errors is known, so the parameter space is $\mu\in R$.
+     \item This is also a parametric model because we are assuming a distribution for the errors.
    \end{enumerate}
    \item Example (c)
    \begin{enumerate}
-      \item The density function for the model $X_i=\mu+\epsilon_i$, $1\leq i \leq n$ depends on the assumptions we make about the distribution of the errors $\epsilon_i$. If we assume that the $\epsilon_i$ are i.i.d. $\mathcal{N}(0,\sigma^2)$, which is common for these kinds of model, then $$F(x)=\mathcal{N}(\mu-x,\sigma^2)$$
-      \item In the above example there are two unknown quantities: $\mu$ and $\sigma^2$. For the case where $\epsilon_i\sim\mathcal{N}(0,\sigma^2)$, we assume that $\sigma>0$ and $\mu\in R$.
-      \item This is a parametric model when we make an assumption about the distribution of the errors. 
+      \item
+      \item
+      \item
     \end{enumerate}
 \end{enumerate}
-
-
-
-\subsection{Hello World again!}
-"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-
-\newpage
-
-\section{ljqhvbw}
-"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-
+\subsection{1.1.2}
 \end{document}
