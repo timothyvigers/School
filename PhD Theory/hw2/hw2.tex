@@ -30,10 +30,21 @@
    \end{enumerate}
    \item Example (c)
    \begin{enumerate}
-      \item
-      \item
-      \item
+      \item This is similar to the model above, but this time $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(\theta,\sigma^2)$. Therefore $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+\theta}{\sigma})^2}$$
+      \item The variance of the errors is still known, but this time we are only able to estimate the parameter $\mu+\theta\in R$ as the model is unindentifiable for $\mu$ or $\theta$ alone.
+      \item This is still a parametic model because we assume a distribution of the errors.
     \end{enumerate}
+    \item Example (d)
+    \begin{enumerate}
+       \item Let $X=$ the number of eggs laid by an insect, which follows a Poisson distribution:$$P_X(X)=\frac{e^{-\lambda}\lambda^x}{x!}$$ for $x=0,1,...$ and $\lambda>0$. If $Y=$ the number of eggs that hatch assuming each egg hatches with probability $p$, then $Y$ follows a binomial distribution:$$P_Y(Y|n=x)={x\choose y}p^y(1-p)^{x-y}$$
+       \item $$\lambda>0$$ $$Y=0,1,...$$ $$0\leq p\leq 1$$
+       \item This is also a parametric model because we are assuming distributions for $X$ and $Y|X$.
+     \end{enumerate}
 \end{enumerate}
 \subsection{1.1.2}
+\begin{enumerate}
+  \item Problem 1.1.1(c) it is possible to estimate the parameter $\mu+\theta$, but it is not possible to estimate $\mu$ or $\theta$ separately because there are many possible values of $\mu$ and $\theta$ that would produce the same $\mu+\theta$ (for example $(\mu=2,\theta=2)$ and $(\mu=3,\theta=1)$).
+  \item The parameterization of 1.1.1(d) is indentifiable because the entomologist is collecting the number of eggs laid by each insect, which allows for estimation of $\lambda$. They are also collecting the number of eggs hatching within a nest, which makes it possible to estimate $p$.
+  \item Unlike the case above, if the entomologist is only collecting data on the number of eggs hatched, they would only be able to estimate $Y|X$, but would not be able to estimate the average number of eggs laid per nest.
+\end{enumerate}
 \end{document}
