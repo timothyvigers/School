@@ -65,8 +65,18 @@ Multiplying this by $\frac{\pi_0^k(1-\pi_0)^{n-k}}{\pi_0^k(1-\pi_0)^{n-k}}$ yiel
 \begin{enumerate}
   \item Given $X_1,...,X_n$ iid $\mathcal{N}(\mu_0,\frac{1}{\theta})$ variables, the joint density $p(x|\theta)$ is:
   $$\prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\theta^{\frac{1}{2}}e^{-\frac{1}{2}\theta(x_i-\mu_0)^2}=\sqrt{2\pi}^{-n} \theta^{\frac{1}{2}n}e^{-\frac{n\theta}{2}\sum_{i=1}^n(x_i-\mu_0)^2}$$
-  Letting $t=\sum_{i=1}^n (x_i-\mu_0)^2$, this density is proportional to:$$\theta^{\frac{1}{2}n}e^{-\frac{1}{2}}\theta t$$
-  \item If $\pi(\theta)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta}$, then the posterior distribution $$\pi(\theta|x)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta} \theta^{\frac{1}{2}n}e^{-\frac{1}{2}\theta t}$$ by 1.2.10. This can be simplified to $$\theta^{\frac{1}{2}(n+\lambda-2)}e^{-\frac{1}{2}\theta(\nu+t)}=\theta^{\frac{n+\lambda}{2}-1}e^{-\frac{1}{2}\theta(\nu+t)}$$
-  $n$ is an integer, so provided $\lambda$ is also an integer, we can set $p=\lambda+n$ and see that this contains the kernel of a $\chi_{p}^2$ density: $$\pi(\theta|x)\propto\theta^{\frac{p}{2}-1}e^{-\frac{1}{2}\theta(\nu+t)}$$
+  Letting $t=\sum_{i=1}^n (x_i-\mu_0)^2$, this density is proportional to:$$\theta^{\frac{1}{2}n}e^{-\frac{1}{2}\theta t}$$
+  \item If $\pi(\theta)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta}$, then the posterior distribution $$\pi(\theta|x)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta} \theta^{\frac{1}{2}n}e^{-\frac{1}{2}\theta t}$$ by 1.2.10. This can be simplified to
+  $$\theta^{\frac{1}{2}(n+\lambda-2)}e^{-\frac{1}{2}\theta(\nu+t)}=\theta^{\frac{n+\lambda}{2}-1}e^{-\frac{\theta(\nu+t)}{2}}$$
+  $n$ is an integer, so provided $\lambda$ is also an integer, we can set $p=\lambda+n$ and see that this contains the kernel of a $\chi_{p}^2$ density: $$\pi(\theta|x)\propto\theta^{\frac{p}{2}-1}e^{-\frac{\theta(\nu+t)}{2}}$$ also provided that $\nu$ and $t$ are known.
+  \item We can find the distribution of $\sigma$ by plugging it into the $\chi_{\lambda+n}^2$ density for $\theta(\nu+t)$:
+  $$p(\theta(\nu+t)|x)=\frac{1}{\Gamma(\frac{p}{2})2^{\frac{p}{2}}}\theta(\nu+t)^{\frac{p}{2}-1}e^{-\frac{\theta(\nu+t)}{2}}$$
+  We know $\theta=\frac{1}{\sigma^2}$, so $\frac{d}{d\sigma}\theta=\frac{-2}{\sigma^3}$ and we can plug this into the above density using CB theorem 2.1.5:
+  $$p(\sigma|x)=\frac{1}{\Gamma(\frac{p}{2})2^{\frac{p}{2}}}(\frac{(\nu+t)}{\sigma^2})^{\frac{p}{2}-1}e^{-\frac{\nu+t}{2\sigma^2}}\frac{2}{\sigma^3}$$
+\end{enumerate}
+\subsection{BD 1.3.8}
+\begin{enumerate}
+  \item To show that $s^2$ is an unbiased estimator, we find its expected expected value:$$E[s^2]=E[\frac{1}{n-1}\sum_{i=1}^{n}(X_i^2-n\bar{X}^2)]=\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])$$ because the $X_i$ are sampled from the same population. $$\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])=\frac{1}{n-1}(n(\sigma^2+\mu^2)-n(\frac{\sigma^2}{n}+\mu^2))=\frac{1}{n-1}(n\sigma^2-\sigma^2)$$
+  This shows that $E[s^2]=\sigma^2$ and it is therefore an unbiased estimator.
 \end{enumerate}
 \end{document}
