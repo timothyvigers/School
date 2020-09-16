@@ -1,4 +1,6 @@
 \documentclass[a4paper,12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
@@ -19,32 +21,52 @@
   \begin{enumerate}
      \item Here let $X$ be a R.V. indicating the diameter of a pebble and $Y=log(X)$. The logarithm of the diameter is normally distributed, so: $$P_Y(Y)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{y-\mu}{\sigma})^2}$$
      To find the distribution of $X$, we can do a simple transformation using $\frac{d}{dx}Y=\frac{1}{X}$ and see that $$P_X(X)=\frac{1}{x\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{log(x)-\mu}{\sigma})^2}$$
-     \item Pebble diameters must be $X\in (0,\infty)$, so $-\infty<log(X)<\infty$. Because we are assuming $log(X)\sim \mathcal{N}(\mu,\sigma^2)$, $-\infty<\mu<\infty$ and $\sigma>0$.
-     \item This is a parametric model because we are assuming a distribution for the pebble diameters.
+     \item Pebble diameters must be $X>0$, so $log(X)\in\mathbb{R}$. Because we are assuming $log(X)\sim \mathcal{N}(\mu,\sigma^2)$, $\mu\in\mathbb{R}$ and $\sigma>0$.
+     \item This is a parametric model because we are assuming a specific distribution for the pebble diameters.
    \end{enumerate}
   \item Example (b)
   \begin{enumerate}
-     \item For this example we have the model $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(0.1,\sigma^2)$. Therefore $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+0.1}{\sigma})^2}$$
-     \item In this case the variance of the errors is known, so the parameter space is $\mu\in R$.
+     \item For this example we have the model $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(0.1,\sigma^2)$. Therefore $$X_i\sim\mathcal{N}(\mu+0.1,\sigma^2)$$ and $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+0.1}{\sigma})^2}$$
+     \item In this case the variance of the errors is known, so the parameter space is $\mu\in\mathbb{R}$.
      \item This is also a parametric model because we are assuming a distribution for the errors.
    \end{enumerate}
    \item Example (c)
    \begin{enumerate}
-      \item This is similar to the model above, but this time $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(\theta,\sigma^2)$. Therefore $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+\theta}{\sigma})^2}$$
-      \item The variance of the errors is still known, but this time we are only able to estimate the parameter $\mu+\theta\in R$ as the model is unindentifiable for $\mu$ or $\theta$ alone.
+      \item This is similar to the model above, but this time $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(\theta,\sigma^2)$. Therefore $$X_i\sim\mathcal{N}(\mu+\theta,\sigma^2)$$ and  $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+\theta}{\sigma})^2}$$
+      \item The variance of the errors is still known, but this time we are only able to estimate the parameter $\mu+\theta\in\mathbb{R}$ as the model is unindentifiable for $\mu$ or $\theta$ alone.
       \item This is still a parametic model because we assume a distribution of the errors.
     \end{enumerate}
     \item Example (d)
     \begin{enumerate}
-       \item Let $X=$ the number of eggs laid by an insect, which follows a Poisson distribution:$$P_X(X)=\frac{e^{-\lambda}\lambda^x}{x!}$$ for $x=0,1,...$ and $\lambda>0$. If $Y=$ the number of eggs that hatch assuming each egg hatches with probability $p$, then $Y$ follows a binomial distribution:$$P_Y(Y|n=x)={x\choose y}p^y(1-p)^{x-y}$$
+       \item Let $X=$ the number of eggs laid by an insect, which follows a Poisson distribution:$$P_X(X)=\frac{e^{-\lambda}\lambda^x}{x!}$$ for $x=0,1,...$ and $\lambda>0$. If $Y=$ the number of eggs that hatch assuming each egg hatches with probability $p$, then $Y$ follows a binomial distribution given the number of eggs laid:$$P_Y(Y|n=x)={x\choose y}p^y(1-p)^{x-y}$$
        \item $$\lambda>0$$ $$Y=0,1,...$$ $$0\leq p\leq 1$$
        \item This is also a parametric model because we are assuming distributions for $X$ and $Y|X$.
      \end{enumerate}
 \end{enumerate}
-\subsection{1.1.2}
+\subsection{BD 1.1.2}
 \begin{enumerate}
-  \item Problem 1.1.1(c): It is possible to estimate the parameter $\mu+\theta$, but it is not possible to estimate $\mu$ or $\theta$ separately because there are many possible values of $\mu$ and $\theta$ that would produce the same $\mu+\theta$ (for example $(\mu=2,\theta=2)$ and $(\mu=3,\theta=1)$).
-  \item The parameterization of 1.1.1(d) is indentifiable because the entomologist is collecting the number of eggs laid by each insect, which allows for estimation of $\lambda$. They are also collecting the number of eggs hatching within a nest, which makes it possible to estimate $p$.
-  \item Unlike the case above, if the entomologist is only collecting data on the number of eggs hatched, they would only be able to estimate $Y|X$, but would not be able to estimate the average number of eggs laid per nest.
+  \item Problem 1.1.1(c): It is possible to estimate the parameter $\mu+\theta$, but it is not possible to estimate $\mu$ or $\theta$ separately because there are many possible values of $\mu$ and $\theta$ that would produce the same $\mu+\theta$. For example, $(\mu=2,\theta=2)$ and $(\mu=3,\theta=1)$.
+  \item The parameterization of 1.1.1(d) is indentifiable because the entomologist is collecting the number of eggs laid by each insect, which allows for estimation of $\lambda$. They are also collecting the number of eggs hatching, which makes it possible to estimate $p$.
+  \item Unlike the case above, if the entomologist is only collecting data on the number of eggs hatched, the model would be unindentifiable. The current parameterization assumes that $n$ is known, so that if the entomologist records for example 6 eggs hatching out of a total of 36 eggs laid, they can estimate $\hat{p}=\frac{1}{6}$. However, if the number of eggs is unknown, then 6 hatchings could imply that $\hat{p}_1=\frac{6}{10}$, $\hat{p}_1=\frac{6}{6}$, etc. because the denominator is unknown. Therefore, $P_{\theta_1}=P_{\theta_2}$ does not imply $\theta_1=\theta_2$.
+\end{enumerate}
+\subsection{BD 1.2.7}
+Example 1.1.1: Let X represent the number of defective items in a random sampling inspection where $X(k)=k$ for $k=0,1,...,n$. If $\theta$ represents the number of defective items in the population, then $$p(X=k)=\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$ Assume $\theta$ has a $\mathcal{B}(N,\pi_0)$ distribution: $$\pi(\theta)={N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
+Then we have that the posterior distribution of $\theta$ given $X=k$: $$\pi(\theta|X=k)=\frac{\pi(\theta)p(x|\theta)}{c}\propto{N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$
+Where $$c=\sum_{t=0}^n\pi(t)p(x|t)=$$
+Blah blah blah, figure this part out...
+$${N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$
+Which equals:$$\frac{N!}{\theta!(N-\theta)!}\frac{(N-\theta)!}{(n-k)!(N-\theta-(n-k))!}\frac{N!}{\theta!(N-\theta)!}\frac{n!(N-n)!}{N!}\frac{\theta!}{k!(t-k)!}\pi_0^{\theta}(1-\pi_0)^{N-\theta}$$
+Several terms cancel, leaving us with:
+$$\frac{n!(N-n)!}{k!(n-k)!(\theta-k)!(N-n-(\theta-k))!}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
+This can be written as:
+$${n\choose k}{N-n\choose \theta-k}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
+Multiplying this by $\frac{\pi_0^k(1-\pi_0)^{n-k}}{\pi_0^k(1-\pi_0)^{n-k}}$ yields a constant ${n\choose k}\pi_0^k(1-\pi_0)^{n-k}$ and the kernal of a $\mathcal{B}(N-n,\theta-k)$:$${N-n\choose \theta-k}\pi_0^{\theta-k}(1-\pi_0)^{N-n-(\theta-k)}$$
+\subsection{BD 1.2.12}
+\begin{enumerate}
+  \item Given $X_1,...,X_n$ iid $\mathcal{N}(\mu_0,\frac{1}{\theta})$ variables, the joint density $p(x|\theta)$ is:
+  $$\prod_{i=1}^n \frac{1}{\sqrt{2\pi}}\theta^{\frac{1}{2}}e^{-\frac{1}{2}\theta(x_i-\mu_0)^2}=\sqrt{2\pi}^{-n} \theta^{\frac{1}{2}n}e^{-\frac{n\theta}{2}\sum_{i=1}^n(x_i-\mu_0)^2}$$
+  Letting $t=\sum_{i=1}^n (x_i-\mu_0)^2$, this density is proportional to:$$\theta^{\frac{1}{2}n}e^{-\frac{1}{2}}\theta t$$
+  \item If $\pi(\theta)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta}$, then the posterior distribution $$\pi(\theta|x)\propto\theta^{\frac{1}{2}(\lambda-2)}e^{-\frac{1}{2}\nu\theta} \theta^{\frac{1}{2}n}e^{-\frac{1}{2}\theta t}$$ by 1.2.10. This can be simplified to $$\theta^{\frac{1}{2}(n+\lambda-2)}e^{-\frac{1}{2}\theta(\nu+t)}=\theta^{\frac{n+\lambda}{2}-1}e^{-\frac{1}{2}\theta(\nu+t)}$$
+  $n$ is an integer, so provided $\lambda$ is also an integer, we can set $p=\lambda+n$ and see that this contains the kernel of a $\chi_{p}^2$ density: $$\pi(\theta|x)\propto\theta^{\frac{p}{2}-1}e^{-\frac{1}{2}\theta(\nu+t)}$$
 \end{enumerate}
 \end{document}
