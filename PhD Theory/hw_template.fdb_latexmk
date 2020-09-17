@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1600196174 "hw_template.tex" "hw_template.pdf" "hw_template" 1600196175
+["pdflatex"] 1600303780 "hw_template.tex" "hw_template.pdf" "hw_template" 1600303781
   "C:/Program Files/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233955448 1004 54797486969f23fa377b128694d548df ""
   "C:/Program Files/MiKTeX/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1233955454 916 f87d7c45f9c908e672703b83b72241a3 ""
   "C:/Program Files/MiKTeX/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1233955454 928 2dc8d444221b7a635bb58038579b861a ""
@@ -14,6 +14,8 @@
   "C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1247596666 32080 340ef9bf63678554ee606688e7b5339d ""
   "C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1247596667 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1247596666 32362 bc3f3eec7ab7d65fe700963d4017d32c ""
+  "C:/Program Files/MiKTeX/tex/generic/iftex/iftex.sty" 1583527000 6501 4011d89d9621e0b0901138815ba5ff29 ""
+  "C:/Program Files/MiKTeX/tex/generic/iftex/ifvtex.sty" 1583527000 1057 525c2192b5febbd8c1f662c9468335bb ""
   "C:/Program Files/MiKTeX/tex/latex/amsfonts/amsfonts.sty" 1358201372 5949 3f3fd50a8cc94c3d4cbf4fc66cd3df1c ""
   "C:/Program Files/MiKTeX/tex/latex/amsfonts/amssymb.sty" 1358201372 13829 94730e64147574077f8ecfea9bb69af4 ""
   "C:/Program Files/MiKTeX/tex/latex/amsfonts/umsa.fd" 1358201372 961 6518c6525a34feb5e8250ffa91731cff ""
@@ -25,12 +27,15 @@
   "C:/Program Files/MiKTeX/tex/latex/amsmath/amstext.sty" 1580750180 2508 8ff93b1137020e8f21930562a874ae66 ""
   "C:/Program Files/MiKTeX/tex/latex/base/article.cls" 1582875266 20023 e427dd9e17e239bf926ef3aab67fe35e ""
   "C:/Program Files/MiKTeX/tex/latex/base/size12.clo" 1582875266 8447 5c4b8ee712f8e349df2722115bc8c513 ""
+  "C:/Program Files/MiKTeX/tex/latex/graphics/keyval.sty" 1580750142 2677 e3b24ff953e5b58d924f163d25380312 ""
   "C:/Program Files/MiKTeX/tex/latex/l3backend/l3backend-pdftex.def" 1598967434 22152 ffb23687d8fc8d546b055b154274dfd1 ""
   "C:/Users/timbv/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1599883943 10050586 9e4c8cea8b78a31f4b89c9afac1ebe7e ""
   "C:/Users/timbv/AppData/Local/MiKTeX/pdftex/config/pdftex.map" 1599884479 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/timbv/AppData/Roaming/MiKTeX/tex/latex/fancyhdr/fancyhdr.sty" 1549027316 11403 a53805799bebfed6358fc1658a18e41f ""
-  "hw_template.aux" 1600196175 310 1e2766414da55cbfbdea6ec1ba010757 "pdflatex"
-  "hw_template.tex" 1600196174 2167 ac6a1c8dec733be1f783a4606eb193af ""
+  "C:/Users/timbv/AppData/Roaming/MiKTeX/tex/latex/geometry/geometry.cfg" 1578057145 1104 7ac475a4e3466b0b43e138e9356bda83 ""
+  "C:/Users/timbv/AppData/Roaming/MiKTeX/tex/latex/geometry/geometry.sty" 1578057145 42759 9cf6c5257b1bc7af01a58859749dd37a ""
+  "hw_template.aux" 1600303781 310 1e2766414da55cbfbdea6ec1ba010757 "pdflatex"
+  "hw_template.tex" 1600303780 2202 5684c235c1875ed1224e24c07670b1f3 ""
   (generated)
   "hw_template.aux"
   "hw_template.log"

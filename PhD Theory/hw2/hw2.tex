@@ -1,4 +1,5 @@
 \documentclass[a4paper,12pt]{article}
+\usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{fancyhdr}
@@ -33,7 +34,7 @@
    \item Example (c)
    \begin{enumerate}
       \item This is similar to the model above, but this time $X_i=\mu+\epsilon_i$, for $1\leq i \leq n$ and $\epsilon\sim \mathcal{N}(\theta,\sigma^2)$. Therefore $$X_i\sim\mathcal{N}(\mu+\theta,\sigma^2)$$ and  $$P_X(X)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2}(\frac{x-\mu+\theta}{\sigma})^2}$$
-      \item The variance of the errors is still known, but this time we are only able to estimate the parameter $\mu+\theta\in\mathbb{R}$ as the model is unindentifiable for $\mu$ or $\theta$ alone.
+      \item The variance of the errors is still known, but this time we are only able to estimate the parameter $\mu+\theta\in\mathbb{R}$ as the model is unidentifiable for $\mu$ or $\theta$ alone.
       \item This is still a parametic model because we assume a distribution of the errors.
     \end{enumerate}
     \item Example (d)
@@ -46,21 +47,23 @@
 \subsection{BD 1.1.2}
 \begin{enumerate}
   \item Problem 1.1.1(c): It is possible to estimate the parameter $\mu+\theta$, but it is not possible to estimate $\mu$ or $\theta$ separately because there are many possible values of $\mu$ and $\theta$ that would produce the same $\mu+\theta$. For example, $(\mu=2,\theta=2)$ and $(\mu=3,\theta=1)$.
-  \item The parameterization of 1.1.1(d) is indentifiable because the entomologist is collecting the number of eggs laid by each insect, which allows for estimation of $\lambda$. They are also collecting the number of eggs hatching, which makes it possible to estimate $p$.
+  \item The parameterization of 1.1.1(d) is identifiable because the entomologist is collecting the number of eggs laid by each insect, which allows for estimation of $\lambda$. They are also collecting the number of eggs hatching, which makes it possible to estimate $p$. See end of homework for additional details.
   \item Unlike the case above, if the entomologist is only collecting data on the number of eggs hatched, the model would be unindentifiable. The current parameterization assumes that $n$ is known, so that if the entomologist records for example 6 eggs hatching out of a total of 36 eggs laid, they can estimate $\hat{p}=\frac{1}{6}$. However, if the number of eggs is unknown, then 6 hatchings could imply that $\hat{p}_1=\frac{6}{10}$, $\hat{p}_1=\frac{6}{6}$, etc. because the denominator is unknown. Therefore, $P_{\theta_1}=P_{\theta_2}$ does not imply $\theta_1=\theta_2$.
 \end{enumerate}
 \subsection{BD 1.2.7}
 Example 1.1.1: Let X represent the number of defective items in a random sampling inspection where $X(k)=k$ for $k=0,1,...,n$. If $\theta$ represents the number of defective items in the population, then $$p(X=k)=\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$ Assume $\theta$ has a $\mathcal{B}(N,\pi_0)$ distribution: $$\pi(\theta)={N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
 Then we have that the posterior distribution of $\theta$ given $X=k$: $$\pi(\theta|X=k)=\frac{\pi(\theta)p(x|\theta)}{c}\propto{N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$
-Where $$c=\sum_{t=0}^n\pi(t)p(x|t)=$$
-Blah blah blah, figure this part out...
 $${N\choose\theta}\pi_0^\theta(1-\pi_0)^{N-\theta}\frac{{\theta\choose k}{N-\theta\choose n-k}}{{N\choose n}}$$
 Which equals:$$\frac{N!}{\theta!(N-\theta)!}\frac{(N-\theta)!}{(n-k)!(N-\theta-(n-k))!}\frac{N!}{\theta!(N-\theta)!}\frac{n!(N-n)!}{N!}\frac{\theta!}{k!(t-k)!}\pi_0^{\theta}(1-\pi_0)^{N-\theta}$$
 Several terms cancel, leaving us with:
 $$\frac{n!(N-n)!}{k!(n-k)!(\theta-k)!(N-n-(\theta-k))!}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
 This can be written as:
 $${n\choose k}{N-n\choose \theta-k}\pi_0^\theta(1-\pi_0)^{N-\theta}$$
-Multiplying this by $\frac{\pi_0^k(1-\pi_0)^{n-k}}{\pi_0^k(1-\pi_0)^{n-k}}$ yields a constant ${n\choose k}\pi_0^k(1-\pi_0)^{n-k}$ and the kernal of a $\mathcal{B}(N-n,\theta-k)$:$${N-n\choose \theta-k}\pi_0^{\theta-k}(1-\pi_0)^{N-n-(\theta-k)}$$
+Next we have $$c=\sum_{t=k}^{N-n+k}\pi(t)p(x|t)=\sum_{t=k}^{N-n+k}{n\choose k}{N-n\choose t-k}\pi_0^t(1-\pi_0)^{N-t}$$
+Multiplying by $\frac{\pi_0^k(1-\pi_0)^{n-k}}{\pi_0^k(1-\pi_0)^{n-k}}$ results in:$${n\choose k}\pi_0^k(1-\pi_0)^{n-k}\sum_{t=k}^{N-n+k}{N-n\choose t-k}\pi_0^{t-k}(1-\pi_0)^{N-t-n+k}$$
+
+The sum term here is the pmf of a $\mathcal{B}(N-n,t-k)$ distribution, so it sums to 1 and the posterior reduces to: $$\pi(\theta|X=k)=\frac{{n\choose k}{N-n\choose \theta-k}\pi_0^\theta(1-\pi_0)^{N-\theta}}{{n\choose k}\pi_0^k(1-\pi_0)^{n-k}}={N-n\choose \theta-k}\pi_0^{\theta-k}(1-\pi_0)^{N-n-\theta+k}$$
+Using a simple change of variable $Z=\theta-k$, we see $$\pi(Z|X=k)={N-n\choose z}\pi_0^{z}(1-\pi_0)^{N-n-z}$$ which is a $\mathcal{B}(N-n,\pi_0)$ distribution.
 \subsection{BD 1.2.12}
 \begin{enumerate}
   \item Given $X_1,...,X_n$ iid $\mathcal{N}(\mu_0,\frac{1}{\theta})$ variables, the joint density $p(x|\theta)$ is:
@@ -70,13 +73,13 @@ Multiplying this by $\frac{\pi_0^k(1-\pi_0)^{n-k}}{\pi_0^k(1-\pi_0)^{n-k}}$ yiel
   $$\theta^{\frac{1}{2}(n+\lambda-2)}e^{-\frac{1}{2}\theta(\nu+t)}=\theta^{\frac{n+\lambda}{2}-1}e^{-\frac{\theta(\nu+t)}{2}}$$
   which is the kernel of a $$Gamma(\frac{n+\lambda}{2},\frac{2}{\nu+t})=\frac{1}{\Gamma(\frac{n+\lambda}{2})(\frac{2}{\nu+t})^{\frac{n+\lambda}{2}}}\theta^{\frac{n+\lambda}{2}-1}e^{-\frac{\theta(\nu+t)}{2}}$$
   Using a simple change of variables where $a=\theta(\nu+t)$, this becomes:$$\frac{1}{\Gamma(\frac{n+\lambda}{2})2^{\frac{n+\lambda}{2}}}a^{\frac{n+\lambda}{2}-1}e^{-\frac{a}{2}}$$ So $a\sim\chi_{n+\lambda}^2$.
-  \item We can find the distribution of $\sigma$ by plugging it into the posterior density:
+  \item We can find the distribution of $\sigma$ by plugging it into the posterior density with another change of variables $\sigma=\theta^{-\frac{1}{2}}$ and $\frac{d}{d\theta}\sigma=\frac{-2}{\sigma^3}$:
 
   $$p(\sigma|x)=\frac{1}{\Gamma(\frac{n+\lambda}{2})(\frac{2}{\nu+t})^{\frac{n+\lambda}{2}}}(\frac{2}{\sigma^3})(\frac{1}{\sigma^2})^{\frac{n+\lambda}{2}-1}e^{-\frac{\nu+t}{2\sigma^2}}$$
 \end{enumerate}
 \subsection{BD 1.3.8}
 \begin{enumerate}
-  \item To show that $s^2$ is an unbiased estimator, we find its expected expected value:$$E[s^2]=E[\frac{1}{n-1}\sum_{i=1}^{n}(X_i^2-n\bar{X}^2)]=\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])$$ because the $X_i$ are sampled from the same population. $$\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])=\frac{1}{n-1}(n(\sigma^2+\mu^2)-n(\frac{\sigma^2}{n}+\mu^2))=\frac{1}{n-1}(n\sigma^2-\sigma^2)$$
+  \item To show that $s^2$ is an unbiased estimator, we find its expected value:$$E[s^2]=E[\frac{1}{n-1}\sum_{i=1}^{n}(X_i^2-n\bar{X}^2)]=\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])$$ because the $X_i$ are sampled from the same population. $$\frac{1}{n-1}(nE[X_1^2]-nE[\bar{X}^2])=\frac{1}{n-1}(n(\sigma^2+\mu^2)-n(\frac{\sigma^2}{n}+\mu^2))=$$$$\frac{1}{n-1}(n\sigma^2-\sigma^2)=\frac{\sigma^2(n-1)}{n-1}$$
   This shows that $E[s^2]=\sigma^2$ and it is therefore an unbiased estimator.
   \item Because $s^2$ is an unbiased estimator, the MSE is $Var(s^2)$. Using the fact that: $$\frac{\sum_{i=1}^n(X_i-\bar{X})^2}{\sigma^2}\sim\chi_{n-1}^2$$ it's obvious that $$Var(\frac{(n-1)s^2}{\sigma^2})=Var(\chi_{n-1}^2)=2(n-1)$$
   Rearranging this gives:$$Var(s^2)=\frac{2\sigma^4(n-1)}{(n-1)^2}=\frac{2\sigma^4}{n-1}$$
