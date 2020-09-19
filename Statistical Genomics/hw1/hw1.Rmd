@@ -6,7 +6,12 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = "C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw1")
+library(knitr)
+library(pwr)
+library(ssize)
+library(samr)
 ```
 
 # Case Studies
@@ -37,7 +42,7 @@ By including the same reference sample on each array, any sample can be compared
 
 Samples from each patient are hybridized to 60 different Affymetrix arrays.
 
-This design has many of the same positives as Design 2, although it could potentially be more expensive than using "in-house" arrays made by the lab. Affymetrix arrays are generally comparable between samples, particularly if it is assumed that all the samples were taken at the same timepoint. Any differential hybridization can be dealt with using standard normalization techniques. One potential advantage over Design 2 is that it would be easier to compare results across labs if you want external validation of the model. This could be done using Design 2, but only if both labs use the same reference sample.
+This design has many of the same positives as Design 2, although it could potentially be more expensive than using "in-house" arrays made by the lab. Affymetrix arrays are generally comparable between samples, particularly if it is assumed that all the samples were taken at the same timepoint. Any differential hybridization can be dealt with using standard normalization techniques. One potential advantage over Design 2 is that it would be easier to compare results across labs if you want external validation of the model. This could potentially be done using Design 2, but only if both labs use the same reference sample.
 
 ## Case Study 4
 
@@ -53,7 +58,7 @@ Affymetrix chips are generally less favorable for time-series designs, especiall
 
 Samples from timepoints 1 - 6 are labeled with Cy3 and each is hybridized an array along with a Cy5-labeled reference sample from time 0. 
 
-This design is essentially the same as the reference design from the previous section, and would allow for valid comparisons between timepoints. Using time 0 as a reference should allow for adjustment for differential hybridization ("bright" or "dark" chips). 
+This design is essentially the same as the reference design from the previous section, and would allow for valid comparisons between timepoints. Using time 0 as a reference should also allow for adjustment for differential hybridization ("bright" or "dark" chips). 
 
 An additional benefit to this design is that it uses 1 less chip than the other two and will therefore be less expensive. However, using time 0 as a reference an all the arrays requires a large sample at baseline.
 
@@ -61,6 +66,73 @@ An additional benefit to this design is that it uses 1 less chip than the other 
 
 Each sample is labeled once with Cy3 and once with Cy5, and are hybridized to 7 arrays in a loop design. 
 
+A major benefit of the loop design is that it only requires n arrays where n = the number of samples, although it does require two aliquots per sample. It allows each sample to be directly compared while adjusting for sample distributions, array effects, etc. However, comparisons between samples that are not adjacent in the loop require modeling the indirect effects of arrays that are in between the arrays of interest, which can be complex.
 
+Compared to Design 2, this approach has the benefit that each sample is measured twice on two different arrays, which helps account for variability between arrays. The major disadvantages are that it requires an additional array (more expensive), and the loop could be broken if one array doesn't work correctly. 
 
 # Sample Size Calculations
+
+The sample size calculations described here assume that gene expression levels are approximately normally distributed within both the treated and non-treated groups. The null hypothesis that a gene is expressed equally in the two groups will be rejected based on a t test at significance level $\alpha=0.0001$. This $\alpha$ level represents the probability of a type 1 error (false positive), and is more strict than the common $\alpha < 0.05$ in order to account for the large number of genes that will be compared. Thus with a 20,000 probe set we would expect approximately 2 genes to be incorrectly identified as differentially expressed.
+
+Statistical power is the probability of correctly rejecting the null hypothesis when the mean expression level of a gene is different between the two groups by $\delta\neq0$. For these calculations we assume that a meaningful difference in standardized expression is $\delta=1$ on the base 2 logarithmic scale (a twofold difference), and consider two reasonable estimates of the standard deviation (SD) of gene expression for this study, $\sigma_1=0.5$ and $\sigma_2=0.25$.
+
+Based on these assumptions, we can solve the equation $$n=\frac{4(t_{\alpha/2})+t_\beta)^2}{(\delta/\sigma)^2}$$ for n. Calculations were done using the pwr package (Champely 2020) in the R programming language version 4.0.2. Cost reflects a per-array price of $1,000 and does not include reagents, technician salary, etc.
+
+```{r sample size}
+# 4 levels of power
+power_levels <- seq(0.8,0.95,by = 0.05)
+sigmas <- c(0.5,0.25)
+# Apply
+ns <- apply(expand.grid(power_levels,sigmas),1,function(x){
+  p_level <- as.numeric(x[1])
+  sig <- as.numeric(x[2])
+  p <- pwr.t.test(d=1/sig,sig.level = 0.0001,power = p_level)
+  group_n <- ceiling(p$n)
+  tot_n <- group_n*2
+  cost <- paste0("$",format(tot_n*1000,big.mark = ","))
+  return(c(p_level,sig,tot_n,group_n,cost))
+})
+ns <- t(ns)
+colnames(ns) <- c("Power","SD","Total n","n per Group","Cost")
+kable(ns)
+```
+
+# Sample Size Comparisons
+
+## a)
+
+Using pwr.t.test, what is the sample size needed based on $\alpha = 0.001$, fold change of 2 ($\delta = 1$) and standard deviation of $\sigma=0.5$ to achieve power of at least 0.8 or 0.95?
+
+```{r owr}
+a <- 0.001
+delta <- 1
+sd <- 0.5
+pwr.t.test(d=delta/sd,sig.level = a,power = 0.8)
+pwr.t.test(d=delta/sd,sig.level = a,power = 0.95)
+```
+
+Under the assumptions above, one would need 12 samples per group to achieve power of at least 0.8, and 15 per group to achieve power of at least 0.95.
+
+## b)
+
+As in part a), determine the sample size needed, but with a FDR of 0.05 instead. This requires an additional parameter, $\pi_0$, which is the proportion of true null hypotheses. Here we assume that 97.5% of the null hypotheses are true.
+
+```{r ssize}
+power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
+                 power = 0.8,pi0 = 0.975)
+power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
+                 power = 0.95,pi0 = 0.975)
+```
+
+For a false discovery rate of 0.05 (assuming 97.5% of the null hypotheses are true), we would need 12 in each group to achieve power of at least 0.8. To achieve power of at least 0.95 we would need 15 in each group. So with the assumption of $\pi_0=0.975$, this calculation produces the same results as the simple t test. However, if we increase the number of genes we expect to be differentially expressed to 10% ($\pi_0=0.9$), then we get less conservative estimates for sample size:
+
+```{r ssize 2}
+power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
+                 power = 0.8,pi0 = 0.90)
+power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
+                 power = 0.95,pi0 = 0.90)
+```
+
+These calculations suggest that only 9 people are needed in each group for power of 0.8, and 12 in each group for at least 0.95 power.
+
+
