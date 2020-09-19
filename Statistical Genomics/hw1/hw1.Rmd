@@ -45,8 +45,22 @@ Yeast was allowed to reproduce across seven timepoints, and the investigators ar
 
 ### Experimental Design 1
 
-Affymetrix chips are generally less favorable for time-series designs, especially with only one sample group. For example, if one of the arrays fluoresces more than the others, then it would be difficult to tell whether this is due to time-related changes in gene expression or is an artifact of differential hybridization. It's possible that adjusting the data for background fluorescence would help address this problem, but it would be better to have more replicates if possible,
+Each sample is hybridized to a single Affymetrix array.
+
+Affymetrix chips are generally less favorable for time-series designs, especially with only one sample per plate. For example, if one of the arrays fluoresces more than the others, then it would be difficult to tell whether this is due to time-related changes in gene expression or is an artifact of differential hybridization. It's possible that adjusting the data for background fluorescence would help address this problem, but it would be better to have more replicates if possible,
 
 ### Experimental Design 2
+
+Samples from timepoints 1 - 6 are labeled with Cy3 and each is hybridized an array along with a Cy5-labeled reference sample from time 0. 
+
+This design is essentially the same as the reference design from the previous section, and would allow for valid comparisons between timepoints. Using time 0 as a reference should allow for adjustment for differential hybridization ("bright" or "dark" chips). 
+
+An additional benefit to this design is that it uses 1 less chip than the other two and will therefore be less expensive. However, using time 0 as a reference an all the arrays requires a large sample at baseline.
+
+### Experimental Design 3
+
+Each sample is labeled once with Cy3 and once with Cy5, and are hybridized to 7 arrays in a loop design. 
+
+
 
 # Sample Size Calculations
