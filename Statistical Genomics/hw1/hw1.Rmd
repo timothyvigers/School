@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Case Studies
 
+Compare resources and cost, variability, confounding, etc.
+
 ## Case Study 3
 
 The aim of case study 3 is to identify subgroups of patients using cluster analysis and then build a model to differentiate between the clusters. Samples are taken from 60 patients with B-cell lymphomas.
@@ -19,8 +21,32 @@ The aim of case study 3 is to identify subgroups of patients using cluster analy
 
 Half of the samples are labeled with Cy3 and the other half with Cy5. Then one Cy3-labeled sample and one Cy5-labeled sample are hybridized to 30 different two-color arrays.
 
+The major advantage of this design is reduced cost, because it only requires 30 arrays compared to the other two designs' 60. However, there are serious issues with this design that outweigh the cost benefits. First, it is not clear how samples will be selected for each label or how they will be distributed across the arrays. There is a possibility for selection-based dye bias here, for example if the investigator tends to favor labeling cases with Cy3 and controls with Cy5. 
+
+Assuming that each array has a sample from one case and one control, and that the Cy3-labeled samples are even split between cases and controls, this is a balanced block design. Balanced block designs work well for performing direct comparisons between two groups, but do not work for cluster analyses. Because there is no reference sample, the investigator will not be able to make comparisons between samples on different arrays, due to natural variation between arrays. Without the balanced block design assumption, it might not even be possible to compare cases to controls.
+
 ### Experimental Design 2
 
-Samples from each patient are labeled with 
+Samples from each patient are labeled with Cy3 and hybridized to 60 two-color arrays. A universal reference sample labeled with Cy5 is also hybridized to each array.
+
+This is design is obviously more expensive than Design 1, because it require twice the number of arrays and preparation of the global reference sample. However, it has some significant advantages compared to Design 1. 
+
+By including the same reference sample on each array, any sample can be compared to any other sample, and the analysis does not depend on comparing two specific groups. This makes the reference design particularly advantageous for cluster analysis and developing models that include information aside from group membership (e.g. disease stage of the patient).
+
+### Experimental Design 3
+
+Samples from each patient are hybridized to 60 different Affymetrix arrays.
+
+This design has many of the same positives as Design 2, although it could potentially be more expensive than using "in-house" arrays made by the lab. Affymetrix arrays are generally comparable between samples, particularly if it is assumed that all the samples were taken at the same timepoint. Any differential hybridization can be dealt with using standard normalization techniques. One potential advantage over Design 2 is that it would be easier to compare results across labs if you want external validation of the model. This could be done using Design 2, but only if both labs use the same reference sample.
+
+## Case Study 4
+
+Yeast was allowed to reproduce across seven timepoints, and the investigators are interested in identifying genes with similar expression profiles across time.
+
+### Experimental Design 1
+
+Affymetrix chips are generally less favorable for time-series designs, especially with only one sample group. For example, if one of the arrays fluoresces more than the others, then it would be difficult to tell whether this is due to time-related changes in gene expression or is an artifact of differential hybridization. It's possible that adjusting the data for background fluorescence would help address this problem, but it would be better to have more replicates if possible,
+
+### Experimental Design 2
 
 # Sample Size Calculations
