@@ -1,0 +1,26 @@
+---
+title: "BIOS 7659 Homework 1"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Case Studies
+
+## Case Study 3
+
+The aim of case study 3 is to identify subgroups of patients using cluster analysis and then build a model to differentiate between the clusters. Samples are taken from 60 patients with B-cell lymphomas.
+
+### Experimental Design 1
+
+Half of the samples are labeled with Cy3 and the other half with Cy5. Then one Cy3-labeled sample and one Cy5-labeled sample are hybridized to 30 different two-color arrays.
+
+### Experimental Design 2
+
+Samples from each patient are labeled with 
+
+# Sample Size Calculations
