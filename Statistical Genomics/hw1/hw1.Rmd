@@ -52,13 +52,13 @@ Yeast was allowed to reproduce across seven timepoints, and the investigators ar
 
 Each sample is hybridized to a single Affymetrix array.
 
-Affymetrix chips are generally less favorable for time-series designs, especially with only one sample per plate. For example, if one of the arrays fluoresces more than the others, then it would be difficult to tell whether this is due to time-related changes in gene expression or is an artifact of differential hybridization. It's possible that adjusting the data for background fluorescence would help address this problem, but it would be better to have more replicates if possible,
+Affymetrix chips are generally less favorable for time-series designs, especially with only one sample per plate. For example, if one of the arrays fluoresces more than the others, then it would be difficult to tell whether this is due to time-related changes in gene expression or is an artifact of differential hybridization. It's possible that adjusting the data for background fluorescence would help address this problem, but it would be better to have more replicates if possible.
 
 ### Experimental Design 2
 
 Samples from timepoints 1 - 6 are labeled with Cy3 and each is hybridized an array along with a Cy5-labeled reference sample from time 0. 
 
-This design is essentially the same as the reference design from the previous section, and would allow for valid comparisons between timepoints. Using time 0 as a reference should also allow for adjustment for differential hybridization ("bright" or "dark" chips). 
+This design is essentially the same as the reference design from the previous section, and would allow for valid comparisons between timepoints. Using time 0 as a reference should also allow for adjustment for differential hybridization ("bright" or "dark" chips). However, there could be problems with dye bias because time 0 is always labeled with Cy5.
 
 An additional benefit to this design is that it uses 1 less chip than the other two and will therefore be less expensive. However, using time 0 as a reference an all the arrays requires a large sample at baseline.
 
@@ -68,7 +68,7 @@ Each sample is labeled once with Cy3 and once with Cy5, and are hybridized to 7 
 
 A major benefit of the loop design is that it only requires n arrays where n = the number of samples, although it does require two aliquots per sample. It allows each sample to be directly compared while adjusting for sample distributions, array effects, etc. However, comparisons between samples that are not adjacent in the loop require modeling the indirect effects of arrays that are in between the arrays of interest, which can be complex.
 
-Compared to Design 2, this approach has the benefit that each sample is measured twice on two different arrays, which helps account for variability between arrays. The major disadvantages are that it requires an additional array (more expensive), and the loop could be broken if one array doesn't work correctly. 
+Compared to Design 2, this approach has the benefit that each sample is measured twice on two different arrays, which helps account for variability between arrays. The major disadvantages are that it requires an additional array (more expensive), more sample, and the loop could be broken if one array doesn't work correctly. 
 
 # Sample Size Calculations
 
@@ -133,7 +133,7 @@ power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
                  power = 0.95,pi0 = 0.90)
 ```
 
-These calculations suggest that only 9 people are needed in each group for power of 0.8, and 12 in each group for at least 0.95 power. So the more genes that are different between the two groups, the lower sample size you need to keep FDR at a constant level.
+These calculations suggest that only 9 people are needed in each group for power of 0.8, and 12 in each group for at least 0.95 power. So the more genes that are different between the two groups, the lower sample size you need to keep FDR at a constant level. If you wanted to be more conservative in your sample size estimate, you could simply pick a relatively high $\pi_0$.
 
 ## c)
 
