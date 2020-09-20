@@ -237,7 +237,7 @@ Generally speaking I would say that these methods agree with one another fairly 
 
 The `ssize()` function requires preliminary data about the standard deviation of each gene's expression. If you have this information the package produces useful plots showing what percentage of the genes you would be able to detect a difference in given the other sample size parameters. If you have pilot data on every gene this is a nice approach because it doesn't require you to guess how many genes actually will be differentially expressed. 
 
-`samr.assess.samplesize()` requires the most pilot data out of any of these methods, and also produces the most confusing output. It does not allow the user to the select a desired level of power and FDR separately, but instead sets FDR equal to 1-power by design. Also, like `power.t.test.FDR()` it requires some knowledge about the number of truly non-null (or truly null) genes. This method would likely be my last choice.
+`samr.assess.samplesize()` requires the most pilot data out of any of these methods, and also produces the most confusing output. It does not allow the user to the select a desired level of power and FDR separately, but instead sets FDR equal to 1-power by design. Also, like `power.t.test.FDR()` it requires some knowledge about the number of truly non-null (or truly null) genes. Perhaps the most problematic aspect of this package is that the plots change drastically depending on the random seed, which makes them difficult to evaluate. This method would likely be my last choice for all of the reasons above.
 
 ```{r echo=FALSE}
 pwr_table <- as.data.frame(matrix(ncol = 3,nrow = 4))
