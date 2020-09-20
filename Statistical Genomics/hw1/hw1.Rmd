@@ -6,17 +6,17 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw1")
 library(knitr)
+library(ggplot2)
 library(pwr)
 library(ssize)
 library(samr)
+set.seed(1017)
 ```
 
 # Case Studies
-
-Compare resources and cost, variability, confounding, etc.
 
 ## Case Study 3
 
@@ -42,7 +42,7 @@ By including the same reference sample on each array, any sample can be compared
 
 Samples from each patient are hybridized to 60 different Affymetrix arrays.
 
-This design has many of the same positives as Design 2, although it could potentially be more expensive than using "in-house" arrays made by the lab. Affymetrix arrays are generally comparable between samples, particularly if it is assumed that all the samples were taken at the same timepoint. Any differential hybridization can be dealt with using standard normalization techniques. One potential advantage over Design 2 is that it would be easier to compare results across labs if you want external validation of the model. This could potentially be done using Design 2, but only if both labs use the same reference sample.
+This design has many of the same positives as Design 2, although it could potentially be more expensive than using "in-house" arrays made by the lab. Affymetrix arrays are generally comparable between samples, particularly if it is assumed that all the samples were taken at the same timepoint. Any differential hybridization can be dealt with using standard normalization techniques. One potential advantage over Design 2 is that it would be easier to compare results across labs if you want external validation of the model. This could potentially be done using Design 2, but only if both labs use the same reference sample. Finally, this design requires less sample because there is only one aliquot required per plate.
 
 ## Case Study 4
 
@@ -117,7 +117,7 @@ Under the assumptions above, one would need 12 samples per group to achieve powe
 
 As in part a), determine the sample size needed, but with a FDR of 0.05 instead. This requires an additional parameter, $\pi_0$, which is the proportion of true null hypotheses. Here we assume that 97.5% of the null hypotheses are true.
 
-```{r ssize}
+```{r fdr}
 power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
                  power = 0.8,pi0 = 0.975)
 power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
@@ -126,13 +126,129 @@ power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
 
 For a false discovery rate of 0.05 (assuming 97.5% of the null hypotheses are true), we would need 12 in each group to achieve power of at least 0.8. To achieve power of at least 0.95 we would need 15 in each group. So with the assumption of $\pi_0=0.975$, this calculation produces the same results as the simple t test. However, if we increase the number of genes we expect to be differentially expressed to 10% ($\pi_0=0.9$), then we get less conservative estimates for sample size:
 
-```{r ssize 2}
+```{r fdr again}
 power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
                  power = 0.8,pi0 = 0.90)
 power.t.test.FDR(sd=sd,delta = delta,FDR.level = 0.05,
                  power = 0.95,pi0 = 0.90)
 ```
 
-These calculations suggest that only 9 people are needed in each group for power of 0.8, and 12 in each group for at least 0.95 power.
+These calculations suggest that only 9 people are needed in each group for power of 0.8, and 12 in each group for at least 0.95 power. So the more genes that are different between the two groups, the lower sample size you need to keep FDR at a constant level.
 
+## c)
 
+### Plot the pooled standard deviation for each gene:
+
+```{r sd plot}
+sds <- read.delim("./sdvalues.txt",sep = " ",header = F)
+ggplot(sds,aes(x=V2)) + 
+  geom_histogram(aes(y=..density..),binwidth = 0.1,alpha = 0.5)+
+  geom_density(alpha=.5, fill="light blue") +
+  theme_bw() + xlab("SD")
+```
+
+The SD for these genes tends to be around 0.25, although the distribution is highly right-skewed. 
+
+### Examine the sample size based on these standard deviations:
+
+#### 80% Power
+
+```{r nssize no print, eval=FALSE}
+s <- ssize(sds$V2,delta,a,0.8)
+```
+
+```{r ssize,include=FALSE}
+s <- ssize(sds$V2,delta,a,0.8)
+```
+
+```{r ssize plot}
+ssize.plot(s,marks = c(5,10,15,20,30),xlim=c(0,30))
+```
+
+The above calculations are still assuming that SD ($\sigma$) is equal between the two groups. Based on this pilot data, it appears that a sample size of 20 per group would provide sufficient power to detect a two-fold change for 90% of the genes. However, the ssize() function implements a Bonferonni correction by default, which feels particularly conservative given our $\alpha$ level of 0.001. 
+
+Assuming that this relatively low $\alpha$ already accounts for multiple comparisons, we get:
+
+```{r ssize liberal no print,eval=FALSE}
+s <- ssize(sds$V2,delta,a,0.8,alpha.correct = "None")
+```
+
+```{r ssize liberal,include=FALSE}
+s <- ssize(sds$V2,delta,a,0.8,alpha.correct = "None")
+```
+
+```{r ssize liberal plot,echo=FALSE}
+ssize.plot(s,marks = c(5,10,15),xlim=c(0,30))
+```
+
+As expected, with no additional p value correction, the required sample size for power of at least 0.8 is lower. To detect a difference in 95% of genes you would only need 15 per group. 
+
+#### 95% Power
+
+```{r ssize 90,include=FALSE}
+s <- ssize(sds$V2,delta,a,0.95,alpha.correct = "None")
+```
+
+```{r ssize 90 plot,echo=FALSE,}
+ssize.plot(s,marks = c(5,10,16),xlim=c(0,30))
+```
+
+Again with no additional p value correction, the required sample size for power of at least 0.95 to detect a difference in 95% of genes is 16 per group. 
+
+## d)
+
+First create a samr object:
+
+```{r eval=FALSE,echo=TRUE}
+arrays <- read.table("./arraydata.txt",row.names = 1)
+x <- as.matrix(arrays)
+data = list(x=x,y=c(rep(1,4),rep(2,4)), geneid=row.names(x), 
+            genenames = row.names(x), logged2 = TRUE)
+samr.obj = samr(data, resp.type="Two class unpaired", nperms=500,
+                assay.type="array")
+
+```
+
+```{r include=FALSE}
+arrays <- read.table("./arraydata.txt",row.names = 1)
+x <- as.matrix(arrays)
+data = list(x=x,y=c(rep(1,4),rep(2,4)), geneid=row.names(x), 
+            genenames = row.names(x), logged2 = TRUE)
+samr.obj = samr(data, resp.type="Two class unpaired", nperms=500,
+                assay.type="array")
+```
+
+Next assess sample size using samr.assess.samplesize.plot():
+
+```{r fig.height=6}
+ss_obj <- samr.assess.samplesize(samr.obj,data,dif = 1)
+invisible(samr.assess.samplesize.plot(ss_obj))
+```
+
+These plots show how false discovery rate (FDR) and false negative rate change as the number of differentially expressed genes increases. Based on the plot it appears that for approximately 20 different genes, a sample size of 40 (20 per group) would be appropriate for this study (to achieve FDR < 0.05). 
+
+The plots produced by the `samr` package are a little more confusing than the others. The left vertical axis represents both FDR and 1-power, so to evaluate power of 0.8 you have to accept an FDR of 0.2. So when using this package it makes more sense to evaluate at power 0.95 and FDR of 0.05.
+
+## e)
+
+Generally speaking I would say that these methods agree with one another fairly well. There are minor differences and the samr package approach appears to be slightly more conservative, but the sample size estimates were at least in the same general range of 15 - 20 per group. Also, aside from the `pwr.t.test()` function, all of these methods require additional assumptions or decisions. 
+
+`power.t.test.FDR()` requires the number of truly null hypotheses, which may be difficult estimate particularly in populations that have not been studied yet. Assuming you are able to make a resonable guess though, the sample size output is straightforward.
+
+The `ssize()` function requires preliminary data about the standard deviation of each gene's expression. If you have this information the package produces useful plots showing what percentage of the genes you would be able to detect a difference in given the other sample size parameters. If you have pilot data on every gene this is a nice approach because it doesn't require you to guess how many genes actually will be differentially expressed. 
+
+`samr.assess.samplesize()` requires the most pilot data out of any of these methods, and also produces the most confusing output. It does not allow the user to the select a desired level of power and FDR separately, but instead sets FDR equal to 1-power by design. Also, like `power.t.test.FDR()` it requires some knowledge about the number of truly non-null (or truly null) genes. This method would likely be my last choice.
+
+```{r echo=FALSE}
+pwr_table <- as.data.frame(matrix(ncol = 3,nrow = 4))
+colnames(pwr_table) <- c("Method","80% Power","95% Power")
+pwr_table$Method <- c("pwr.t.test()","power.t.test.FDR()",
+                      "ssize()","samr.assess.samplesize()")
+# Fill in
+pwr_table[1,2:3] <- c(12,15)
+pwr_table[2,2:3] <- c("9-12","12-15")
+pwr_table[3,2:3] <- c(15,16)
+pwr_table[4,2:3] <- c(NA,20)
+
+kable(pwr_table)
+```
