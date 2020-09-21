@@ -32,6 +32,7 @@ library(affy)
 ## Cyclic loess
 
 1. Take two arrays $i$ and $j$, each with probes $k=1,...,p$. 
+
 2. Create an MA plot for these two arrays, and fit a loess curve through these data: $$M_k=log_2(\frac{x_{ki}}{x_{kj}}), A_k=\frac{log_2(x_{ki}x_{kj})}{2}$$
 
 3. Subtract the normalization curve fits $M_k'=M_k-\hat{M_k}$ and obtain adjusted probe intensities: $$x_{ki}'=2^{A_k+\frac{M_k'}{2}},x_{kj}'=2^{A_k-\frac{M_k'}{2}}$$
@@ -40,7 +41,7 @@ library(affy)
 
 ## Contrast method
 
-- Very similar to the cyclic loess method, because it's another way of normalizing based on M vs. A:
+Very similar to the cyclic loess method, because it's another way of normalizing based on M vs. A:
 
 1. Data is converted to the log scale and the basis is transformed (this is just a fancy linear algebra step).
 
@@ -50,11 +51,12 @@ library(affy)
 
 4. This normalized data is tranformed back to the original basis and exponentiated.
 
-- This is slightly faster than cyclic loess but fitting the curves can still be slow.
+This is slightly faster than cyclic loess but fitting the curves can still be slow.
 
 ## Contrast method
 
-![Åstrand, 2003]("./contrast_method.png")
+![Scatter plots of the 2 contrasts against the mean for 3 arrays, A, B, and C, prior to normalizing.
+The red curve is the fitted normalizing curve, and the green line is the reference line. (Åstrand, 2003)]("./contrast_method.png")
 
 ## The quantile method
 
@@ -76,11 +78,11 @@ library(affy)
 
 4. Put each column of $X_{\text{sort}}'$ back in the original ordering from $X$ to produce $X_{\text{normalized}}$
 
-- This approach could theoretically be a problem for probes that have the same value across all arrays, but in practice this isn't an issue.
+This approach could theoretically be a problem for probes that have the same value across all arrays, but in practice this isn't an issue.
 
 ## Scaling method
 
-- Based on the approach suggested by Affymetrix, but this paper uses a probe-level version.
+Based on the approach suggested by Affymetrix, but this paper uses a probe-level version.
 
 1. Choose a baseline array $x_{\text{base}}$: Usually this is the median array, but doesn't necessarily have to be. 
 
@@ -93,9 +95,23 @@ library(affy)
 - The scaling method is the same as fitting a straight line with intercept 0 between $x_{\text{base}}$ and $x_i$.
 - This can be extended to non-linear methods, usually a loess curve such that: $$x_i'=\hat{f_i}(x_i)$$ where $\hat{f_i}(\cdot)$ is the curve mapping from array $i$ to baseline.
 
+## Data
+
+Bolstad et al. tested these techniques on two datasets: 
+
+1. 30 arrays each from liver and central nervous system cell lines, plus 15 arrays with mixtures of cell lines in 75:25, 50:50, and 25:75 proportions.
+
+2. A dilution series of 27 arrays, plus two sets of triplicates (6 arrays total) from a latin square experiment.
+
 ## Results
 
+![10 pairwise M versus A plots using liver (at concentration
+10) dilution series data for unadjusted data. (Bolstad et al., 2003)]("./pairwise_ma.png"){width=90%}
 
+## Results
+
+![10 pairwise M versus A plots using liver (at concentration
+10) dilution series data after quantile normalization. (Bolstad et al., 2003)]("./pairwise_ma_norm.png"){width=90%}
 
 ## References
 
