@@ -14,13 +14,13 @@ library(affy)
 ## Introduction
 
 - The goal of normalization is to separate the interesting biological variation from the variation that is a result of sample preparation, array production and processing, etc.
-- Affymetrix proposes scaling the arrays so that each one has the same mean expression summary measure.
+- Affymetrix proposes scaling the arrays so that each one has the same mean expression (based on a summary measure).
   - This does not work well when there are non-linear relationships between arrays.
 
 ## Alternatives
 
 - Other approaches, such as non-linear smooth curves or transforming data to standardize the distribution of intensities across arrays, rely on picking a "baseline" array.
-- Bolstad et al. compare three different approaches, all of which combine data from every single array rather than relying on a baseline.
+- Bolstad et al. compare three different approaches, all of which combine data from every single array (complete data).
 
 ## Cyclic loess
 
@@ -105,6 +105,12 @@ Bolstad et al. tested these techniques on two datasets:
 
 ## Results
 
+![A plot of the densities for PM for each of the 27
+spike-in datasets, with distribution after quantile normalization
+superimposed. (Bolstad et al., 2003)]("./pm_density.png"){width=90%}
+
+## Results
+
 ![10 pairwise M versus A plots using liver (at concentration
 10) dilution series data for unadjusted data. (Bolstad et al., 2003)]("./pairwise_ma.png"){width=90%}
 
@@ -113,8 +119,75 @@ Bolstad et al. tested these techniques on two datasets:
 ![10 pairwise M versus A plots using liver (at concentration
 10) dilution series data after quantile normalization. (Bolstad et al., 2003)]("./pairwise_ma_norm.png"){width=90%}
 
+## Results
+
+- To compare methods at the probeset level, this paper uses the Robust Multichip Average (RMA). 
+- Plotting the log variance ratio against the log mean between two methods allows you to examine "differences in the between array variations and intensity dependent trends." 
+- When the loess line is below the x-axis, the first method has lower variance, and vice versa when the line is above the horizontal axis.
+
+## Results
+
+![$log_2$ variance ratio versus average $log_2$ mean for liver
+dilution data at concentration 10. (Bolstad et al., 2003)]("./variance_mean.png"){width=90%}
+
+## Results
+
+![$log_2$ variance ratio versus average $log_2$ mean using the spike-in
+data. Comparing the baseline methods with the quantile method. (Bolstad et al., 2003)]("./variance_mean_spike.png"){width=80%}
+
+## Results
+
+![Comparing the ability of methods to reduce pairwise differences between arrays by using average absolute distance from loess smoother to x-axis in pairwise M versus A plots using spike-in dataset. Smaller distances are favorable. (Bolstad et al., 2003)]("./pairwise_spike.png"){width=80%}
+
+## Results
+
+- The spike-in data can be used to assess bias for these techniques by fitting a regression model that includes the known concentration:$$\text{log}_2(\text{Expression})=\beta_0+\beta_1\text{log}_2(\text{concentration})+\epsilon$$
+- Ideally you would see $\beta_1=1$ for the spike-in probesets and $\beta_0=0$ for the non-spike-in sets.
+- However, none of the median slopes for the non-spike-in probesets are exactly $0$, which suggests that spike in concentration affects intensity.
+- The authors recommend adjusting the slopes of the normalization procedures but subtracting the median slope of the non-spike-ins (e.g. $0.845 + 0.005 = 0.850$).
+- There is likely some error due to "pipette" effect, so concentrations may not be exactly correct.
+
+## Results
+
+![(Bolstad et al., 2003)]("./table1.png")
+
+## Results
+
+- Next they compared the means produced by quantile normalization and the non-linear method. 
+- For the non-linear method, they changed which array was used as baseline, including two "synthetic" baseline arrays made by taking probe-wise means and medians.
+
+## Results
+
+![Distribution of average (over 6 chips) of a probeset expression measure using different baseline normalizations. (Bolstad et al., 2003)]("./distribution_means.png"){width=80%}
+
+## Results
+
+![(Bolstad et al., 2003)]("./table2.png")
+
+- For all approaches, about 95% of probesets have reduced variance.
+- Compared to the quantile approach, over 50% of the probesets have reduced variance for 4 approaches (median, NL1, NL5, and NL6).
+
+## Results
+
+![M versus A plot for spike-in triplicate data normalized using quantile normalization. Spike-ins are clearly identified. (Bolstad et al., 2003)]("./ma_spike.png){width=80%}
+
+## Conclusions
+
+- All three complete data methods (cyclic loess, contrast, and quantile) reduced variability across arrays more than scaling. The non-linear approached performed about as well as all three.
+- The complete data methods performed comparably in terms of bias. The non-linear approach did not perform well in spike-in regressions. The slopes for scaling were closer to 1 but more variable than other methods.
+- Choice of baseline can affect downstream analysis, so complete data methods are preferable.
+- Quantile normalization is the fastest of the complete data methods, and therefore the best approach.
+
+## Questions
+
+1. What does this last figure show?
+
+2. 
+
 ## References
 
 1. Dudoit, S., Yang, Y. H., Callow, M. J., & Speed, T. P. (2002). STATISTICAL METHODS FOR IDENTIFYING DIFFERENTIALLY EXPRESSED GENES IN REPLICATED cDNA MICROARRAY EXPERIMENTS. Statistica Sinica, 12(1), 111–139. JSTOR.
 
 2. Åstrand, M. (2003). Contrast Normalization of Oligonucleotide Arrays. Journal of Computational Biology, 10(1), 95–102. https://doi.org/10.1089/106652703763255697
+
+3. Bolstad, B. M., Irizarry, R. A., Åstrand, M., & Speed, T. P. (2003). A comparison of normalization methods for high density oligonucleotide array data based on variance and bias. Bioinformatics, 19(2), 185–193. https://doi.org/10.1093/bioinformatics/19.2.185
