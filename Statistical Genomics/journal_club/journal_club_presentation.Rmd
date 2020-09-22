@@ -49,14 +49,13 @@ Very similar to the cyclic loess method, because it's another way of normalizing
 
 3. Data is transformed again so that the normalizing curves lie on the horizontal, this time using a smooth function.
 
-4. This normalized data is tranformed back to the original basis and exponentiated.
+4. This normalized data is transformed back to the original basis and exponentiated.
 
 This is slightly faster than cyclic loess but fitting the curves can still be slow.
 
 ## Contrast method
 
-![Scatter plots of the 2 contrasts against the mean for 3 arrays, A, B, and C, prior to normalizing.
-The red curve is the fitted normalizing curve, and the green line is the reference line. (Åstrand, 2003)]("./contrast_method.png")
+![Scatter plots of the 2 contrasts against the mean for 3 arrays, A, B, and C, prior to normalizing. The red curve is the fitted normalizing curve, and the green line is the reference line. (Åstrand, 2003)]("./contrast_method.png")
 
 ## The quantile method
 
@@ -101,23 +100,19 @@ Bolstad et al. tested these techniques on two datasets:
 
 1. 30 arrays each from liver and central nervous system cell lines, plus 15 arrays with mixtures of cell lines in 75:25, 50:50, and 25:75 proportions.
 
-2. A dilution series of 27 arrays, plus two sets of triplicates (6 arrays total) from a latin square experiment.
+2. A dilution series of 27 arrays, plus two sets of triplicates (6 arrays total) from a Latin square experiment.
 
 ## Results
 
-![A plot of the densities for PM for each of the 27
-spike-in datasets, with distribution after quantile normalization
-superimposed. (Bolstad et al., 2003)]("./pm_density.png"){width=90%}
+![A plot of the densities for PM for each of the 27 spike-in datasets, with distribution after quantile normalization superimposed. (Bolstad et al., 2003)]("./pm_density.png"){width=90%}
 
 ## Results
 
-![10 pairwise M versus A plots using liver (at concentration
-10) dilution series data for unadjusted data. (Bolstad et al., 2003)]("./pairwise_ma.png"){width=90%}
+![10 pairwise M versus A plots using liver (at concentration 10) dilution series data for unadjusted data. (Bolstad et al., 2003)]("./pairwise_ma.png"){width=90%}
 
 ## Results
 
-![10 pairwise M versus A plots using liver (at concentration
-10) dilution series data after quantile normalization. (Bolstad et al., 2003)]("./pairwise_ma_norm.png"){width=90%}
+![10 pairwise M versus A plots using liver (at concentration 10) dilution series data after quantile normalization. (Bolstad et al., 2003)]("./pairwise_ma_norm.png"){width=90%}
 
 ## Results
 
@@ -127,13 +122,11 @@ superimposed. (Bolstad et al., 2003)]("./pm_density.png"){width=90%}
 
 ## Results
 
-![$log_2$ variance ratio versus average $log_2$ mean for liver
-dilution data at concentration 10. (Bolstad et al., 2003)]("./variance_mean.png"){width=90%}
+![$log_2$ variance ratio versus average $log_2$ mean across 5 arrays for liver dilution data at concentration 10. (Bolstad et al., 2003)]("./variance_mean.png"){width=90%}
 
 ## Results
 
-![$log_2$ variance ratio versus average $log_2$ mean using the spike-in
-data. Comparing the baseline methods with the quantile method. (Bolstad et al., 2003)]("./variance_mean_spike.png"){width=80%}
+![$log_2$ variance ratio versus average $log_2$ mean using the spike-in data. Comparing the baseline methods with the quantile method. (Bolstad et al., 2003)]("./variance_mean_spike.png"){width=80%}
 
 ## Results
 
@@ -154,6 +147,8 @@ data. Comparing the baseline methods with the quantile method. (Bolstad et al., 
 ## Results
 
 - Next they compared the means produced by quantile normalization and the non-linear method. 
+- Used two sets of triplicates (6 arrays) where the fold change between the spike-in concentrations is high.
+- About half of the spike-in probesets are high in one triplicate and low in the other, and the opposite for the remaining probesets.
 - For the non-linear method, they changed which array was used as baseline, including two "synthetic" baseline arrays made by taking probe-wise means and medians.
 
 ## Results
@@ -180,13 +175,17 @@ data. Comparing the baseline methods with the quantile method. (Bolstad et al., 
 
 ## Questions
 
-1. What does this last figure show?
+1. What are some potential disadvantages of the quantile approach?
 
-2. 
+2. What about advantages of the Affymetrix-recommended approach?
+
+3. What are some potential problems with this paper's methodology?
+
+4. Would you draw the same conclusions as the authors based on these results?
 
 ## References
 
-1. Dudoit, S., Yang, Y. H., Callow, M. J., & Speed, T. P. (2002). STATISTICAL METHODS FOR IDENTIFYING DIFFERENTIALLY EXPRESSED GENES IN REPLICATED cDNA MICROARRAY EXPERIMENTS. Statistica Sinica, 12(1), 111–139. JSTOR.
+1. Dudoit, S., Yang, Y. H., Callow, M. J., & Speed, T. P. (2002). Statistical Methods for Identifying Differentially Expressed Genes in Replicated cDNA Microarray Experiments. Statistica Sinica, 12(1), 111–139. JSTOR.
 
 2. Åstrand, M. (2003). Contrast Normalization of Oligonucleotide Arrays. Journal of Computational Biology, 10(1), 95–102. https://doi.org/10.1089/106652703763255697
 
