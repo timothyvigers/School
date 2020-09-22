@@ -98,9 +98,9 @@ Based on the approach suggested by Affymetrix, but this paper uses a probe-level
 
 Bolstad et al. tested these techniques on two datasets: 
 
-1. 30 arrays each from liver and central nervous system cell lines, plus 15 arrays with mixtures of cell lines in 75:25, 50:50, and 25:75 proportions.
+1. 30 arrays each from liver and central nervous system cell lines (6 groups at 5 dilution levels), plus 15 arrays with mixtures of cell lines in 75:25, 50:50, and 25:75 proportions.
 
-2. A dilution series of 27 arrays, plus two sets of triplicates (6 arrays total) from a Latin square experiment.
+2. A dilution series of 27 arrays where 11 cDNA fragments have been spiked in at various concentrations. They also use two sets of triplicates (6 arrays total) from a Latin square experiment.
 
 ## Results
 
