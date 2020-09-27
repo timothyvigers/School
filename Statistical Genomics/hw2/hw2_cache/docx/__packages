@@ -1,0 +1,9 @@
+base
+knitr
+BiocGenerics
+Biobase
+affy
+genefilter
+gcrma
+simpleaffy
+hgu133plus2cdf

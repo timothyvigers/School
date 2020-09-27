@@ -1,0 +1,225 @@
+---
+title: "BIOS 7659 Homework 2"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw2")
+library(knitr)
+library(affy)
+library(simpleaffy)
+```
+
+# Quality Control
+
+## a) Read the 8 CEL files
+
+```{r import}
+pd = read.AnnotatedDataFrame("./targets.txt" , header=TRUE,
+                             row.names=1,as.is=TRUE)
+Data = ReadAffy(filenames=pData(pd)$FileName, phenoData=pd,
+                sampleNames=sampleNames(pd))
+```
+
+### Practice extracting information from data
+
+```{r functions,warning=FALSE}
+head(exprs(Data))
+sampleNames(Data)
+head(probeNames(Data))
+head(mm(Data))
+head(pm(Data))
+pData(Data)
+```
+
+## b) Plot the raw microarray images
+
+```{r raw images}
+image(Data)
+```
+
+For the most part nothing in these plots stands out to me, except for "Low 4." This array appears to be generally bright (washed out), with an oval patch of high fluorescence and a thin strip of probes with no fluorescence. It's not obvious exactly what happened, but it appears that the processing for this plate went very wrong at some point.
+
+## c) Plot quality control metrics
+
+```{r plot qc}
+plot.qc.stats(qc.affy(Data))
+```
+
+Interestingly, the quality control metrics appear to be pretty good based on this plot. The top number (a percentage) for each array is the present call, which is the percentage of genes reliably detected, and can be considered a measure of overall quality. In general these arrays appear to have similar percentages, which is a good sign. The bottom number represents average background level, and this appears to be pretty similar across arrays except for "High1" which has a much higher level than the rest. This suggests potential signal-to-noise problems with this array. 
+
+Also, it is a little bit surprising that the background for "Low4" is among the lower end of background values, because visual inspection suggested there was a lot of noise. The package automatically flags significantly different (by default defined as more than 10% difference for present call and 20 units for background) values in red. So in general these values are acceptable except for the background value of "High1."
+
+The GAPDH ratios (circles) and beta actin ratios (triangles) also look reasonable for all arrays. In general the triangles should be within 3-fold change and the circles within 1, and the `simpleaffy` package will again automatically flag values outside these ranges by coloring them red. Lastly, the horizontal line for each array represents the distance from 0-fold change to its scale factor. The ends of each line should be within the shaded blue region, so the scale factors for all of these plates are compatible. 
+
+## d) Plot the mean intensity from 3' to 5' end of the target mRNA
+
+```{r}
+plotAffyRNAdeg(AffyRNAdeg(Data))
+```
+
+Probes in a probeset are ordered relative to the 5' end. Intensities are averaged by location across all probesets, for each array. Because RNA tends to start degradation at the 5' end, so if RNA degradation is a problem one would expect lower intensities at that end. This appears to be the case for this dataset, but it's probably worth checking using `summaryAffyRNAdeg`, which provides a slope estimate and p value ot accompany this plot:
+
+```{r}
+summaryAffyRNAdeg(AffyRNAdeg(Data))
+```
+This confirms that RNA degradation is likely a problem with these data (for all chips). On the positive side, it appears that the slopes are fairly similar across all arrays, which probably means that we can still make relative comparisons.
+
+## e) Examine the distribution of intensity values for the perfect-match and mismatch probes
+
+### Perfect match
+
+```{r}
+boxplot(Data,which = "pm")
+plotDensity.AffyBatch(Data,which = "pm")
+```
+
+### Mismatch
+
+```{r}
+boxplot(Data,which = "mm")
+plotDensity.AffyBatch(Data,which = "mm")
+```
+
+For both sets of probes, the intensity tends to be higher on "High1" compared to the rest of the arrays (at least I'm assuming that the solid black line produced by `plotDensity.AffyBatch()` is the "High1" array, but unfortunately it isn't obvious how to add a legend to this figure). The rest of the arrays appear to be in pretty close agreement with each other based on these plots, although "Low4" has a wider range than the others.
+
+## f) Recommendations
+
+Based on the QC plots and tables, I would recommend keeping an eye on "High1" at the very least. Its background level of intensity seems significantly different from the other arrays, but hopefully this will be fixed during the normalization step. It might also be worth looking into array "Low4" a little more as well, because the raw image looks awful. It's surprising to me that "Low4" didn't particularly stand out during QC. Finally, I'm not sure how much of a concern the RNA degradation is. It appears to be significant, but at a comparable level across all the arrays. So I probably wouldn't exclude anything at this point, but "High1" and "Low4" are candidates for exclusion at later steps and warrant extra attention.
+
+# Normalization
+
+## a) Plot log-transformed and non-transformed data
+
+```{r}
+plotDensity.AffyBatch(Data,log = F)
+```
+
+```{r}
+plotDensity.AffyBatch(Data)
+```
+
+The plot with non-transformed data is almost impossible to read because the data are so skewed and the range is so large. Most intensity values are close to 0, but some are as high as 50,000. Again, one of the arrays seems a little different from the others, although the distribution is approximately the same shape, so hopefully normalization helps this. 
+
+## b) MA plots
+
+```{r}
+MAplot(Data)
+```
+
+The MA plots generally support the patterns observed in the QC plots, with most of the chips looking reasonably similar. However, "High1" is not clustered around the x-axis and the loess line is a little bit higher. This could be seen during QC as well, with expression for that array being generally higher than the others. 
+
+Also, the MA plots really show how bad the "Low4" array is. The loess line is actually pretty close to the x-axis (except maybe in the left tail), which explains why the QC intensity plots didn't look too bad. However, there are points that form a thin straight line and another cloud, both at a pretty severe angle to the x-axis. You would have to assume that these are due to the obvious array defects that you can see in the raw image.   
+
+## c) Using `expresso()`, try different methods
+
+### Changing the normalization method
+
+#### Non-normalized
+
+```{r}
+boxplot(Data)
+```
+
+#### Quantiles
+
+```{r}
+quantile_data <- expresso(Data,normalize.method = "quantiles",
+                          summary.method="avgdiff",
+                          bgcorrect.method="rma",
+                          pmcorrect.method="pmonly")
+boxplot(log(exprs(quantile_data),base = 2))
+```
+
+#### Loess
+
+```{r}
+loess_data <- expresso(Data,normalize.method = "loess",
+                       summary.method="avgdiff",
+                       bgcorrect.method="rma",
+                       pmcorrect.method="pmonly")
+boxplot(log(exprs(loess_data),base = 2))
+```
+
+#### Constant
+
+```{r}
+constant_data <- expresso(Data,normalize.method = "constant",
+                          summary.method="avgdiff",
+                          bgcorrect.method="rma",
+                          pmcorrect.method="pmonly")
+boxplot(log(exprs(constant_data),base = 2))
+```
+
+Based on visual inspection of these boxplots, I don't think that one normalization method performs better than the others (at least not with `summary.method="avgdiff"`, `bgcorrect.method="rma"`, and `pmcorrect.method="pmonly"`). All of the arrays look similar to each other, and with all methods "High1" and "Low4" look much improved. However, the quantile method is significantly faster than the others, so I would probably favor this method. 
+
+### Changing the summary method
+
+The following plots are generated using the quantile normalization method, `pmcorrect.method = "pmonly"`, and `bgcorrect.method="rma"` with different options for `summary.method`.
+
+#### AvgDiff
+
+```{r}
+avg_diff_data <- expresso(Data,summary.method="avgdiff",
+                          normalize.method = "quantiles",
+                          bgcorrect.method="rma",
+                          pmcorrect.method="pmonly")
+boxplot(log(exprs(avg_diff_data),base = 2))
+```
+
+#### MAS
+
+```{r}
+mas_data <- expresso(Data,summary.method="mas",
+                     normalize.method = "quantiles",
+                     bgcorrect.method="rma",
+                     pmcorrect.method="pmonly")
+boxplot(log(exprs(mas_data),base = 2))
+```
+
+#### Median polish
+
+```{r}
+median_data <- expresso(Data,summary.method="medianpolish",
+                        normalize.method = "quantiles",
+                        bgcorrect.method="rma",
+                        pmcorrect.method="pmonly")
+boxplot(log(exprs(median_data),base = 2))
+```
+
+### Changing the PM correction method
+
+Using the quantile normalization method, `summary.method = "avgdiff"`, and `bgcorrect.method="rma"`.
+
+#### PM Only
+
+```{r}
+pmonly_data <- expresso(Data,pmcorrect.method="pmonly",
+                     summary.method="avgdiff",
+                     normalize.method = "quantiles",
+                     bgcorrect.method="rma")
+boxplot(log(exprs(pmonly_data),base = 2))
+```
+
+#### MAS
+
+```{r}
+mas_data_2 <- expresso(Data,pmcorrect.method="mas",
+                     summary.method="avgdiff",
+                     normalize.method = "quantiles",
+                     bgcorrect.method="rma")
+boxplot(log(exprs(mas_data_2),base = 2))
+```
+
+#### Subtract mismatch
+
+```{r}
+subtractmm_data <- expresso(Data,pmcorrect.method="subtractmm",
+                     summary.method="avgdiff",
+                     normalize.method = "quantiles",
+                     bgcorrect.method="rma")
+boxplot(log(exprs(subtractmm_data),base = 2))
+```

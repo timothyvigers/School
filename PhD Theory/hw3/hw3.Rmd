@@ -1,0 +1,97 @@
+---
+title: "Homework 3"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# BD 1.4.5
+
+Give an example in which the best linear predictor of $Y$ given $Z$ is a constant (has no predictive value) whereas the best predictor of $Y$ given $Z$ predicts Y perfectly.
+
+The unique best linear predictor $\mu_L(Z)=E[Y]-\frac{Cov(Z,Y)}{Var(Z)}E[Z]+\frac{Cov(Z,Y)}{Var(Z)}Z$ and the best MSPE predictor of $Y$ given $Z$ is $E[Y|Z]$. First, take $Y=Z^2$ and calculate the covariance of $Y$ and $Z$:
+
+$$
+Cov(Z,Y)=E[ZY]-E[Z]E[Y]=E[Z^3]-E[Z]E[Z^2]
+$$
+If we restrict $Z$ so that $E[Z^3]$ and $E[Z]$ both equal 0, then:
+
+$$
+\mu_L(Z)=E[Y]-0+0=E[Y]
+$$
+The expected value of $Y$ is a constant, so this satisfies the first part of the question. Next, check the best MSPE predictor of $Y$ given $Z$:
+
+$$
+\mu(Z)=E[Y|Z]=E[Z^2|Z]=Z^2=Y
+$$
+Thus, $\mu(Z)$ perfectly predicts $Y$ and this satisfies the second part of the question.
+
+# BD 1.4.14
+
+Let $Z_1$ and $Z_2$ be independent and have exponential distributions with density $\lambda e^{-\lambda z}$, $z > 0$. Define $Z = Z_2$ and $Y = Z_1 + Z_1 Z_2$. Find:
+
+## a) 
+
+The best MSPE predictor $E[Y | Z = z]$ of $Y$ given $Z = z$:
+
+First find $E[Y|Z=z]=E[Z_1+Z_1 Z_2|Z_2=z]$. Because $Z_1$ and $Z_2$ are independent, this simplifies to $E[Z_1]+E[Z_1] E[Z_2|Z_2=z]$, which is $\frac{1}{\lambda}+\frac{1}{\lambda}z=\frac{z+1}{\lambda}$.
+
+## b) 
+
+$E[E[Y|Z]]$:
+
+First find $E[Y|Z]=E[Z_1+Z_1 Z_2|Z_2]=\frac{Z+1}{\lambda}$ (see above). This contains the random variable $Z$, so take the expectation again:
+
+$$
+E[\frac{Z+1}{\lambda}]=\frac{E[Z]+1}{\lambda}=\frac{\frac{1}{\lambda}+1}{\lambda}=\frac{1}{\lambda^2}+\frac{1}{\lambda}
+$$
+
+## c) 
+
+$Var(E[Y|Z])$:
+
+From above we know that $E[Y|Z]=\frac{Z+1}{\lambda}$. So, we find the variance of this using $Var(\frac{Z+1}{\lambda})=\frac{Var(Z+1)}{\lambda^2}$. Because the variance of a RV plus a constant is the same as the variance of the RV, this simplifies to $\frac{Var(Z)}{\lambda^2}=\frac{\frac{1}{\lambda^2}}{\lambda^2}=\frac{1}{\lambda^4}$
+
+## d) 
+
+$Var(Y | Z = z)$:
+
+First we write $Y$ in terms of $Z_1$ and $Z_2$ to get $Var(Y|Z=z)=Var(Z_1+Z_1 Z_2|Z=z)$. Then we can plug in $Z_2=z$ to get $Var(Y|Z=z)=Var(Z_1+Z_1z)$ and rearrange and simplify to get $Var((z+1)Z_1)=(z+1)^2Var(Z_1)$. So, $Var(Y | Z = z)=(\frac{z+1}{\lambda})^2$.
+
+## e) 
+
+$E[Var(Y | Z)]$:
+
+From above we know that $Var(Y|Z)=Var(Z_1+Z_1 Z|Z)=(Z+1)^2Var(Z_1)=\frac{(Z+1)^2}{\lambda^2}$. By expanding the numerator we get $E[Var(Y | Z)]=E[\frac{Z^2+2Z+1}{\lambda^2}]$. To find $E[Z^2]$ we rearrange the formula for variance to get $E[Z^2]=Var(Z)+E[Z]^2=\frac{1}{\lambda^2}+\frac{1}{\lambda^2}=\frac{2}{\lambda^2}$. So, plugging this back in we get:
+
+$$
+E[Var(Y | Z)]=E[\frac{Z^2+2Z+1}{\lambda^2}]=\frac{E[Z^2]+E[2Z]+1}{\lambda^2}=\frac{\frac{2}{\lambda^2}+\frac{2}{\lambda}+1}{\lambda^2}
+$$
+
+This could be further rearranged, but I kind of like this form.
+
+## f) 
+
+The best linear MSPE predictor of $Y$ based on $Z = z$:
+
+Given $Z=z$, $Cov(Z,Y)=0$ because $z$ is a constant. Therefore, the best linear predictor $\mu_L(Z)=E[Y|Z=z]$ (see equations in problem 1). So this is the same as part a).
+
+# BD 1.6.4
+
+Which of the following families of distributions are exponential families? (Prove or disprove.)
+
+## b) 
+
+$p(x,\theta) = {exp[-2log\theta + log(2x)]}1[x \in (0, \theta)]$
+
+This is not an exponential family because the indicator function depends on both $x$ and $\theta$, so the support depends on the parameter.
+
+## d)
+
+$\mathcal{N}(\theta,\theta^2)$
+
+See scanned pages for the remainder of these problems.
