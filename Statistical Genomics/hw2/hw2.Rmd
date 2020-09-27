@@ -6,11 +6,12 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,cache=TRUE)
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE,message=FALSE)
 knitr::opts_knit$set(root.dir = "C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw2")
 library(knitr)
 library(affy)
 library(simpleaffy)
+library(tidyverse)
 ```
 
 # Quality Control
@@ -27,12 +28,12 @@ Data = ReadAffy(filenames=pData(pd)$FileName, phenoData=pd,
 ### Practice extracting information from data
 
 ```{r functions,warning=FALSE}
-head(exprs(Data))
+kable(head(exprs(Data)),digits = 3)
 sampleNames(Data)
 head(probeNames(Data))
-head(mm(Data))
-head(pm(Data))
-pData(Data)
+kable(head(mm(Data)),digits = 3)
+kable(head(pm(Data)),digits = 3)
+kable(pData(Data),digits = 3)
 ```
 
 ## b) Plot the raw microarray images
@@ -154,7 +155,7 @@ constant_data <- expresso(Data,normalize.method = "constant",
 boxplot(log(exprs(constant_data),base = 2))
 ```
 
-Based on visual inspection of these boxplots, I don't think that one normalization method performs better than the others (at least not with `summary.method="avgdiff"`, `bgcorrect.method="rma"`, and `pmcorrect.method="pmonly"`). All of the arrays look similar to each other, and with all methods "High1" and "Low4" look much improved. However, the quantile method is significantly faster than the others, so I would probably favor this method. 
+Based on visual inspection of these boxplots, I don't think that one normalization method performs better than the others (at least not with `summary.method="avgdiff"`, `bgcorrect.method="rma"`, and `pmcorrect.method="pmonly"`). All of the arrays look similar to each other, and with all methods "High1" and "Low4" look much improved. However, the quantile method is faster than the others, so I would probably favor this method. The loess method is particularly slow and I would avoid it unless the other two wouldn't work for some reason.
 
 ### Changing the summary method
 
@@ -163,11 +164,7 @@ The following plots are generated using the quantile normalization method, `pmco
 #### AvgDiff
 
 ```{r}
-avg_diff_data <- expresso(Data,summary.method="avgdiff",
-                          normalize.method = "quantiles",
-                          bgcorrect.method="rma",
-                          pmcorrect.method="pmonly")
-boxplot(log(exprs(avg_diff_data),base = 2))
+boxplot(log(exprs(quantile_data),base = 2))
 ```
 
 #### MAS
@@ -190,15 +187,17 @@ median_data <- expresso(Data,summary.method="medianpolish",
 boxplot(log(exprs(median_data),base = 2))
 ```
 
+The MAS and AvgDiff boxplots look almost identical (in fact they are so similar that I was convinced I had accidentally messed up my code), but the median polish method does look different from the other two. It appears that the median polish method produces expression values that are more normally distributed than those produced by the other methods. I did not notice big differences in speed, so I think that median polish is the best of these options (at least with the normalization and background and PM correction methods I selected).
+
 ### Changing the PM correction method
 
-Using the quantile normalization method, `summary.method = "avgdiff"`, and `bgcorrect.method="rma"`.
+Using the quantile normalization method, `summary.method = "medianpolish"`, and `bgcorrect.method="rma"`.
 
 #### PM Only
 
 ```{r}
 pmonly_data <- expresso(Data,pmcorrect.method="pmonly",
-                     summary.method="avgdiff",
+                     summary.method="medianpolish",
                      normalize.method = "quantiles",
                      bgcorrect.method="rma")
 boxplot(log(exprs(pmonly_data),base = 2))
@@ -208,7 +207,7 @@ boxplot(log(exprs(pmonly_data),base = 2))
 
 ```{r}
 mas_data_2 <- expresso(Data,pmcorrect.method="mas",
-                     summary.method="avgdiff",
+                     summary.method="medianpolish",
                      normalize.method = "quantiles",
                      bgcorrect.method="rma")
 boxplot(log(exprs(mas_data_2),base = 2))
@@ -216,10 +215,74 @@ boxplot(log(exprs(mas_data_2),base = 2))
 
 #### Subtract mismatch
 
-```{r}
+```{r warning=FALSE}
 subtractmm_data <- expresso(Data,pmcorrect.method="subtractmm",
-                     summary.method="avgdiff",
+                     summary.method="medianpolish",
                      normalize.method = "quantiles",
                      bgcorrect.method="rma")
 boxplot(log(exprs(subtractmm_data),base = 2))
+```
+
+Unfortunately, neither the MAS or subtract MM approaches seem to work well with the median polish summary method (the subtract MM plot looks reasonable but it produces a lot of concerning "NaN" warnings that I suppressed in the output above). The PM only plot with median polish as the summary method looks excellent though, so this would be my choice moving forward.
+
+## d) Get present and absent calls
+
+```{r}
+# Presence/absence detection
+calls <- mas5calls(Data)
+# Get p values
+calls_sig <- as.data.frame(assayData(calls)$exprs)
+# Subset those with at least one significant p value in each group
+filtered <- calls_sig %>% 
+  filter(("P"==High1|"P"==High2|"P"==High3|"P"==High4)&
+           ("P"==Low1|"P"==Low2|"P"==Low3|"P"==Low4))
+```
+
+After filtering there are `r nrow(filtered)` probesets left out of `r nrow(calls_sig)` (`r round(nrow(filtered)/nrow(calls_sig),3)*100`%).
+
+## e) Problematic chips
+
+Although most of the boxplots seem reasonable for "Low4," the MA plot in comparison to the pseudochip suggests that we should exclude it. The bright oval and dark strip that you can see in the raw image are very obvious in this plot, and I worry that this chip will negatively affect normalization. Because I chose a normalization technique that uses information from all the chips, it's important to exclude obvious problematic arrays before the normalization step.
+
+However, the potential problems with "High1" appear to have been fixed by the normalization procedures:
+
+```{r}
+plotDensity(exprs(pmonly_data))
+```
+
+So the most appropriate approach seems to be to exclude "Low4" but keep "High1" in the dataset for analysis.
+
+### Re-normalization
+
+Import data without "Low4":
+
+```{r}
+pd = read.AnnotatedDataFrame("./targets_low4_excluded.txt" ,
+                             header=TRUE,row.names=1,as.is=TRUE)
+Data = ReadAffy(filenames=pData(pd)$FileName, phenoData=pd,
+                sampleNames=sampleNames(pd))
+```
+
+Normalize using the subset from the filtering step d) above, and generate new plots:
+
+```{r}
+normalized <- rma(Data,subset = rownames(filtered))
+plotDensity(exprs(normalized))
+```
+
+Save files of the intensities and calls locally:
+
+```{r}
+# Save normalized data
+save(normalized,file = "./normalized.R")
+# Get calls and save
+calls <- mas5calls(Data,ids=rownames(filtered))
+save(calls,file = "./calls.R")
+```
+
+Show the top lines:
+
+```{r}
+kable(head(log(exprs(normalized),base = 2)),digits = 3)
+kable(head(assayData(calls)$exprs),digits = 3)
 ```
