@@ -283,6 +283,6 @@ save(calls,file = "./calls.R")
 Show the top lines:
 
 ```{r}
-kable(head(log(exprs(normalized),base = 2)),digits = 3)
+kable(head(exprs(normalized)),digits = 3)
 kable(head(assayData(calls)$exprs),digits = 3)
 ```
