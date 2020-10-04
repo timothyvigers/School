@@ -1,0 +1,25 @@
+---
+title: "Homework 4"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Likelihood plot for 3)
+
+MLEs highlighted with red circles.
+
+```{r}
+likelihood <- function(theta){
+  (1-theta)/4 * theta/12 * 1/2 * (3-theta)/12 * theta/4
+}
+theta <- seq(-1,5,by=0.001)
+plot(theta,likelihood(theta),type = "l",ylim = c(-0.001,0.0015))
+points((3/2)+sqrt(3)/2,likelihood((3/2)+sqrt(3)/2), col = "red")
+points((3/2)-sqrt(3)/2,likelihood((3/2)-sqrt(3)/2), col = "red")
+```
+
