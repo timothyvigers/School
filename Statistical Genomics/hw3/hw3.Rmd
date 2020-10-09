@@ -1,0 +1,89 @@
+---
+title: "BIOS 7659 Homework 3"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,cache=TRUE,message=FALSE)
+knitr::opts_knit$set(root.dir="C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw3")
+library(knitr)
+library(impute)
+library(limma)
+library(samr)
+```
+
+# 1. T Statistics
+
+Read in the data:
+
+```{r read in data}
+array <- read.table("./hw3data/hw3arraydata.txt")
+gene_names <- read.table("./hw3data/hw3genenames.txt",
+                         blank.lines.skip = FALSE)
+```
+
+## a) Fold Change
+
+For each gene (row), find the mean $\log_2$ expression among controls and among the knock out group. Then calculate fold change using $\log_2(controls)-\log_2(knockouts)$:
+
+```{r fc}
+fc <- apply(array,1,function(x){
+  control = mean(as.numeric(x[1:8]))
+  knockout = mean(as.numeric(x[9:16]))
+  return(control-knockout)
+})
+fc_results <- as.data.frame(cbind(gene_names,fc))
+colnames(fc_results) <- c("Gene","log2FC")
+kable(head(fc_results[order(abs(fc_results$log2FC),decreasing = T),],10),
+      caption = "Top 10 genes with largest absolute value of fold change",
+      row.names = F)
+```
+
+## b) Standard t test
+
+For each gene, calculate the two-sample independent t-statistic between controls and knockouts, assuming equal variances:
+
+```{r t test}
+# Tests
+tp <- apply(array,1,function(x){
+  control = as.numeric(x[1:8])
+  knockout = as.numeric(x[9:16])
+  t <- t.test(control,knockout,var.equal = T)
+  return(c(t$statistic,t$p.value))
+})
+# Format results
+tp <- as.data.frame(t(tp))
+colnames(tp) <- c("T","p value")
+fc_results <- as.data.frame(cbind(fc_results,tp))
+kable(head(fc_results[order(fc_results$T,decreasing = T),],10),
+      caption = "Top 10 genes with largest t statistic",
+      row.names = F)
+```
+
+Out of the `r nrow(array)` genes, `r sum(fc_results$`p value` < 0.01)` were significant at the p < 0.01 level.
+
+## c) Alternative t statistics
+
+### i)
+
+### ii) Moderated t statistic (using the limma package)
+
+First, create the design matrix for limma:
+
+```{r design}
+design <- matrix(ncol = 2,nrow = ncol(array))
+colnames(design) <- c("Control","Knockout")
+rownames(design) <- colnames(array)
+design[,1] <- rep(1,nrow(design))
+design[,2] <- ifelse(grepl("k",rownames(design)),1,0)
+kable(design)
+```
+
+Fit the model with limma:
+
+```{r}
+fit <- lmFit(array, design)
+```
+
