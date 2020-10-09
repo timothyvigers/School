@@ -34,6 +34,9 @@ fc <- apply(array,1,function(x){
   knockout = mean(as.numeric(x[9:16]))
   return(control-knockout)
 })
+```
+
+```{r echo=FALSE}
 fc_results <- as.data.frame(cbind(gene_names,fc))
 colnames(fc_results) <- c("Gene","log2FC")
 kable(head(fc_results[order(abs(fc_results$log2FC),decreasing = T),],10),
@@ -53,6 +56,9 @@ tp <- apply(array,1,function(x){
   t <- t.test(control,knockout,var.equal = T)
   return(c(t$statistic,t$p.value))
 })
+```
+
+```{r echo=FALSE}
 # Format results
 tp <- as.data.frame(t(tp))
 colnames(tp) <- c("T","p value")
@@ -62,13 +68,15 @@ kable(head(fc_results[order(fc_results$T,decreasing = T),],10),
       row.names = F)
 ```
 
-Out of the `r nrow(array)` genes, `r sum(fc_results$`p value` < 0.01)` were significant at the p < 0.01 level.
+Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] < 0.01)` were significant at the p < 0.01 level.
 
 ## c) Alternative t statistics
 
-### i)
+### i) Modified t statistic (using the `samr` package)
 
-### ii) Moderated t statistic (using the limma package)
+
+
+### ii) Moderated t statistic (using the `limma` package)
 
 First, create the design matrix for limma:
 
@@ -78,12 +86,19 @@ colnames(design) <- c("Control","Knockout")
 rownames(design) <- colnames(array)
 design[,1] <- rep(1,nrow(design))
 design[,2] <- ifelse(grepl("k",rownames(design)),1,0)
-kable(design)
 ```
 
 Fit the model with limma:
 
-```{r}
+```{r limma}
 fit <- lmFit(array, design)
+eb <- eBayes(fit)
+limma_res <- topTable(eb,coef = 2)
+```
+
+```{r echo=FALSE}
+rownames(limma_res) <- gene_names$V1[as.numeric(rownames(limma_res))]
+kable(limma_res,
+      caption = "Top 10 differentially expressed genes (based on the moderated t statistic)")
 ```
 
