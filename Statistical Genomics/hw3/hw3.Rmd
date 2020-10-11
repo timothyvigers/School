@@ -6,12 +6,15 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE,cache=TRUE,message=FALSE)
-knitr::opts_knit$set(root.dir="C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw3")
+knitr::opts_chunk$set(echo=TRUE,cache=TRUE,
+                      message=FALSE,warning = FALSE)
+knitr::opts_knit$set(root.dir="/home/tim/Documents/GitHub/School/Statistical Genomics/hw3")
 library(knitr)
 library(impute)
 library(limma)
 library(samr)
+library(qvalue)
+library(gtools)
 ```
 
 # 1. T Statistics
@@ -74,7 +77,13 @@ Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] < 0.01)` were si
 
 ### i) Modified t statistic (using the `samr` package)
 
-
+```{r}
+y <- ifelse(grepl("c",colnames(array)),1,2)
+x <- as.matrix(array)
+data=list(x=x,y=y,resp.type="Two class unpaired",
+          assay.type = "array",genenames=gene_names$V1)
+s <- samr(data)
+```
 
 ### ii) Moderated t statistic (using the `limma` package)
 
@@ -102,3 +111,14 @@ kable(limma_res,
       caption = "Top 10 differentially expressed genes (based on the moderated t statistic)")
 ```
 
+## d) Method comparisons
+
+
+
+# P Values and Multiple Testing
+
+## a) Permutation tests
+
+```{r}
+
+```
