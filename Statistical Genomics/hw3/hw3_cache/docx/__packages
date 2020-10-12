@@ -3,3 +3,5 @@ knitr
 impute
 limma
 samr
+qvalue
+gtools

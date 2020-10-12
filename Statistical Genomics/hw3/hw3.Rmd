@@ -2,7 +2,7 @@
 title: "BIOS 7659 Homework 3"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: word_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -15,9 +15,10 @@ library(limma)
 library(samr)
 library(qvalue)
 library(gtools)
+set.seed(1017)
 ```
 
-# 1. T Statistics
+# 1. T-statistics
 
 Read in the data:
 
@@ -39,11 +40,10 @@ fc <- apply(array,1,function(x){
 })
 ```
 
-```{r echo=FALSE}
+```{r fc results,echo=FALSE}
 fc_results <- as.data.frame(cbind(gene_names,fc))
 colnames(fc_results) <- c("Gene","log2FC")
-kable(head(fc_results[order(abs(fc_results$log2FC),decreasing = T),],10),
-      caption = "Top 10 genes with largest absolute value of fold change",
+kable(head(fc_results[order(abs(fc_results$log2FC),decreasing = T),],10),caption = "Top 10 genes with largest absolute value of fold change",
       row.names = F)
 ```
 
@@ -61,35 +61,54 @@ tp <- apply(array,1,function(x){
 })
 ```
 
-```{r echo=FALSE}
+```{r t test results,echo=FALSE}
 # Format results
 tp <- as.data.frame(t(tp))
 colnames(tp) <- c("T","p value")
 fc_results <- as.data.frame(cbind(fc_results,tp))
 kable(head(fc_results[order(fc_results$T,decreasing = T),],10),
-      caption = "Top 10 genes with largest t statistic",
+      caption = "Top 10 genes with largest t-statistic",
       row.names = F)
 ```
 
 Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] < 0.01)` were significant at the p < 0.01 level.
 
-## c) Alternative t statistics
+## c) Alternative t-statistics
 
-### i) Modified t statistic (using the `samr` package)
+### i) Modified t-statistic (using the `samr` package)
 
-```{r}
+```{r samr echo,eval=FALSE}
 y <- ifelse(grepl("c",colnames(array)),1,2)
 x <- as.matrix(array)
 data=list(x=x,y=y,resp.type="Two class unpaired",
           assay.type = "array",genenames=gene_names$V1)
-s <- samr(data)
+samr_obj <- samr(data)
+samr_pvalues <- 2*pt(-abs(samr_obj$tt),df=14)
 ```
 
-### ii) Moderated t statistic (using the `limma` package)
+```{r samr,include=FALSE}
+y <- ifelse(grepl("c",colnames(array)),1,2)
+x <- as.matrix(array)
+data=list(x=x,y=y,resp.type="Two class unpaired",
+          assay.type = "array",genenames=gene_names$V1)
+samr_obj <- samr(data)
+samr_pvalues <- 2*pt(-abs(samr_obj$tt),df=14)
+```
+
+```{r samr results,echo=FALSE}
+samr_results <- cbind(gene_names,samr_obj$tt,samr_pvalues)
+colnames(samr_results) <- c("Gene","Modified t-statistic","p value")
+# P values
+kable(head(samr_results[order(samr_results[,2],decreasing = T),],10),
+      caption = "Top 10 genes with largest modified t-statistic",
+      row.names = F)
+```
+
+### ii) Moderated t-statistic (using the `limma` package)
 
 First, create the design matrix for limma:
 
-```{r design}
+```{r limma design}
 design <- matrix(ncol = 2,nrow = ncol(array))
 colnames(design) <- c("Control","Knockout")
 rownames(design) <- colnames(array)
@@ -105,10 +124,10 @@ eb <- eBayes(fit)
 limma_res <- topTable(eb,coef = 2)
 ```
 
-```{r echo=FALSE}
+```{r limma results,echo=FALSE}
 rownames(limma_res) <- gene_names$V1[as.numeric(rownames(limma_res))]
 kable(limma_res,
-      caption = "Top 10 differentially expressed genes (based on the moderated t statistic)")
+      caption = "Top 10 differentially expressed genes (based on the moderated t-statistic)")
 ```
 
 ## d) Method comparisons
@@ -119,6 +138,27 @@ kable(limma_res,
 
 ## a) Permutation tests
 
-```{r}
+First, find all the possible permutations of group labels (i.e. control vs. knockout) using `combinations(16,8,colnames(array))`.
+
+```{r perm tests}
+combos <- combinations(16,8,colnames(array))
+pvalues <- apply(array,1,function(g){
+  maxt <- t.test(g[grep("c",names(array))],
+                 g[grep("k",names(array))])
+  perms <- apply(combos,1,function(c){
+    control <- g[c]
+    knockout <- g[setdiff(names(g),c)]
+    t <- t.test(control,knockout)
+    return(t$statistic)
+  })
+  return(sum(abs(perms)>=abs(maxt$statistic))/length(perms))
+})
+```
+
+Using the permutation test approach, there are `r sum(pvalues <= 0.01)` genes significant at the 0.01 level.
+
+## b) P value adjustment methods
+
+```{r p value adjust}
 
 ```
