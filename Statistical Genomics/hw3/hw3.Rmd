@@ -6,8 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE,cache=TRUE,
-                      message=FALSE,warning = FALSE)
+knitr::opts_chunk$set(echo=TRUE,cache = TRUE)
 knitr::opts_knit$set(root.dir="/home/tim/Documents/GitHub/School/Statistical Genomics/hw3")
 library(knitr)
 library(impute)
@@ -15,6 +14,7 @@ library(limma)
 library(samr)
 library(qvalue)
 library(gtools)
+library(parallel)
 set.seed(1017)
 ```
 
@@ -28,7 +28,7 @@ gene_names <- read.table("./hw3data/hw3genenames.txt",
                          blank.lines.skip = FALSE)
 ```
 
-## a) Fold Change
+## a) Fold change
 
 For each gene (row), find the mean $\log_2$ expression among controls and among the knock out group. Then calculate fold change using $\log_2(controls)-\log_2(knockouts)$:
 
@@ -36,42 +36,40 @@ For each gene (row), find the mean $\log_2$ expression among controls and among 
 fc <- apply(array,1,function(x){
   control = mean(as.numeric(x[1:8]))
   knockout = mean(as.numeric(x[9:16]))
-  return(control-knockout)
+  return(c(control,knockout,control-knockout))
 })
-```
-
-```{r fc results,echo=FALSE}
+fc <- t(fc)
 fc_results <- as.data.frame(cbind(gene_names,fc))
-colnames(fc_results) <- c("Gene","log2FC")
-kable(head(fc_results[order(abs(fc_results$log2FC),decreasing = T),],10),caption = "Top 10 genes with largest absolute value of fold change",
+colnames(fc_results) <- 
+  c("Gene","Control mean","Knockout mean","log2FC")
+kable(head(fc_results[order(abs(fc_results$log2FC),
+                            decreasing = T),],10),
+      caption = "Top 10 genes with largest absolute value of fold change",
       row.names = F)
 ```
 
 ## b) Standard t test
 
-For each gene, calculate the two-sample independent t-statistic between controls and knockouts, assuming equal variances:
+For each gene, calculate the two-sample independent t-statistic (not assuming equal variances) for the comparison between controls and knockouts:
 
 ```{r t test}
 # Tests
 tp <- apply(array,1,function(x){
   control = as.numeric(x[1:8])
   knockout = as.numeric(x[9:16])
-  t <- t.test(control,knockout,var.equal = T)
+  t <- t.test(control,knockout)
   return(c(t$statistic,t$p.value))
 })
-```
-
-```{r t test results,echo=FALSE}
 # Format results
 tp <- as.data.frame(t(tp))
 colnames(tp) <- c("T","p value")
 fc_results <- as.data.frame(cbind(fc_results,tp))
-kable(head(fc_results[order(fc_results$T,decreasing = T),],10),
+kable(head(fc_results[order(abs(fc_results$T),decreasing = T),],10),
       caption = "Top 10 genes with largest t-statistic",
       row.names = F)
 ```
 
-Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] < 0.01)` were significant at the p < 0.01 level.
+Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] <= 0.01)` were significant at the p < 0.01 level.
 
 ## c) Alternative t-statistics
 
@@ -80,29 +78,29 @@ Out of the `r nrow(array)` genes, `r sum(fc_results[,'p value'] < 0.01)` were si
 ```{r samr echo,eval=FALSE}
 y <- ifelse(grepl("c",colnames(array)),1,2)
 x <- as.matrix(array)
-data=list(x=x,y=y,resp.type="Two class unpaired",
-          assay.type = "array",genenames=gene_names$V1)
+data=list(x=x,y=y)
 samr_obj <- samr(data)
-samr_pvalues <- 2*pt(-abs(samr_obj$tt),df=14)
 ```
 
 ```{r samr,include=FALSE}
 y <- ifelse(grepl("c",colnames(array)),1,2)
 x <- as.matrix(array)
-data=list(x=x,y=y,resp.type="Two class unpaired",
-          assay.type = "array",genenames=gene_names$V1)
+data=list(x=x,y=y)
 samr_obj <- samr(data)
-samr_pvalues <- 2*pt(-abs(samr_obj$tt),df=14)
 ```
 
-```{r samr results,echo=FALSE}
+```{r samr results}
+samr_pvalues <- samr.pvalues.from.perms(samr_obj$tt,samr_obj$ttstar)
 samr_results <- cbind(gene_names,samr_obj$tt,samr_pvalues)
 colnames(samr_results) <- c("Gene","Modified t-statistic","p value")
 # P values
-kable(head(samr_results[order(samr_results[,2],decreasing = T),],10),
+kable(head(samr_results[order(abs(samr_results[,2]),
+                              decreasing = T),],10),
       caption = "Top 10 genes with largest modified t-statistic",
       row.names = F)
 ```
+
+Based on the modified t-statistic, there are `r sum(samr_results[,'p value']<=0.01)` genes that are significantly different at the 0.01 level.
 
 ### ii) Moderated t-statistic (using the `limma` package)
 
@@ -121,28 +119,39 @@ Fit the model with limma:
 ```{r limma}
 fit <- lmFit(array, design)
 eb <- eBayes(fit)
-limma_res <- topTable(eb,coef = 2)
-```
-
-```{r limma results,echo=FALSE}
+limma_res <- topTable(eb,coef = 2,number = 10)
 rownames(limma_res) <- gene_names$V1[as.numeric(rownames(limma_res))]
 kable(limma_res,
       caption = "Top 10 differentially expressed genes (based on the moderated t-statistic)")
 ```
 
+Based on the moderated t-statistic, there are `r sum(topTable(eb,coef = 2,number = nrow(array))[,"P.Value"]<=0.01)` genes that are significantly different at the 0.01 level (without additional adjustment for multiple comparisons).
+
 ## d) Method comparisons
 
+Generally speaking, the four methods are pretty similar, at least in terms of ranking the top ten differentially expressed genes. The ranked order is not exactly the same for each method, but the same 10 genes are chosen regardless. However, the modified and moderated t-statistic approaches reject more null hypotheses than the standard t-statistic. One potential downside to the `samr` approach is that the number of significant genes changes slightly depending on the random seed and the number of permutations. 
 
+The standard t-statistic (assuming independent samples with unequal variances) for a gene $g$ is calculated using the formula:$$t_g=\frac{\hat{\mu}_{g1}-\hat{\mu}_{g2}}{\sqrt{\frac{s_{g1}^2}{n_1}+\frac{s_{g2}^2}{n_2}}}$$ where $\hat{\mu}$, $s$, and $n$ represent the mean, sample variance, and number of samples, respectively, for groups 1 and 2. This generally works well for larger sample sizes, but the standard error (SE) estimates are unreliable with smaller samples as is often the case in gene expression studies. This can lead to artificially inflated t-statistics. The modified and moderated t-statistics try to address this issue in two different ways.
+
+The modified t-statistic from the `samr` package adds a constant amount to the SE estimate (based on pooled variance) for each gene. This is often the $\alpha^{th}$ percentile of SE across all genes, but this can be altered. So, the formula is: $$t_g=\frac{\hat{\mu}_{g1}-\hat{\mu}_{g2}}{s_g+s_0}$$
+
+Where $s_g$ represents the standard error estimate for gene $g$ and $s_0$ is the added constant. This approach is not grounded in distributional theory, and is considered more of an ad-hoc approach.
+
+The moderated t-statistic calculated by the `limma` package also aims to estimate a more stable SE, but uses a more complex Bayesian approach instead of simply adding a constant. The statistic is calculated as: $$\tilde{t}_{gj}=\frac{\hat{\beta}_{gj}}{\tilde{s}_g\sqrt{\nu_{gj}}}$$
+
+Where $\tilde{s}_g$ is a shrunken variance estimate that depends on hyperparameters chosen by sharing information across all genes. There is some complex theory behind this method, but the essential idea is that all of the information across genes contributes to the calculation of the t-statistic, which results in more stable SE estimates.
 
 # P Values and Multiple Testing
 
 ## a) Permutation tests
 
-First, find all the possible permutations of group labels (i.e. control vs. knockout) using `combinations(16,8,colnames(array))`.
+First, find all the possible combinations of group labels (in this case control vs. knockout) using the `combinations()` functions. Then, for each gene calculate a t-statistic for each possible combination and count the number of permuted t-statistics that are larger than the "true" statistic. The proportion of permuted t-statistics greater than or equal to the "true" statistic is the permutation-based p value.
 
 ```{r perm tests}
 combos <- combinations(16,8,colnames(array))
-pvalues <- apply(array,1,function(g){
+cores <- detectCores()-4
+cl <- makeCluster(cores,type = "FORK")
+pvalues <- parApply(cl,array,1,function(g){
   maxt <- t.test(g[grep("c",names(array))],
                  g[grep("k",names(array))])
   perms <- apply(combos,1,function(c){
@@ -153,12 +162,99 @@ pvalues <- apply(array,1,function(g){
   })
   return(sum(abs(perms)>=abs(maxt$statistic))/length(perms))
 })
+stopCluster(cl)
 ```
 
-Using the permutation test approach, there are `r sum(pvalues <= 0.01)` genes significant at the 0.01 level.
+Using the permutation test approach, there are `r sum(pvalues<=0.01)` genes significant at the 0.01 level. 
+
+*Note: I know that the homework sheet says not to use parallel computing methods, but I was curious about why this is and decided to test it. Using `parApply()` from the `parallel` package produced exactly the same results as using `apply()` and was approximately four times faster.
 
 ## b) P value adjustment methods
 
-```{r p value adjust}
+### i) Bonferroni
 
+The Bonferroni correction rejects the null hypothesis for each $p_i$ when $p_i\leq\frac{\alpha}{m}$, where $m$ is the total number of null hypotheses. We have a total of `r nrow(array)` tests, so will reject the null hypothesis when $p_i\leq\frac{0.01}{6384}$.
+
+```{r bonferroni}
+a_bonf <- 0.01 / nrow(array)
+kable(fc_results[fc_results$`p value`<=a_bonf,],
+      caption = "Significant genes after Bonferroni correction",
+      row.names = F)
 ```
+
+After Bonferroni correction, we reject the null hypothesis for `r sum(fc_results[,"p value"]<=a_bonf)` genes.
+
+### ii) Sidak
+
+The Sidak correction rejects the null hypothesis for each $p_i$ when $p_i\leq 1-(1-\alpha)^{\frac{1}{m}}$, where again $m$ is the total number of null hypotheses. We have a total of `r nrow(array)` tests, so will reject the null hypothesis when $p_i\leq 1-(1-\alpha)^{\frac{1}{6384}}$.
+
+```{r sidak}
+a_sid <- 1-(1-0.01)^(1/nrow(array))
+kable(fc_results[fc_results$`p value`<=a_sid,],
+      caption = "Significant genes after Sidak correction",
+      row.names = F)
+```
+
+After Sidak correction, we reject the null hypothesis for `r sum(fc_results[,"p value"]<=a_sid)` genes.
+
+### iii) Holm step-down
+
+The Holm step-down procedure is as follows:
+
+1. Rank p-values: $p_{(1)}\leq p_{(2)}...\leq p_{(j)}\leq...\leq p_{(m)}$.
+
+2. Find the first $j^*$ such that $p_{(j)}>\frac{\alpha}{m-j+1}$.
+
+3. Reject all null hypotheses up to $j^*$.
+
+```{r holm}
+ordered <- fc_results[order(fc_results$`p value`),]
+m <- nrow(ordered)
+j <- 1:m
+jstar <- min(which((ordered$`p value` > 0.01/(m+1-j))==T))
+kable(ordered[1:(jstar-1),],
+      caption = "Significant genes after Holm correction",
+      row.names = F)
+```
+
+After Holm step-down correction, we reject the null hypothesis for `r jstar-1` genes.
+
+### iv) Benjamini-Hochberg
+
+The Benjamini-Hochberg step-up procedure is as follows:
+
+1. Rank p-values: $p_{(1)}\leq p_{(2)}...\leq p_{(j)}\leq...\leq p_{(m)}$.
+
+2. Find the maximum $j^*$ such that $p_{(j)}\leq\frac{j}{m}q$ where $q$ is the desired false discovery rate. 
+
+3. Reject all null hypotheses through $j^*$.
+
+```{r bh}
+q <- 0.01
+jstar <- max(which((ordered$`p value` <= (j/m)*q)==T))
+kable(ordered[1:jstar,],
+      caption = "Significant genes after Benjamini-Hochberg correction",
+      row.names = F)
+```
+
+After Benjamini-Hochberg step-up correction, we reject the null hypothesis for `r jstar` genes.
+
+### Comparison
+
+The Bonferroni, Sidak, and Holm methods above are more conservative than the Benjamini-Hochberg approach, because they aim to control the family-wise error rate (FWER), or the probability of making at least 1 type 1 error. In other words, these methods ensure that $1-(1-p)^m \leq\alpha$. Of these methods, the Bonferroni approach is the most conservative, because it is a single step procedure and all tests are subject to the same stringent bound.
+
+On the other hand, the Benjamini-Hochberg approach aims to control the false discovery rat (FDR), or the expected proportion of false positives among rejected hypotheses. Because FDR-based approaches focus on limiting type 1 error among "discoveries" (significant p values) as opposed to across all tests, they tend to be less conservative. This is why the Benjamini-Hochberg step-up correction rejects `r jstar` null hypotheses compared to `r sum(fc_results[,"p value"]<=a_bonf)` for the more conservative methods.
+
+## c) Q-values
+
+Calculate q-values using the `qvalue` package (without a pre-specified $\pi_0$ parameter): 
+
+```{r q values}
+q <- qvalue(fc_results$`p value`)
+fc_results$qvalue <- q$qvalues
+kable(fc_results[fc_results$qvalue<=0.01,],
+      caption = "Significant genes based on q-value",
+      row.names = F)
+```
+
+There are `r sum(fc_results$qvalue<=0.01)` genes with a q-value $\leq$ 0.01. $\pi_0$ represents the proportion of truly null hypotheses, and this package estimates it at approximately `r round(q$pi0,3)`.
