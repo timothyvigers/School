@@ -1,0 +1,24 @@
+---
+title: "BIOS 7659 Homework 4"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+knitr::opts_knit$set(root.dir="C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw4")
+library(Rsubread)
+list.files()
+```
+
+# 1. Online software
+
+## a) Read information
+
+```{r qc,include=FALSE,cache=TRUE}
+# Extract quality scores
+qs <- qualityScores(filename="./sra_data.fastq.gz",nreads=-1)
+```
+
+There are total of `r nrow(qs)` spots (reads) in this dataset.

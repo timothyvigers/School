@@ -2,12 +2,12 @@
 title: "BIOS 7659 Homework 3"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: pdf_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE,cache = TRUE)
-knitr::opts_knit$set(root.dir="/home/tim/Documents/GitHub/School/Statistical Genomics/hw3")
+knitr::opts_knit$set(root.dir="C:/Users/timbv/Documents/GitHub/School/Statistical Genomics/hw3")
 library(knitr)
 library(impute)
 library(limma)
@@ -149,9 +149,7 @@ First, find all the possible combinations of group labels (in this case control 
 
 ```{r perm tests}
 combos <- combinations(16,8,colnames(array))
-cores <- detectCores()-4
-cl <- makeCluster(cores,type = "FORK")
-pvalues <- parApply(cl,array,1,function(g){
+pvalues <- apply(array,1,function(g){
   maxt <- t.test(g[grep("c",names(array))],
                  g[grep("k",names(array))])
   perms <- apply(combos,1,function(c){
@@ -162,7 +160,6 @@ pvalues <- parApply(cl,array,1,function(g){
   })
   return(sum(abs(perms)>=abs(maxt$statistic))/length(perms))
 })
-stopCluster(cl)
 ```
 
 Using the permutation test approach, there are `r sum(pvalues<=0.01)` genes significant at the 0.01 level. 
