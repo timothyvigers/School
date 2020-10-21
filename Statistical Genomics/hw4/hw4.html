@@ -592,6 +592,113 @@ ggplot(plot_sum_stat,aes(x=position,y=value,color=name)) +
 <p class="caption">Screenshot of UCSC Genome Browser on S. cerevisiae Apr. 2011</p>
 </div>
 </div>
+<div id="c-quantitation" class="section level2">
+<h2>c) Quantitation</h2>
+<p>The htseq function returns two tables, one with a summary of the number of aligned or ambiguous reads and another with read counts for specific features (in this case gene IDs).</p>
+<pre class="r"><code># Import no features
+no_feat &lt;- read.delim(&quot;./htseq-count_no_feature.tabular&quot;,header = F)
+kable(no_feat,col.names = c(&quot;Category&quot;,&quot;SAM-to-BAM on data 11: converted BAM&quot;),
+      caption = &quot;htseq Summary Table&quot;)</code></pre>
+<table>
+<caption>htseq Summary Table</caption>
+<thead>
+<tr class="header">
+<th align="left">Category</th>
+<th align="right">SAM-to-BAM on data 11: converted BAM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">__no_feature</td>
+<td align="right">197763</td>
+</tr>
+<tr class="even">
+<td align="left">__ambiguous</td>
+<td align="right">7719</td>
+</tr>
+<tr class="odd">
+<td align="left">__too_low_aQual</td>
+<td align="right">582447</td>
+</tr>
+<tr class="even">
+<td align="left">__not_aligned</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">__alignment_not_unique</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Counts per features
+feat &lt;- read.delim(&quot;./htseq-count.tabular&quot;,header = F)
+kable(head(feat[order(feat$V2,decreasing = T),],10),
+      caption = &quot;htseq Top 10 Features by Read Count&quot;,
+      col.names = c(&quot;Geneid&quot;,&quot;SAM-to-BAM on data 11: converted BAM&quot;))</code></pre>
+<table>
+<caption>htseq Top 10 Features by Read Count</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Geneid</th>
+<th align="right">SAM-to-BAM on data 11: converted BAM</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">3013</td>
+<td align="left">YHR174W</td>
+<td align="right">39192</td>
+</tr>
+<tr class="even">
+<td align="left">2640</td>
+<td align="left">YGR192C</td>
+<td align="right">37184</td>
+</tr>
+<tr class="odd">
+<td align="left">3794</td>
+<td align="left">YKL060C</td>
+<td align="right">34937</td>
+</tr>
+<tr class="even">
+<td align="left">107</td>
+<td align="left">YAL038W</td>
+<td align="right">28748</td>
+</tr>
+<tr class="odd">
+<td align="left">4423</td>
+<td align="left">YLR249W</td>
+<td align="right">25601</td>
+</tr>
+<tr class="even">
+<td align="left">4195</td>
+<td align="left">YLR044C</td>
+<td align="right">22660</td>
+</tr>
+<tr class="odd">
+<td align="left">729</td>
+<td align="left">YCR012W</td>
+<td align="right">20836</td>
+</tr>
+<tr class="even">
+<td align="left">5710</td>
+<td align="left">YOL086C</td>
+<td align="right">19958</td>
+</tr>
+<tr class="odd">
+<td align="left">2166</td>
+<td align="left">YGL008C</td>
+<td align="right">19017</td>
+</tr>
+<tr class="even">
+<td align="left">3894</td>
+<td align="left">YKL152C</td>
+<td align="right">16013</td>
+</tr>
+</tbody>
+</table>
+<p>The summary table shows that</p>
+</div>
 </div>
 
 
