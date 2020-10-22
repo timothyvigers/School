@@ -1,0 +1,48 @@
+---
+title: "BIOS 7731 HW 6"
+author: "Tim Vigers"
+date: "10/21/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# BD 3.5.11
+
+If we set $\mu_0=0$ and the ideal sample mean of $x_1,...,x_{n-1}$, $\bar{X}_{n-1}=0$, then the sensitivity curve of $t=\frac{\sqrt{n}(\bar{x}-\mu_0)}{\sqrt{\frac{\sum_{i=1}^n(x_i-\bar{x})^2}{n-1}}}$ simplifies to:
+
+$$
+sc(x) = n(\frac{\sqrt{n}(\bar{X}-\mu_0)}{\sqrt{\frac{\sum_{i=1}^n(X_i-\bar{X})^2}{n-1}}}-0) = n[\frac{\sqrt{n}(\bar{X})}{\sqrt{\frac{\sum_{i=1}^n(X_i-\bar{X})^2}{n-1}}}]
+$$
+
+## a)
+
+From this we can see that the limit of $sc(x)$ as $|x|\rightarrow\infty$ is 1, assuming $n$ is fixed. When the observation $x$ is added to the ideal sample with sample mean $0$, the new sample mean is pushed away from 0 (with the direction depending on the sign of $x$). As $x$ gets extremely large, the function approaches $n\frac{\bar{X}}{\sqrt{\bar{X}^2}}=n$ due to the Law of Large Numbers. 
+In order to check this, I wrote some quick R code:
+
+```{r}
+set.seed(1017)
+# Make n-1 sample with mean 0 (or close enough)
+xn_1 <- rnorm(999,0,5)
+# N
+n <- length(xn_1)+1
+# Values of x going toward infinity
+xs <- 1:10000
+# SC function
+sc <- lapply(xs, function(x){
+  xn <- c(xn_1,x)
+  stat <- n*sqrt(n)*mean(xn)/sd(xn)
+  stat
+})
+# Plot
+plot(xs,unlist(sc),type = "l",xlab = "x",ylab = "sc(x)")
+abline(n,0)
+```
+
+## b)
+
+It's a little more obvious to see the limit of $sc(x)$ as $n\rightarrow\infty$ with $x$ fixed. The function can be rearranged to $[\frac{n\sqrt{n}\sqrt{n-1}(\bar{X})}{\sqrt{\sum_{i=1}^n(X_i-\bar{X})^2}}]$. With $x$ fixed this is increasing in $n$, so the limit as $n$ approaches $\infty$ does not exist. 
+
+So, the t-ratio is robust as a function of $x$, but not $n$.
