@@ -14,6 +14,7 @@ library(cqn)
 library(yeastRNASeq)
 library(EDASeq)
 library(tidyverse)
+library(patchwork)
 ```
 
 # 1. Next Generation Sequencing (NGS): Sample Size Estimates
@@ -232,96 +233,47 @@ biasPlot(median,"gc",log=TRUE)
 
 ## d) Apply `betweenLaneNormalization()` to normalize across samples
 
-This method is similar to the `withinLaneNormalization()` function, but does not include a loess method. Instead of normalizing bins within a lane, however, these methods ensure that the lanes are similar. So, the median approach forces the median of all the lanes to the be the same, the upper approach does the same but using the upper quartile rather than the median, and the full method uses the full quantile method. 
+This method is similar to the `withinLaneNormalization()` function, but does not include a loess method. Instead of normalizing bins within a lane, however, these methods ensure that the lanes are similar. So, the median approach forces the median of all the lanes to the be the same, the upper approach does the same but using the upper quartile rather than the median, and the full method uses the full quantile method. First, generate each combination of within- and between-lane normalization methods:
 
-### Loess within-lane normalization
-
-#### Median between-lane normalization
+# DO WE REALLY NEED A BEFORE AND AFTER PLOT FOR EACH COMBINATION PLUS A COMPARISON OF ALL 12?!
 
 ```{r}
+# Loess
 loess_median = betweenLaneNormalization(loess,"median")
-boxplot(loess_median)
-```
-
-#### Upper between-lane normalization
-
-```{r}
 loess_upper = betweenLaneNormalization(loess,"upper")
-boxplot(loess_upper)
-```
-
-#### Full between-lane normalization
-
-```{r}
 loess_full = betweenLaneNormalization(loess,"full")
-boxplot(loess_full)
-```
-
-### Median within-lane normalization
-
-#### Median between-lane normalization
-
-```{r}
+# Median
 median_median = betweenLaneNormalization(median,"median")
-boxplot(median_median)
-```
-
-#### Upper between-lane normalization
-
-```{r}
 median_upper = betweenLaneNormalization(median,"upper")
-boxplot(median_upper)
-```
-
-#### Full between-lane normalization
-
-```{r}
 median_full = betweenLaneNormalization(median,"full")
-boxplot(median_full)
-```
-
-### Upper within-lane normalization
-
-#### Median between-lane normalization
-
-```{r}
+# Upper
 upper_median = betweenLaneNormalization(upper,"median")
-boxplot(upper_median)
-```
-
-#### Upper between-lane normalization
-
-```{r}
 upper_upper = betweenLaneNormalization(upper,"upper")
-boxplot(upper_upper)
-```
-
-#### Full between-lane normalization
-
-```{r}
 upper_full = betweenLaneNormalization(upper,"full")
-boxplot(upper_full)
-```
-
-### Full within-lane normalization
-
-#### Median between-lane normalization
-
-```{r}
+# Full
 full_median = betweenLaneNormalization(full,"median")
-boxplot(full_median)
-```
-
-#### Upper between-lane normalization
-
-```{r}
 full_upper = betweenLaneNormalization(full,"upper")
-boxplot(full_upper)
-```
-
-#### Full between-lane normalization
-
-```{r}
 full_full = betweenLaneNormalization(full,"full")
-boxplot(full_full)
 ```
+
+
+### Comparison
+
+In order to more easily compare methods, it's helpful to look at the normalization boxplots in a grid. In this case the within-lane normalization approaches are in columns, and the between-lane approaches are in rows:
+
+```{r,fig.height=10,fig.width=8}
+par(mfrow=c(3,4))
+boxplot(loess_median,main="Loess-Median")
+boxplot(median_median,main="Median-Median")
+boxplot(upper_median,main="Upper-Median")
+boxplot(full_median,main="Full-Median")
+boxplot(loess_upper,main="Loess-Upper")
+boxplot(median_upper,main="Median-Upper")
+boxplot(upper_upper,main="Upper-Upper")
+boxplot(full_upper,main="Full-Upper")
+boxplot(loess_full,main="Loess-Full")
+boxplot(median_full,main="Median-Full")
+boxplot(upper_full,main="Upper-Full")
+boxplot(full_full,main="Full-Full")
+```
+
