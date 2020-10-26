@@ -2,19 +2,19 @@
 title: "BIOS 7659 Homework 5"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE)
-knitr::opts_knit$set(root.dir="/home/tim/Documents/GitHub/School/Statistical Genomics/hw5")
+knitr::opts_chunk$set(echo=TRUE,fig.width = 8)
+knitr::opts_knit$set(root.dir="C:/Users/tim/Documents/GitHub/School/Statistical Genomics/hw5")
 library(RNASeqPower)
 library(edgeR)
 library(cqn)
 library(yeastRNASeq)
 library(EDASeq)
 library(tidyverse)
-library(patchwork)
+library(knitr)
 ```
 
 # 1. Next Generation Sequencing (NGS): Sample Size Estimates
@@ -28,9 +28,7 @@ data(uCovar)
 
 ## a) Recreate Figure 3 from the journal club paper
 
-Figure 3 from Hart et al. shows the sample size needed to detect a two-fold difference in expression with 80% power and alpha = 0.01 for three different CV’s and a range of sequencing depths from 1 to 50.
-
-# ALPHA = 0.05 OR 0.01?
+Figure 3 from Hart et al. shows the sample size needed to detect a two-fold difference in expression with 80% power and $\alpha = 0.01$ for three different CV’s and a range of sequencing depths from 1 to 50. The paper claims that their plot was generated using $\alpha = 0.01$, but the following figure does not match the paper's version exactly. The paper also mentions a type error rate of 5%, which suggests $\alpha = 0.05$, but I wasn't able to match the paper's figure using this value for $\alpha$ either.
 
 ```{r}
 # Parameters
@@ -49,38 +47,57 @@ fig3_data = fig3_data %>% pivot_longer(cv0.4:cv1.2)
 ggplot(fig3_data,aes(x=depths,y=value,color=name)) + 
   geom_point() + geom_line() +
   theme_bw() + xlab("Gene Depth") + ylab("Samples Required") + 
-  scale_color_discrete(name="",labels=c("CV = 0.4","CV = 0.8","CV = 1.2"))
+  scale_color_discrete(name="",labels=c("CV = 0.4","CV = 0.8",
+                                        "CV = 1.2"))
 ```
 
-This figure shows that as the gene depth increases, the required sample size decreases. After a depth of approximately 10, this effect tends to level off and the gains from increasing gene depth are minimal. Also, a higher coefficient of
-variation (CV) across samples requires a higher sample size to achieve adequate power, as you would expect.
+This figure shows that as the gene depth increases, the required sample size decreases. After a depth of approximately 10, this effect tends to level off and the gains from increasing gene depth are minimal. Also, a higher coefficient of variation (CV) across samples requires a larger sample size to achieve adequate power, as you would expect.
 
-## b) Create a row for the Mongomery data in Table 1 in the Hart et al. paper.
+## b) Create a row for the Mongomery data in Table 1 
+
+The more I read the description of this table and try to recreate it, the more confusing it becomes. I think that we need to sum the raw counts for each gene (row-wise), and then divide that sum by the total number of reads in the whole experiment (in millions). Then, we put these counts per million mapped into the bins specified in the Hart paper and then convert counts to percentages.
 
 ```{r}
-cols = c("Avg Reads","% mapped","< 0.01","0.01–.1","0.1–1","1–10","10–100","100–1000","> 1000")
-table_1 = montgomery.subset %>% 
-  summarise(ID="m",Sample="Montgomery",`Sample Type`="lymphoblastoid cell lines",
-            n=ncol(.),`Read Type`="PE")
+# Convert
+total_reads = sum(unlist(montgomery.subset))/1e06
+gene_totals = rowSums(montgomery.subset)
+avg = round(mean(gene_totals))
+gene_totals = gene_totals / total_reads
+# Count the number in each bin
+gene_totals = cut(gene_totals,c(0,0.01,0.1,1,10,100,1000,Inf),right = F,
+                  labels = c("< 0.01","0.01–.1","0.1–1","1–10","10–100",
+                             "100–1000","> 1000"))
+# As percentages
+gene_percs = round(table(gene_totals)/length(gene_totals) * 100,1)
+# Print
+line = c(ID="m",Sample="Montgomery",
+         `Sample Type`="lymphoblastoid cell lines",
+         n=10,`Read Type`="PE",`Avg Reads` = avg,`% mapped`=100,
+         gene_percs)
+kable(t(line))
 ```
 
-# WHAT ARE THE UNITS HERE? DO WE DIVIDE BY THE SUM OF THE COLUMN (IN MILLIONS)?
+This dataset has much a much higher average read count than any in the Hart paper, although this could be due to the different pre-filtering steps (i.e. the Montgomery data subset excluded genes with all 0 counts). This is also likely part of the reason that the distribution across the bins is slightly different for the Montgomery data compared to Hart's datasets. For example, the Montgomery dataset has 0% in the < 0.01 bin. Also, the brain datasets have more genes in the 10 - 100 bin, whereas the Montgomery data is more evenly spread across the bins and has more genes in the 0.01 - 0.1 range than the Hart datasets.
 
 ## c) Calculate the biological coefficient of variations (CV)
 
-First, estimate the common dispersion using `estimateCommonDisp()`, then use this estimate for the dispersion parameter in `estimateTagwiseDisp()`. Plot a histogram and empirical CDF of these estimates, and print the quantiles:
+First, estimate the common dispersion using `estimateCommonDisp()`, then use this estimate for the dispersion parameter in `estimateTagwiseDisp()`. According to the `edgeR` documentation, biological CV "is the square root of the dispersion
+parameter under the negative binomial model." Plot a histogram and empirical CDF of these CV estimates, and print the quantiles:
 
 ```{r}
 # Get common dispersion estimate
 c = estimateCommonDisp(montgomery.subset)
 # Estimate biological CV
-e = estimateTagwiseDisp(montgomery.subset,dispersion = c)
+e = sqrt(estimateTagwiseDisp(montgomery.subset,dispersion = c))
 # Histogram
-hist(e,main="Histogram of Tagwise Dispersion Estimates",xlab = "Estimate")
-plot(ecdf(e),main="Empirical CDF of Tagwise Dispersion Estimates",xlab="CV")
+hist(e,main="Histogram of Tagwise Dispersion Estimates",
+     xlab = "Estimate")
+plot(ecdf(e),main="Empirical CDF of Tagwise Dispersion Estimates",
+     xlab="CV")
+quantile(e,seq(0.1,1,0.1))
 ```
 
-The median CV using this method is `r quantile(e,0.5)` and the 90th percentile is `r quantile(e,0.9)`. These estimates are quite a lot higher than the Hart paper human samples, which ranged "from 0.32 to 0.74 with a median of 0.43."
+The median CV using this method is `r quantile(e,0.5)` and the 90th percentile is `r quantile(e,0.9)`. These estimates are slightly higher than the Hart paper human samples, which ranged "from 0.32 to 0.74 with a median of 0.43."
 
 ## d) Recreate Figure 3 from Hart et al. again
 
@@ -88,8 +105,8 @@ The median CV using this method is `r quantile(e,0.5)` and the 90th percentile i
 # Calculate n
 cv_median = rnapower(depths,cv = median(e),effect = effect,alpha = alpha,
                      power = power)
-cv_90 = rnapower(depths,cv = quantile(e,0.9),effect = effect,alpha = alpha,
-                 power = power)
+cv_90 = rnapower(depths,cv = quantile(e,0.9),effect = effect,
+                 alpha = alpha,power = power)
 # Plotting data
 fig3_data_2 = as.data.frame(cbind(depths,cv_median,cv_90))
 fig3_data_2 = fig3_data_2 %>% pivot_longer(cv_median:cv_90)
@@ -100,7 +117,7 @@ ggplot(fig3_data_2,aes(x=depths,y=value,color=name)) +
   scale_color_discrete(name="",labels=c("Median CV","90th %ile CV"))
 ```
 
-Based on the plot above and assuming gene depth of at least 10, I would recommend a sample size of approximately 380. Of course, these CV estimates appear to be fairly high, so if there is convincing evidence that the biological CV in the population under study would be lower than the median estimate, then a smaller sample size would be sufficient.
+Based on the plot above and assuming depth of at least 10, I would recommend a sample size of approximately 100. This also assumes that the median biological CV estimated here is reasonable, but if there's good reason to expect that the biological CV will be closer to the 90th percentile estimate, then it's a possible that a sample size of 25 would be acceptable. 
 
 ## e) Recreate the curve in the top of Figure 4
 
@@ -110,7 +127,7 @@ The curve we are trying to recreate is "the power curve for n = 20 per group, co
 # Set parameters
 n = 20
 depth = 100
-cv = quantile(e,0.6)
+cv = 0.32
 alpha = 0.001
 effects = seq(1,8,0.01)
 # Plot power as a function of fold change
@@ -120,7 +137,16 @@ ggplot(plot_data,aes(x=effects,y=p)) + geom_line() +
   theme_bw() + ylab("Power") + xlab("Fold Change")
 ```
 
-# WHY WOULDN'T WE BE ABLE TO RECREATE THIS? DO WE NEED TO USE 60TH PERCENTILE OF OUR OBSERVED OR RECREATE USING THEIR CV VALUE? OR IS THIS REFERRING TO THE WEIRD Y AXIS IN THE HART FIGURE?
+The power curve in the Hart et al. paper tops out at just over 0.6. I was not able to recreate this, but the plot above looks much more like what we would expect for a power curve. Below is the same plot using the 60th percentile of biological CV from the Montgomery data as $\sigma$:
+
+```{r}
+# Plot power as a function of fold change
+p = rnapower(depth=depth,n=n,cv=quantile(e,0.6),alpha=alpha,
+             effect=effects)
+plot_data = as.data.frame(cbind(effects,p))
+ggplot(plot_data,aes(x=effects,y=p)) + geom_line() +
+  theme_bw() + ylab("Power") + xlab("Fold Change")
+```
 
 # 2. Next Generation Sequencing: Pre-Processing
 
@@ -157,10 +183,13 @@ row.names(exprs) = NULL #remove row and column names
 colnames(exprs) = NULL
 #Create SeqExpressionSet, which contains counts, labels for the
 #samples and GC content/length
-counts = newSeqExpressionSet(counts=exprs,
-phenoData=data.frame(conditions = factor(c("mut","mut","wt","wt"))),
-featureData=AnnotatedDataFrame(data.frame(gc=yeastGC[sub],
-length = yeastLength[sub])))
+feature <- data.frame(gc=yeastGC[sub],length=yeastLength[sub])
+counts <- 
+  newSeqExpressionSet(counts=as.matrix(geneLevelData[sub,]),
+                      featureData=feature,
+                      phenoData=data.frame(
+                        conditions=factor(c(rep("mut",2),rep("wt",2))),
+                        row.names=colnames(geneLevelData)))
 ```
 
 ## b)
@@ -170,8 +199,6 @@ length = yeastLength[sub])))
 ```{r}
 EDASeq::boxplot(counts)
 ```
-
-# EDA AUTOMATICALLY   DOES BOXPLOTS ON THE LOG SCALE RIGHT?
 
 The two wildtype samples (3 and 4 above) do appear to be slightly different from the other two samples. Their distributions look slightly wider, and the medians appear to be slightly different as well, which indicates a need for normalization.
 
@@ -207,7 +234,7 @@ The `withinLaneNormalization()` function has four options for normalization: loe
 
 ```{r}
 loess = withinLaneNormalization(counts,"gc",which = "loess")
-biasPlot(loess,"gc",log=TRUE)
+biasPlot(loess,"gc",log=TRUE,ylim=c(2.5,3.5))
 ```
 
 ### Full method
@@ -231,49 +258,40 @@ median = withinLaneNormalization(counts,"gc",which = "median")
 biasPlot(median,"gc",log=TRUE)
 ```
 
+Of these methods, the loess approach appears to be the best as the gene counts are more even across the GC proportions (i.e. the lines are flatter). The other methods align the peaks of the wildtype and mutant curves, but the gene counts still depend heavily on GC proportion for both conditions. 
+
 ## d) Apply `betweenLaneNormalization()` to normalize across samples
 
-This method is similar to the `withinLaneNormalization()` function, but does not include a loess method. Instead of normalizing bins within a lane, however, these methods ensure that the lanes are similar. So, the median approach forces the median of all the lanes to the be the same, the upper approach does the same but using the upper quartile rather than the median, and the full method uses the full quantile method. First, generate each combination of within- and between-lane normalization methods:
+This method is similar to the `withinLaneNormalization()` function, but does not include a loess method. Instead of normalizing bins within a lane, however, these methods ensure that the lanes are similar. So, the median approach forces the median of all the lanes to the be the same, the upper approach does the same but using the upper quartile rather than the median, and the full method uses the full quantile method. First, plot before and after normalization for each between-lane method, using the data normalized within-lane using the loess method:
 
-# DO WE REALLY NEED A BEFORE AND AFTER PLOT FOR EACH COMBINATION PLUS A COMPARISON OF ALL 12?!
+### Median
 
 ```{r}
+par(mfrow=c(1,2))
 # Loess
 loess_median = betweenLaneNormalization(loess,"median")
+boxplot(loess,main = "Before")
+boxplot(loess_median,main = "After")
+```
+
+### Upper
+
+```{r}
+par(mfrow=c(1,2))
+# Loess
 loess_upper = betweenLaneNormalization(loess,"upper")
+boxplot(loess,main = "Before")
+boxplot(loess_upper,main = "After")
+```
+
+### Full
+
+```{r}
+par(mfrow=c(1,2))
+# Loess
 loess_full = betweenLaneNormalization(loess,"full")
-# Median
-median_median = betweenLaneNormalization(median,"median")
-median_upper = betweenLaneNormalization(median,"upper")
-median_full = betweenLaneNormalization(median,"full")
-# Upper
-upper_median = betweenLaneNormalization(upper,"median")
-upper_upper = betweenLaneNormalization(upper,"upper")
-upper_full = betweenLaneNormalization(upper,"full")
-# Full
-full_median = betweenLaneNormalization(full,"median")
-full_upper = betweenLaneNormalization(full,"upper")
-full_full = betweenLaneNormalization(full,"full")
+boxplot(loess,main = "Before")
+boxplot(loess_full,main = "After")
 ```
 
-
-### Comparison
-
-In order to more easily compare methods, it's helpful to look at the normalization boxplots in a grid. In this case the within-lane normalization approaches are in columns, and the between-lane approaches are in rows:
-
-```{r,fig.height=10,fig.width=8}
-par(mfrow=c(3,4))
-boxplot(loess_median,main="Loess-Median")
-boxplot(median_median,main="Median-Median")
-boxplot(upper_median,main="Upper-Median")
-boxplot(full_median,main="Full-Median")
-boxplot(loess_upper,main="Loess-Upper")
-boxplot(median_upper,main="Median-Upper")
-boxplot(upper_upper,main="Upper-Upper")
-boxplot(full_upper,main="Full-Upper")
-boxplot(loess_full,main="Loess-Full")
-boxplot(median_full,main="Median-Full")
-boxplot(upper_full,main="Upper-Full")
-boxplot(full_full,main="Full-Full")
-```
-
+Between the median, upper, and full methods, the full approach appears to work the best as it aligns the whole distribution of each sample, rather than just the median.
