@@ -6,7 +6,7 @@ output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE)
+knitr::opts_chunk$set(echo=TRUE,dpi = 600)
 knitr::opts_knit$set(root.dir="C:/Users/tim/Documents/GitHub/School/Statistical Genomics/hw5")
 library(RNASeqPower)
 library(edgeR)
