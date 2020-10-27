@@ -15,6 +15,7 @@ library(yeastRNASeq)
 library(EDASeq)
 library(tidyverse)
 library(knitr)
+library(flextable)
 ```
 
 # 1. Next Generation Sequencing (NGS): Sample Size Estimates
@@ -77,7 +78,8 @@ line = c(ID="m",Sample="Montgomery",
          `Sample Type`="lymphoblastoid cell lines",
          n=10,`Read Type`="PE",`Avg Reads` = avg,`% mapped`=100,
          gene_percs)
-kable(t(line))
+line = as.data.frame(t(line))
+flextable(line)
 ```
 
 This dataset has a slightly lower average read count than most in the Hart paper. The distribution across the bins is slightly different for the Montgomery data compared to Hart's datasets. For example, the Montgomery dataset has 0% in the < 0.01 bin (due to the fact that the example data filtered out genes with all 0 counts). Also, the brain datasets have more genes in the 10 - 100 bin, whereas the Montgomery data is generally more evenly spread across the bins.
