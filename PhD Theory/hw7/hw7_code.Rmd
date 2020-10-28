@@ -1,0 +1,26 @@
+---
+title: "BIOS 7731 HW 7"
+author: "Tim Vigers"
+date: "10/21/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# BD 5.3.13
+
+```{r}
+# Vector of n
+n = c(5,10,25)
+# Get critical values
+q9 = qchisq(0.9,df=n)
+q99 = qchisq(0.99,df=n)
+# CLT approximations
+clt9 = pnorm((q9-n)/sqrt(2*n))
+clt99 = pnorm((q99-n)/sqrt(2*n))
+# Part b
+b9 = pnorm(sqrt(2*q9)-sqrt(2*n))
+b99 = pnorm(sqrt(2*q99)-sqrt(2*n))
+```
