@@ -13,7 +13,9 @@ library(knitr)
 # BD 5.3.13
 
 ## c)
-
+ 
+For each n (degrees of freedom), find the critical value. Plug the critical value and n into the two approximations from above and compare.
+ 
 ```{r}
 # Vector of n
 n = c(5,10,25)
@@ -34,3 +36,5 @@ t99 = cbind(n,b99,clt99)
 kable(t99,caption = "99th %ile",col.names = c("n","Part b)","CLT"),
       digits = 3)
 ```
+
+For the $x_{0.90}$ case, the approximation from part b) slightly underestimates the probability while the CLT approach slightly overestimates. Both seem to perform well, however, and get very close to the correct value as n increases. In the $x_{0.99}$ case, the approximation from part b) is correct for every value of n, while the CLT approximation is too large. The CLT approximation again improves as n increases, but I think the approximation from part b) is better overall. 
