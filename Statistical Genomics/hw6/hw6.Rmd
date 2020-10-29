@@ -1,0 +1,45 @@
+---
+title: "BIOS 7659 Homework 6"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,dpi = 600)
+knitr::opts_knit$set(root.dir="C:/Users/tim/Documents/GitHub/School/Statistical Genomics")
+library(cqn)
+library(edgeR)
+library(tidyverse)
+library(flextable)
+```
+
+```{r}
+data("montgomery.subset")
+data("uCovar")
+```
+
+# 1. Next Generation Sequencing: Differential Expression
+
+## a) Calculate RPKM
+
+RPKM stands for reads per kilobases per million reads and is calculated by $\frac{r_g}{l_g T}=\frac{\text{# of mapped reads}}{\text{length in Kb}*\text{total mapped reads in millions}}$:
+
+```{r}
+lg = uCovar$length / 1000
+t = sum(unlist(montgomery.subset))
+rpkm = montgomery.subset/(lg*t)
+```
+
+Do a standard t test between the groups for each gene:
+
+```{r}
+# Define groups
+group1 = colnames(montgomery.subset)[1:5]
+group2 = colnames(montgomery.subset)[6:5]
+# T test for each row
+t_tests = apply(rpkm,1,function(x){
+  t = t.test(x[group1],x[group2])
+  return(c(rownames(x),t$statistic,t$p.value))
+})
+```
