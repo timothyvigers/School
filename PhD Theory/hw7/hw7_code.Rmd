@@ -1,15 +1,18 @@
 ---
 title: "BIOS 7731 HW 7"
 author: "Tim Vigers"
-date: "10/21/2020"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
 ```
 
 # BD 5.3.13
+
+## c)
 
 ```{r}
 # Vector of n
@@ -23,4 +26,11 @@ clt99 = pnorm((q99-n)/sqrt(2*n))
 # Part b
 b9 = pnorm(sqrt(2*q9)-sqrt(2*n))
 b99 = pnorm(sqrt(2*q99)-sqrt(2*n))
+# Make tables
+t9 = cbind(n,b9,clt9)
+kable(t9,caption = "90th %ile",col.names = c("n","Part b)","CLT"),
+      digits = 3)
+t99 = cbind(n,b99,clt99)
+kable(t99,caption = "99th %ile",col.names = c("n","Part b)","CLT"),
+      digits = 3)
 ```
