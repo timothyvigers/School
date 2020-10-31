@@ -21,9 +21,9 @@ data("uCovar")
 
 # 1. Next Generation Sequencing: Differential Expression
 
-## a) Calculate RPKM
+## a) Calculate RPKM and perform a t test
 
-RPKM stands for reads per kilobases per million reads and is calculated by $\frac{r_g}{l_g T}=\frac{\text{# of mapped reads}}{\text{length in Kb}*\text{total mapped reads in millions}}$:
+RPKM stands for reads per kilobases per million reads and is calculated by $$\frac{r_g}{l_g T}=\frac{\text{# of mapped reads}}{\text{length in Kb}*\text{total mapped reads in millions}}:$$
 
 ```{r}
 lg = uCovar$length / 1000
@@ -34,12 +34,57 @@ rpkm = montgomery.subset/(lg*t)
 Do a standard t test between the groups for each gene:
 
 ```{r}
-# Define groups
-group1 = colnames(montgomery.subset)[1:5]
-group2 = colnames(montgomery.subset)[6:5]
 # T test for each row
 t_tests = apply(rpkm,1,function(x){
-  t = t.test(x[group1],x[group2])
-  return(c(rownames(x),t$statistic,t$p.value))
+  group1 = as.numeric(x[1:5])
+  group2 = as.numeric(x[6:10])
+  if(var(group1)==0 | var(group2)==0){ # Skip those with constant values 
+    return(c(NA,NA))
+  } else {
+    t <- t.test(group1,group2)
+    return(c(t$statistic,t$p.value))
+  }
 })
+# Format and print
+t_tests = as.data.frame(t(t_tests))
+t_tests = t_tests %>% rownames_to_column() %>% 
+  set_names(c("Gene","T","p")) %>% arrange(desc(abs(T))) 
+
+t_tests %>% head(10) %>% flextable(.) %>% 
+  set_caption("Top 10 Genes by t-statistic") %>% autofit(.)
+```
+
+## b) Plot the histogram of p-values
+
+```{r}
+hist(t_tests$p,main = "Histogram of p values",xlab = "p")
+```
+
+Normally we would expect a uniform distribution of p values, but this distribution appears to have a peak at around 0.3 and another at p = 1. My guess is that this is because we have only filtered genes with all 0 counts, but kept other genes with counts so low that they are effectively 0. 
+
+## c) Filter genes by total counts
+
+# DOESN'T DGELIST AUTOMATICALLY INCLUDE lib.size
+with the total reads per subject?
+
+```{r}
+# Remove genes with low counts
+filtered = montgomery.subset[rowSums(montgomery.subset)>=10,]
+# Create edgeR object
+filtered_dge = DGEList(filtered,group = c(rep(1,5),rep(2,5)))
+```
+
+## d) Calculate TMM normalization factors
+
+```{r}
+norm = calcNormFactors(filtered_dge)
+autofit(flextable(norm$samples))
+```
+
+The effective library sizes are generally similar to the column sums because the normalization factors are fairly close to 1. A normalization factor > 1 increases the library size, which is similar to downscaling the counts (and vice versa for factors < 1). So, the effective library size for sample 6 is increased by about 115%. Conversely, the effective library size for sample 5 is decreased by approximately 90%, which suggests that there are a small number of high-count sequences that need to be adjusted for.
+
+## e) Use the `estimateDisp()` function to calculate the common, trended and tagwise dispersions
+
+```{r}
+e_disp = estimateDisp(filtered_dge)
 ```
