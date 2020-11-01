@@ -86,5 +86,57 @@ The effective library sizes are generally similar to the column sums because the
 ## e) Use the `estimateDisp()` function to calculate the common, trended and tagwise dispersions
 
 ```{r}
-e_disp = estimateDisp(filtered_dge)
+filtered_dge = estimateDisp(filtered_dge)
+```
+
+The common dispersion estimate is approximately `r round(filtered_dge$common.dispersion,3)`. Plot the tagwise dispersion estimate for each gene vs. the average log counts per million:
+
+# IS IT OKAY TO USE THE BUILT IN FUNCTION THAT PLOTS ON SQUARE ROOT SCALE?
+
+```{r}
+plotBCV(filtered_dge)
+```
+
+The common dispersion estimate only seems to work well for a narrow range of log CPM around 4. It appears to underestimate dispersion for the lower count genes and overestimate the higher average count genes.
+
+## f) Fit the negative binomial model
+
+### Using the common dispersion estimate
+
+```{r}
+et <- exactTest(filtered_dge,dispersion = "common")
+top_common <- topTags(et) %>% as.data.frame(.) %>% 
+  rownames_to_column(.,var = "Gene")
+autofit(flextable(top_common))
+```
+
+### Using the tag-wise dispersion estimates
+
+```{r}
+et <- exactTest(filtered_dge,dispersion = "tagwise")
+top_tagwise <- topTags(et) %>% as.data.frame(.) %>% 
+  rownames_to_column(.,var = "Gene")
+autofit(flextable(top_tagwise))
+```
+
+There are only `r length(intersect(top_tagwise$Gene,top_common$Gene))` overlapping genes in the top 10 table for the two methods.Also, the top genes as determined by the common dispersion estimate approach appear to be driven more by fold change than those that are most significant using the tagwise method, because the table is essentially in decreasing order of logFC (with a couple of minor exceptions).
+
+## g) Extract the raw counts 
+
+### For the top 10 genes based on the common dispersion
+
+```{r}
+top_common_counts = filtered_dge$counts[top_common$Gene,] %>%
+  as.data.frame(.) %>% rownames_to_column(var = "Gene")
+set_table_properties(flextable(top_common_counts),
+                     width = .5, layout = "autofit")
+```
+
+### For the top 10 genes based on tagwise dispersion
+
+```{r}
+top_tagwise_counts = filtered_dge$counts[top_tagwise$Gene,] %>%
+  as.data.frame(.) %>% rownames_to_column(var = "Gene")
+set_table_properties(flextable(top_tagwise_counts),
+                     width = .5, layout = "autofit")
 ```
