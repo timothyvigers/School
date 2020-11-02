@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo=TRUE,dpi = 600)
 knitr::opts_knit$set(root.dir="C:/Users/tim/Documents/GitHub/School/Statistical Genomics")
 library(cqn)
 library(edgeR)
+library(biomaRt)
+library(RUVSeq)
 library(tidyverse)
 library(flextable)
 ```
@@ -19,7 +21,7 @@ data("montgomery.subset")
 data("uCovar")
 ```
 
-# 1. Next Generation Sequencing: Differential Expression
+# 1. Differential Expression
 
 ## a) Calculate RPKM and perform a t test
 
@@ -132,6 +134,8 @@ set_table_properties(flextable(top_common_counts),
                      width = .5, layout = "autofit")
 ```
 
+# Most of these top genes have...
+
 ### For the top 10 genes based on tagwise dispersion
 
 ```{r}
@@ -140,3 +144,46 @@ top_tagwise_counts = filtered_dge$counts[top_tagwise$Gene,] %>%
 set_table_properties(flextable(top_tagwise_counts),
                      width = .5, layout = "autofit")
 ```
+
+# These are more evenly spread...
+
+### Get Ensembl information for the top genes
+
+#### Based on common dispersion
+
+```{r}
+ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+en = getBM(attributes=c('ensembl_gene_id','description'), 
+           filters ='ensembl_gene_id', values = top_common_counts$Gene, 
+           mart = ensembl)
+set_table_properties(flextable(en),
+        width = .75, layout = "autofit")
+```
+
+#### Based on tagwise dispersion
+
+```{r}
+en = getBM(attributes=c('ensembl_gene_id','description'), 
+           filters ='ensembl_gene_id', values = top_tagwise_counts$Gene, 
+           mart = ensembl)
+set_table_properties(flextable(en),
+        width = .75, layout = "autofit")
+```
+
+# 2. Remove Unwanted Variation.
+
+## a) Create a design matrix that includes an intercept and group indicator
+
+```{r}
+group = c(rep(1,5),rep(2,5))
+design = model.matrix(~group)
+filtered_dge = DGEList(filtered)
+filtered_dge = calcNormFactors(filtered_dge,"upperquartile")
+filtered_dge = estimateDisp(filtered_dge,design = design)
+glm_fit = glmFit(filtered_dge,
+                 dispersion = filtered_dge$common.dispersion)
+glm_lrt = glmLRT(glm_fit)$table
+glm_lrt$PValue_FDR = p.adjust(glm_lrt$PValue,"fdr")
+```
+
+
