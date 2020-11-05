@@ -30,9 +30,13 @@ data("uCovar")
 RPKM stands for reads per kilobases per million reads and is calculated by $$\frac{r_g}{l_g T}=\frac{\text{# of mapped reads}}{\text{length in Kb}*\text{total mapped reads in millions}}:$$
 
 ```{r}
-lg = uCovar$length / 1000
-t = sum(unlist(montgomery.subset)) / 1e6
-rpkm = montgomery.subset/(lg*t)
+# Divide by column sums (in millions)
+rpkm = as.data.frame(lapply(montgomery.subset, function(c){
+  c / (sum(c)/1e6)
+}))
+# Divide rows by gene length (in Kb)
+rpkm = as.matrix(rpkm) / c(uCovar$length / 1e3)
+rownames(rpkm) = rownames(montgomery.subset)
 ```
 
 Do a standard t test between the groups for each gene (using RPKM):
@@ -66,7 +70,7 @@ hist(t_tests$p,main = "Histogram of p values",xlab = "p")
 
 Normally we would expect a uniform distribution of p values, but this distribution appears to have a peak at around 0.3 and another at p = 1. The slight peak around 0.3 isn't necessarily too concerning, but it is odd that there are so many p values equal to (or very close to) 1. Looking at the genes that produce these p values, it seems as if they all have low RPKM across all samples, but were not excluded in the initial filtering step based on raw counts. Because the values are small, the t test for the difference between the two groups produces a tiny t statistic, which corresponds to a p value of 1. I think it would be best to just exclude these gene from any RPKM-based analyses.
 
-```{r}
+```{r eval=FALSE}
 p1 = t_tests$Gene[which(t_tests$p==1)]
 p1 = rpkm[p1,] %>% rownames_to_column(var="Gene")
 flextable(head(p1,10))
@@ -224,7 +228,7 @@ These plots are definitely an improvement on the previous ones. There still appe
 
 ```{r}
 design = model.matrix(~group + W_1, data=pData(set1))
-y = DGEList(counts=counts(set1), group=group)
+y = DGEList(counts=counts(set1))
 y = calcNormFactors(y, method="upperquartile")
 y = estimateGLMCommonDisp(y, design)
 y = estimateGLMTagwiseDisp(y, design)
@@ -247,7 +251,7 @@ Increasing the number of factors of unwanted variation appears to improve these 
 
 ```{r}
 design = model.matrix(~group + W_1 + W_2, data=pData(set2))
-y = DGEList(counts=counts(set2), group=group)
+y = DGEList(counts=counts(set2))
 y = calcNormFactors(y, method="upperquartile")
 y = estimateGLMCommonDisp(y, design)
 y = estimateGLMTagwiseDisp(y, design)
@@ -273,7 +277,7 @@ Overall these plots look similar to using RUVg with k = 2, although it appears t
 
 ```{r}
 design = model.matrix(~group + W_1 + W_2, data=pData(set3))
-y = DGEList(counts=counts(set3), group=group)
+y = DGEList(counts=counts(set3))
 y = calcNormFactors(y, method="upperquartile")
 y = estimateGLMCommonDisp(y, design)
 y = estimateGLMTagwiseDisp(y, design)
@@ -308,11 +312,11 @@ bottomly.count.table = exprs(bottomly.eset)
 ```{r}
 # Filter
 filtered = bottomly.count.table[rowSums(bottomly.count.table)>=10,]
-# edgeR object
-filtered_dge = DGEList(filtered)
 # DESeq2 object
 pheno = factor(gsub("/","_",phenoData(bottomly.eset)$strain))
 filtered_dseq = DESeqDataSetFromMatrix(filtered, DataFrame(pheno),~pheno)
+# edgeR object
+filtered_dge = DGEList(filtered,group = pheno)
 ```
 
 There are `r nrow(filtered)` genes with at least 10 counts across all samples.
