@@ -31,11 +31,11 @@ RPKM stands for reads per kilobases per million reads and is calculated by $$\fr
 
 ```{r}
 lg = uCovar$length / 1000
-t = sum(unlist(montgomery.subset))
+t = sum(unlist(montgomery.subset)) / 1e6
 rpkm = montgomery.subset/(lg*t)
 ```
 
-Do a standard t test between the groups for each gene:
+Do a standard t test between the groups for each gene (using RPKM):
 
 ```{r}
 # T test for each row
@@ -60,18 +60,19 @@ t_tests %>% head(10) %>% flextable(.) %>%
 
 ## b) Plot the histogram of p-values
 
-# THIS IS PROBABLY SOMETHING TO DO WITH RPKM - LOOK INTO IT
-
 ```{r}
 hist(t_tests$p,main = "Histogram of p values",xlab = "p")
 ```
 
-Normally we would expect a uniform distribution of p values, but this distribution appears to have a peak at around 0.3 and another at p = 1. My guess is that this is because we have only filtered genes with all 0 counts, but kept other genes with counts so low that they are effectively 0. 
+Normally we would expect a uniform distribution of p values, but this distribution appears to have a peak at around 0.3 and another at p = 1. The slight peak around 0.3 isn't necessarily too concerning, but it is odd that there are so many p values equal to (or very close to) 1. Looking at the genes that produce these p values, it seems as if they all have low RPKM across all samples, but were not excluded in the initial filtering step based on raw counts. Because the values are small, the t test for the difference between the two groups produces a tiny t statistic, which corresponds to a p value of 1. I think it would be best to just exclude these gene from any RPKM-based analyses.
+
+```{r}
+p1 = t_tests$Gene[which(t_tests$p==1)]
+p1 = rpkm[p1,] %>% rownames_to_column(var="Gene")
+flextable(head(p1,10))
+```
 
 ## c) Filter genes by total counts
-
-# DOESN'T DGELIST AUTOMATICALLY INCLUDE lib.size
-with the total reads per subject?
 
 ```{r}
 # Remove genes with low counts
@@ -79,6 +80,8 @@ filtered = montgomery.subset[rowSums(montgomery.subset)>=10,]
 # Create edgeR object
 filtered_dge = DGEList(filtered,group = rep(c(1,2),each=5))
 ```
+
+There are a total of `r nrow(filtered)` genes with at least 10 counts across all samples. By default, the `DGEList()` function uses column sums for the `lib.size` argument. This makes the most sense for this dataset, as the provided `sizeFactors.subset` data appears to be incorrect.
 
 ## d) Calculate TMM normalization factors
 
@@ -97,13 +100,11 @@ filtered_dge = estimateDisp(filtered_dge)
 
 The common dispersion estimate is approximately `r round(filtered_dge$common.dispersion,3)`. Plot the tagwise dispersion estimate for each gene vs. the average log counts per million:
 
-# IS IT OKAY TO USE THE BUILT IN FUNCTION THAT PLOTS ON SQUARE ROOT SCALE?
-
 ```{r}
 plotBCV(filtered_dge)
 ```
 
-The common dispersion estimate only seems to work well for a narrow range of log CPM around 4. It appears to underestimate dispersion for the lower count genes and overestimate the higher average count genes.
+The common dispersion estimate only seems to work well for a narrow range of log CPM around 4. It appears to underestimate dispersion for the lower count genes and overestimate the higher average count genes. Note that the y axis of the above plot is the biological CV, which is the square root of the dispersion factor. 
 
 ## f) Fit the negative binomial model
 
@@ -125,9 +126,7 @@ top_tagwise = topTags(et) %>% as.data.frame(.) %>%
 autofit(flextable(top_tagwise))
 ```
 
-There are only `r length(intersect(top_tagwise$Gene,top_common$Gene))` overlapping genes in the top 10 table for the two methods.Also, the top genes as determined by the common dispersion estimate approach appear to be driven more by fold change than those that are most significant using the tagwise method, because the table is essentially in decreasing order of logFC (with a couple of minor exceptions).
-
-# ESSENTIALLY BECAUSE THE VARIABILITY (DISPERSION) ISN'T REALLY ACCOUNTED FOR CORRECTLY WITH COMMON
+There are only `r length(intersect(top_tagwise$Gene,top_common$Gene))` overlapping genes in the top 10 table for the two methods.Also, the top genes as determined by the common dispersion estimate approach appear to be driven more by fold change than those that are most significant using the tagwise method, because the table is essentially in decreasing order of logFC (with a couple of minor exceptions). This is because the common dispersion factor fails to correctly account for dispersion, which means that the fold change drives the significance test.
 
 ## g) Extract the raw counts 
 
@@ -140,8 +139,6 @@ set_table_properties(flextable(top_common_counts),
                      width = .5, layout = "autofit")
 ```
 
-# Most of these top genes have...
-
 ### For the top 10 genes based on tagwise dispersion
 
 ```{r}
@@ -151,7 +148,7 @@ set_table_properties(flextable(top_tagwise_counts),
                      width = .5, layout = "autofit")
 ```
 
-# These are more evenly spread...
+The genes that are significant when using the common dispersion tend to be low counts with a few highly expressed genes, whereas the top genes based on tagwise dispersion tend to have counts more evenly spread across the samples. This further supports my theory from above.
 
 ### Get Ensembl information for the top genes
 
@@ -176,6 +173,8 @@ set_table_properties(flextable(en),
                      width = .75, layout = "autofit")
 ```
 
+Almost all of the top ten genes based on common dispersion code for some sort of immunoglobulin. A few of the top tagwise genes are also immunoglobulins, but there appears to be a greater variety of function in among the top tagwise genes.
+
 # 2. Remove Unwanted Variation.
 
 ## a) Create a design matrix 
@@ -187,8 +186,7 @@ design = model.matrix(~group)
 filtered_dge = DGEList(filtered)
 filtered_dge = calcNormFactors(filtered_dge,"upperquartile")
 filtered_dge = estimateDisp(filtered_dge,design = design)
-glm_fit_a = glmFit(filtered_dge,
-                 dispersion = filtered_dge$common.dispersion)
+glm_fit_a = glmFit(filtered_dge)
 glm_lrt_a = glmLRT(glm_fit_a)$table
 glm_lrt_a$PValue_FDR = p.adjust(glm_lrt_a$PValue,"fdr")
 ```
@@ -222,7 +220,7 @@ plotRLE(set1, outline=FALSE,col=colors[group])
 plotPCA(set1,col=colors[group])
 ```
 
-These plots are definitely an improvement on the previous ones. There still appear to be two samples with more variability than the others (NA07037 and NA11918), but in both the boxplot and PCA plot all of the samples are closer to one another than before RUVg. 
+These plots are definitely an improvement on the previous ones. There still appear to be two samples that are different from the others (NA07037 and NA11918), but in both the boxplot and PCA plot all of the samples are closer to one another than before RUVg. 
 
 ```{r}
 design = model.matrix(~group + W_1, data=pData(set1))
@@ -271,7 +269,7 @@ plotRLE(set3,outline=FALSE,col=colors[group])
 plotPCA(set3,col=colors[group])
 ```
 
-Overall these plots look similar to using RUVg with k = 2, although in the boxplot it appears that NA11918 still has more variability than the other samples. NA11918 also seems to driving PC1, although this PCA plot is still a significant improvement over the original plot without any RUV methods applied.
+Overall these plots look similar to using RUVg with k = 2, although it appears that NA11918 is still different from the other samples. NA11918 also seems to driving PC1, although this PCA plot is still a significant improvement over the original plot without any RUV methods applied.
 
 ```{r}
 design = model.matrix(~group + W_1 + W_2, data=pData(set3))
@@ -288,11 +286,11 @@ After controlling for two factors of unwanted variation using RUVr, there are `r
 
 ## f) Concerns
 
-My major concern about RUV methods in general is that they remove wanted variation in addition to unwanted. For example, 
+Based on the diagnostic plots alone, there doesn't appear to be anything wrong with using RUV on this dataset. However, one of the important assumptions of RUVg is that there are "control" genes that are not differentially expressed. Here we chose 10,000 genes with large p values from a standard likelihood ratio test, which seems like a somewhat ad-hoc approach. It would be better if we could use prior knowledge or spike-ins to determine control genes.
 
-# LOOK AT THE PAPER FOR LIMITATIONS
+The assumptions for RUVr are less strict, so I would be more inclined to move forward with that method. RUVr can use information from all the genes for normalization, but assumes that the unwanted factors are unrelated to variables of interest. This seems like a reasonable assumption for this dataset, although it's difficult to say for sure.
 
-# GENERALLY WE WANT THE LOWEST POSSIBLE K THAT HELPS
+The major concern I have with RUV in general is that it's easy to accidentally remove wanted variation. This isn't unique to RUV, and I think it can be avoided by carefully checking the diagnostic plots and keeping the k parameter low, but it's a concern nonetheless. 
 
 # 3. Method Comparisons
 
@@ -319,8 +317,6 @@ filtered_dseq = DESeqDataSetFromMatrix(filtered, DataFrame(pheno),~pheno)
 
 There are `r nrow(filtered)` genes with at least 10 counts across all samples.
 
-# KEEP AN EYE OUT FOR AUTOMATIC P VALUE ADJUSTMENT
-
 ## b) Calculate the DESeq2 size factors
 
 ```{r}
@@ -340,7 +336,15 @@ $$
 \hat{s_j} = \text{median}_i(\frac{k_{ij}}{(\prod_{v=1}^{k_{iv}})^{\frac{1}{m}}})
 $$
 
-The idea is to make samples which may have been sequenced at different depths more comparable. For this dataset, the size factors estimated by TMM tend to be close to 1, whereas those estimated by DESeq2 have a much larger range and are more variable. 
+The TMM approach estimates relative RNA expression using the trimmed mean of the M values, where the M value of gene g in samples k and k' is:
+
+$$
+M_g=\text{log}_2\frac{Y_{gk}/N_k}{Y_{gk'}/N_{k'}}
+$$
+
+And $Y$ indicates the observed count.
+
+The general idea of size factors is to make samples which may have been sequenced at different depths more comparable. For this dataset, the size factors estimated by TMM tend to be close to 1, whereas those estimated by DESeq2 have a much larger range and are more variable. 
 
 ## c) Calculate the DESeq2 dispersions
 
