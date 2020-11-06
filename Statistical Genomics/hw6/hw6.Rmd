@@ -89,8 +89,8 @@ There are a total of `r nrow(filtered)` genes with at least 10 counts across all
 ## d) Calculate TMM normalization factors
 
 ```{r}
-norm = calcNormFactors(filtered_dge)
-autofit(flextable(norm$samples))
+filtered_dge = calcNormFactors(filtered_dge)
+autofit(flextable(filtered_dge$samples))
 ```
 
 The effective library sizes are generally similar to the column sums because the normalization factors are fairly close to 1. A normalization factor > 1 increases the library size, which is similar to downscaling the counts (and vice versa for factors < 1). So, the effective library size for sample 6 is increased by about 115%. Conversely, the effective library size for sample 5 is decreased by approximately 90%, which suggests that there are a small number of high-count sequences that need to be adjusted for.
@@ -274,11 +274,19 @@ plotPCA(set3,col=colors[group])
 Overall these plots look similar to using RUVg with k = 2, although it appears that NA11918 is still different from the other samples. NA11918 still seems to driving PC1, although this PCA plot is still a significant improvement over the original plot without any RUV methods applied.
 
 ```{r}
-design = model.matrix(~group + W_1 + W_2, data=pData(set3))
-y = DGEList(counts=counts(set3))
+design = model.matrix(~group + W_1 + W_2, data=pData(set2))
+y = DGEList(counts=counts(set2),group = group)
 y = calcNormFactors(y, method="upperquartile")
-y = estimateGLMCommonDisp(y, design)
-y = estimateGLMTagwiseDisp(y, design)
+y = estimateDisp(y, design)
+glm_fit_d = glmFit(y, design,dispersion = y$tagwise.dispersion)
+glm_lrt_d = glmLRT(glm_fit_d, coef=2)$table
+glm_lrt_d$PValue_FDR = p.adjust(glm_lrt_d$PValue,"fdr")
+
+
+design = model.matrix(~group + W_1 + W_2, data=pData(set3))
+y = DGEList(counts=counts(set3),group = group)
+y = calcNormFactors(y, method="upperquartile")
+y = estimateDisp(y, design)
 glm_fit_e = glmFit(y, design, dispersion = y$tagwise.dispersion)
 glm_lrt_e = glmLRT(glm_fit_e, coef=2)$table
 glm_lrt_e$PValue_FDR = p.adjust(glm_lrt_e$PValue,"fdr")
