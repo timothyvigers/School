@@ -65,7 +65,7 @@ t_tests %>% head(10) %>% flextable(.) %>%
 hist(t_tests$p,main = "Histogram of p values",xlab = "p")
 ```
 
-Normally we would expect a uniform distribution of p values (or hopefully one with a slight tail at or below 0.05, suggesting some sort of signal in the data), but this distribution has a large peak around 0.4. Looking at the genes that produce these p values, it seems that they all have 0 RPKM across most samples, and one sample with a low value. Because one group has all 0 values, the absolute value of the t statistic is 1, which corresponds to a p value of 0.374.
+Normally we would expect a uniform distribution of p values (or hopefully one with a slight tail around 0.05, suggesting some sort of signal in the data), but this distribution has a large peak around 0.4. Looking at the genes that produce these p values, it seems that they all have 0 RPKM across most samples, and one sample with a low value. This results in an absolute value of the t statistic of 1, which corresponds to a p value of 0.374.
 
 ```{r}
 t1 = t_tests$Gene[which(abs(t_tests$T)==1)]
@@ -150,7 +150,7 @@ set_table_properties(flextable(top_tagwise_counts),
                      width = .5, layout = "autofit")
 ```
 
-The genes that are significant when using the common dispersion tend to have low counts across most samples with a few samples with high expression levels. One the other hand, the top genes based on tagwise dispersion tend to have counts more evenly spread across the samples.
+The genes that are significant when using the common dispersion tend to have low counts across most samples with a few samples with high expression levels. On the other hand, the top genes based on tagwise dispersion tend to have counts more evenly spread across the samples.
 
 ### Get Ensembl information for the top genes
 
@@ -356,16 +356,18 @@ The general idea of size factors is to make samples which may have been sequence
 
 ## c) Calculate the DESeq2 dispersions
 
-Histograms:
+Histograms of log dispersion:
 
-```{r}
+```{r message=FALSE}
 filtered_dseq = estimateDispersions(filtered_dseq,fitType = "local")
-hist(dispersions(filtered_dseq),xlab = "Size Factor",
+hist(log(dispersions(filtered_dseq)),xlab = "Size Factor",
      main = "Histogram of DESeq2 Size Factors")
 filtered_dge = estimateDisp(filtered_dge)
-hist(filtered_dge$tagwise.dispersion,xlab = "Dispersion",
+hist(log(filtered_dge$tagwise.dispersion),xlab = "Dispersion",
      main = "Histogram of edgeR Tagwise Dispersion")
 ```
+
+I found it much easier to look at the histograms of log-transformed dispersion. Based on these plots it appears that the mean dispersion estimate is similar between the two packages. However, there the DESeq estimates are distributed across a wider of range than the edgeR values. 
 
 Bland-Altman plot:
 
@@ -374,16 +376,35 @@ blandr.draw(log(dispersions(filtered_dseq)),
             log(filtered_dge$tagwise.dispersion))
 ```
 
+The Bland-Altman (BA) plot suggests that there is not good agreement between the two methods. Here the green and red lines represent $\pm$ 1.96 SD of the differences, so we would want at least 95% of the points to lie in this range in order to be confident in the methods' agreement. The disagreement is particularly striking when the mean log dispersion is low, where some of the DESeq estimates are much larger than edgeR (the cluster in the top left of the plot), and some are a little bit smaller (the tail towards the bottom left). When the mean is in the -4 to 0 range there's less of a linear trend in the plot, but many of the points are above the green line, which indicates that DESeq's estimates are generally higher than edgeR's.
+
 ## d) Test for differences between the two strains
 
 ```{r}
 filtered_dseq = nbinomWaldTest(filtered_dseq)
-res = results(filtered_dseq)
+res = as.data.frame(results(filtered_dseq)) %>% rownames_to_column(var = "Gene")
+dseq_sig = res$Gene[which(res$padj < 0.05)]
+
 design = model.matrix(~pheno)
 glm_fit = glmFit(filtered_dge,design,
                  dispersion = filtered_dge$tagwise.dispersion)
-glm_lrt = glmLRT(glm_fit)$table
+glm_lrt = as.data.frame(glmLRT(glm_fit)$table)
 glm_lrt$PValue_BH = p.adjust(glm_lrt$PValue,"BH")
+glm_lrt = glm_lrt %>% rownames_to_column(var = "Gene")
+edger_sig = glm_lrt$Gene[which(glm_lrt$PValue_BH < 0.05)]
 ```
 
-The DESeq2 method finds `r sum(res$padj < 0.05,na.rm = T)` genes with p values < 0.05 after Benjamini-Hochberg (BH) correction, and edgeR finds `r sum(glm_lrt$PValue_BH<0.05)`. 
+The DESeq2 method finds `r sum(res$padj < 0.05,na.rm = T)` genes with p values < 0.05 after Benjamini-Hochberg (BH) correction, and edgeR finds `r sum(glm_lrt$PValue_BH<0.05)`, with an overlap of  `r length(intersect(dseq_sig,edger_sig))` genes. Now look at the results for a few genes that were significant in the DESEq results but not significant in edgeR:
+
+```{r}
+diff = setdiff(dseq_sig,edger_sig)
+dseq_diff = intersect(diff,dseq_sig)
+head(res[res$Gene %in% dseq_diff,]) %>% flextable(.) %>% 
+       set_caption(.,"DESeq Results") %>% 
+  set_table_properties(width = .75, layout = "autofit")
+head(glm_lrt[glm_lrt$Gene %in% dseq_diff,]) %>% flextable(.) %>% 
+       set_caption(.,"edgeR Results") %>% set_table_properties(layout = "autofit")
+```
+
+
+The log fold change results are really close between the two packages, which suggests that the dispersion estimates are driving the differences we see in the significance testing. Based on this it's difficult to say which package is better. edgeR may be slightly more conservative, so it's likely a better option if you're concerned about type 1 error. However, DESeq produces more significant hits, which can be good for exploratory research which aims to discover candidate genes for future studies. These differences are fairly small though, so I think the two approaches are pretty comparable overall, despite the concerning BA plot. Also, to me neither package has an advantage in terms of usability (both are pretty good but with documentation quirks), so I think I would pick my workflow based on the question at hand.
