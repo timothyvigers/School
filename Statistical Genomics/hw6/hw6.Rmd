@@ -7,7 +7,6 @@ output: word_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE,dpi = 600)
-knitr::opts_knit$set(root.dir="C:/Users/tim/Documents/GitHub/School/Statistical Genomics")
 library(cqn)
 library(edgeR)
 library(biomaRt)
@@ -308,8 +307,7 @@ Load package and data:
 
 ```{r}
 library(DESeq2)
-load(url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/
-bottomly_eset.RData"))
+load(url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bottomly_eset.RData"))
 bottomly.count.table = exprs(bottomly.eset)
 ```
 
