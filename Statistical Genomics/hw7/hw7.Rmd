@@ -12,6 +12,8 @@ library(minfi)
 library(bumphunter) 
 library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(arsenal)
+library(flextable)
+library(tidyverse)
 ```
 
 # 1. DNA Methylation QC and Normalization (Illumina 450K)
@@ -104,6 +106,149 @@ msetSWAN = preprocessSWAN(rgSet)
 
 ## f) Multidimensional scaling (MDS) plots
 
+### By sex
+
+#### SWAN-normalized
+
 ```{r}
-mdsPlot(msetSWAN)
+mdsPlot(msetSWAN,sampGroups = sex)
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = sex)
+```
+
+#### Raw data
+
+```{r}
+mdsPlot(mset,sampGroups = sex)
+mdsPlot(mset,numPositions = 10000,sampGroups = sex)
+```
+
+### By cancer status
+
+#### SWAN-normalized
+
+```{r}
+mdsPlot(msetSWAN,sampGroups = stype)
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = stype)
+```
+
+#### Raw data
+
+```{r}
+mdsPlot(mset,sampGroups = stype)
+mdsPlot(mset,numPositions = 10000,sampGroups = stype)
+```
+
+## g) Distribution of beta values before and after SWAN normalization
+
+```{r fig.width=8,fig.height=10}
+par(mfrow=c(6,2),mar=c(1,1,1,1))
+for (i in 1:6) {
+  plotBetasByType(mset[,i],main = paste(colnames(mset[,i]),"Before"))
+  plotBetasByType(msetSWAN[,i],
+                  main = paste(colnames(msetSWAN[,i]),"After"))
+}
+```
+
+# 2. DNA Methylation Annotation and Dierentially Methylated Positions (Illumina 450K)
+
+Get genome annotation information:
+
+```{r}
+gset <-mapToGenome(msetSWAN)
+annotation <-getAnnotation(gset)
+```
+
+## a) CpG islands, shores, shelves and open seas
+
+```{r}
+table(annotation$Relation_to_Island) %>% as.data.frame(.) %>%
+  rename(.,Feature = Var1) %>% flextable(.)
+```
+
+## b) Find DMP for cancer status
+
+```{r}
+m = getM(msetSWAN)
+pheno = pData(rgSet)$Status
+dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
+  head(.,10) %>% flextable(.)
+```
+
+There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. In the DMP table above, a positive intercept indicates that the methylation was higher in the cancer samples compared to the normal tissue samples. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$intercept[dmp$pval <= 1e-5] > 0)` was hypermethylated in cancer samples and `r sum(dmp$intercept[dmp$pval <= 1e-5] < 0)` were hypomethylated. This makes some sense, because I would expect that in general cancer cells would have higher gene expression than normal cells.
+
+### Plot CpGs
+
+```{r}
+top4 = rownames(dmp[order(dmp$pval)[1:4],])
+plotCpg(msetSWAN,cpg = top4,pheno)
+```
+
+## c) Find DMP for sex
+
+```{r}
+pheno = pData(rgSet)$Sex
+dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
+  head(.,10) %>% flextable(.)
+```
+
+There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$intercept[dmp$pval <= 1e-5] > 0)` was hypermethylated in females and `r sum(dmp$intercept[dmp$pval <= 1e-5] < 0)` were hypomethylated. 
+
+### Plot CpGs
+
+```{r}
+top4 = rownames(dmp[order(dmp$pval)[1:4],])
+plotCpg(msetSWAN,cpg = top4,pheno)
+```
+
+## d) Estimate whether each sample is male or female
+
+```{r}
+gset <-mapToGenome(msetSWAN)
+gset = addSex(gset)
+pred_sex = 
+  as.data.frame(cbind(pData(gset)$predictedSex, pData(gset)$Sex))
+colnames(pred_sex) = c("Predicted Sex","Label")
+flextable(pred_sex)
+```
+
+### Re-do MDS plot
+
+```{r}
+pred = pred_sex$`Predicted Sex`
+mdsPlot(msetSWAN,sampGroups = pred)
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = pred)
+```
+
+### Re-do 2c
+
+```{r}
+dmp = dmpFinder(m,pheno = pred,type = "categorical")
+dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
+  head(.,10) %>% flextable(.)
+```
+
+After correcting the sex labels, there are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$.
+
+## e) bumphunter
+
+```{r}
+# Re-run for cancer status
+pheno = pData(rgSet)$Status
+dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+# Code from questions
+diffs <- dmp$intercept 
+chr <- annotation$chr
+pos <- annotation$pos
+cl <- clusterMaker(chr, pos, maxGap = 300) # cluster probes
+#Find regions with a stretch of differences
+segs <- getSegments(diffs, f = cl, cutoff = 6)
+#To plot the first region identified
+j=1
+ind = segs$dnIndex[[j]]
+index <- which(cl==cl[ind])
+plot(pos[index],diffs[index],
+xlab=paste("position on", chr[ind]), ylab="diff")
+abline(h = 0, col = "blue")
 ```
