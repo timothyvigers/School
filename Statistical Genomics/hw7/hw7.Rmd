@@ -1,0 +1,77 @@
+---
+title: "BIOS 7659 Homework 7"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,dpi = 600)
+library(shinyMethyl)
+library(minfi) 
+library(bumphunter) 
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(arsenal)
+```
+
+# 1. DNA Methylation QC and Normalization (Illumina 450K)
+
+Load the data:
+
+```{r warning=FALSE,message=FALSE}
+baseDir = "C:/Users/tim/Dropbox/Documents/School/Statistical Genomics/Homework Files/HW7/idats"
+targets = read.metharray.sheet(baseDir)
+rgSet = read.metharray.exp(targets = targets)
+annotation(rgSet)
+```
+
+## a) Table 1
+
+```{r results='asis'}
+df = as.data.frame(pData(rgSet))
+df = df[df$Status == "cancer",]
+t1 = tableby(~ patient.age_at_initial_pathologic_diagnosis +
+               patient.height + patient.weight + Sex +  patient.race,
+             data = df)
+summary(t1,labelTranslations = 
+          list(patient.age_at_initial_pathologic_diagnosis = 
+                 "Age at Diagnosis",
+               patient.height = "Height",patient.weight = "Weight",
+               patient.race = "Race"))
+```
+
+There are three unique subjects in this dataset, each with two samples (one primary tumor sample and one from normal solid tissue).
+
+## b) Type I and II probes
+
+```{r}
+getManifest(rgSet)
+```
+
+There are 135,476 type I probes and 350,036 type II probes. Type I probes have two different sequences per CpG site, one for methylated and one for unmethylated CpGs. Type II probes use a two-color channel, which allows each probe to measure both methylated and unmethylated CpGs. As a result, type II probes take up half the physical space of type I probes. However, they have a lower dynamic range than type I probes, and are also more biased and less reproducible. 
+
+## c) QC Plots
+
+### By ID
+
+```{r}
+id = pData(rgSet)$id
+densityPlot(rgSet,sampGroups = id)
+densityBeanPlot(rgSet,sampGroups = id)
+```
+
+### By Sample Type
+
+```{r}
+stype = pData(rgSet)$sample_type
+densityPlot(rgSet,sampGroups = stype)
+densityBeanPlot(rgSet,sampGroups = stype)
+```
+
+### By Sex
+
+```{r}
+sex = pData(rgSet)$Sex
+densityPlot(rgSet,sampGroups = sex)
+densityBeanPlot(rgSet,sampGroups = sex)
+```
