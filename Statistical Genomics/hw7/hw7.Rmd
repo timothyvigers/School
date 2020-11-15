@@ -98,8 +98,8 @@ Sample `r colnames(detect)[which.max(colSums(detect >= 0.05))]` has the most det
 ### Save the methylation signals
 
 ```{r}
-mset <- preprocessRaw(rgSet)
-msetSWAN <- preprocessSWAN(rgSet)
+mset = preprocessRaw(rgSet)
+msetSWAN = preprocessSWAN(rgSet)
 ```
 
 ## f) Multidimensional scaling (MDS) plots
