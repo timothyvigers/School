@@ -60,7 +60,7 @@ densityPlot(rgSet,sampGroups = id)
 densityBeanPlot(rgSet,sampGroups = id)
 ```
 
-### By Sample Type
+### By sample type
 
 ```{r}
 stype = pData(rgSet)$sample_type
@@ -68,10 +68,42 @@ densityPlot(rgSet,sampGroups = stype)
 densityBeanPlot(rgSet,sampGroups = stype)
 ```
 
-### By Sex
+### By sex
 
 ```{r}
 sex = pData(rgSet)$Sex
 densityPlot(rgSet,sampGroups = sex)
 densityBeanPlot(rgSet,sampGroups = sex)
+```
+
+## d) Control probes
+
+```{r}
+controlStripPlot(rgSet,controls = "BISULFITE CONVERSION I")
+controlStripPlot(rgSet,controls = "NEGATIVE")
+```
+
+## e) Detection p values
+
+```{r}
+# Count p values >= 0.05 per sample
+detect = detectionP(rgSet)
+colSums(detect >= 0.05)
+# Row means
+rmeans = rowMeans(detect)
+```
+
+Sample `r colnames(detect)[which.max(colSums(detect >= 0.05))]` has the most detection p values $\geq 0.05$ with `r max(colSums(detect >= 0.05))` (`r round(max(colSums(detect >= 0.05))/nrow(detect)*100,3)`%). Out of the `r nrow(detect)` probes, `r sum(rmeans >= 0.05)` have a mean p value $\geq 0.05$.
+
+### Save the methylation signals
+
+```{r}
+mset <- preprocessRaw(rgSet)
+msetSWAN <- preprocessSWAN(rgSet)
+```
+
+## f) Multidimensional scaling (MDS) plots
+
+```{r}
+mdsPlot(msetSWAN)
 ```
