@@ -62,21 +62,27 @@ densityPlot(rgSet,sampGroups = id)
 densityBeanPlot(rgSet,sampGroups = id)
 ```
 
+Unfortunately I get the error "'sampNames' is not a graphical parameter" when trying to use `sampNames` as requested in the prompt, so I used sample ID as the group ID. On first inspection, nothing in the density plot particularly jumped out at me, although the peak for sample 5 is a little higher than the other at the 1.0 end of the x axis. This sample also looks different from the others in the bean plot because its center is skewed further to the right than the others.
+
 ### By sample type
 
 ```{r}
 stype = pData(rgSet)$sample_type
-densityPlot(rgSet,sampGroups = stype)
+densityPlot(rgSet,sampGroups = stype,legend = F)
 densityBeanPlot(rgSet,sampGroups = stype)
 ```
+
+I removed the legend above because otherwise it covers most of the right-hand peak, but tumor samples are in green and normal tissue samples are in orange. No patterns particularly stand out to me here, except that sample 5 stands out even more when it's colored orange. I imagine that people who look at these plots more often might notice a pattern by sample type, but all I can see in these plots is the fact that sample 5 (R06C01) looks different from the rest.
 
 ### By sex
 
 ```{r}
 sex = pData(rgSet)$Sex
-densityPlot(rgSet,sampGroups = sex)
+densityPlot(rgSet,sampGroups = sex,legend = F)
 densityBeanPlot(rgSet,sampGroups = sex)
 ```
+
+Again, I had to remove the legend in the density plot because it covers up the right-hand peak, but in these plots females are in green and males in orange. Again, sample 5 stands out to me here but I don't see any patterns by sex. Sample 5 is not so different that it should be excluded, but I would try some between sample normalization and see if that helps it align more with the other samples.  
 
 ## d) Control probes
 
@@ -84,6 +90,8 @@ densityBeanPlot(rgSet,sampGroups = sex)
 controlStripPlot(rgSet,controls = "BISULFITE CONVERSION I")
 controlStripPlot(rgSet,controls = "NEGATIVE")
 ```
+
+Each 450K array includes internal control probes to help with quality control of various pre-treatment steps. Bisulfite conversion probes are included to help assess the efficiency of bisulfite conversion. Negative controls are included to help with background correction, by targeting bisulfite-converted sequences that don't contain CpGs. 
 
 ## e) Detection p values
 
@@ -105,6 +113,8 @@ msetSWAN = preprocessSWAN(rgSet)
 ```
 
 ## f) Multidimensional scaling (MDS) plots
+
+# ADD SAMPLE NAMES TO ALL PLOTS
 
 ### By sex
 
@@ -149,13 +159,13 @@ for (i in 1:6) {
 }
 ```
 
-# 2. DNA Methylation Annotation and Dierentially Methylated Positions (Illumina 450K)
+# 2. DNA Methylation Annotation and Differentially Methylated Positions (Illumina 450K)
 
 Get genome annotation information:
 
 ```{r}
-gset <-mapToGenome(msetSWAN)
-annotation <-getAnnotation(gset)
+gset = mapToGenome(msetSWAN)
+annotation = getAnnotation(gset)
 ```
 
 ## a) CpG islands, shores, shelves and open seas
@@ -205,7 +215,7 @@ plotCpg(msetSWAN,cpg = top4,pheno)
 ## d) Estimate whether each sample is male or female
 
 ```{r}
-gset <-mapToGenome(msetSWAN)
+gset =mapToGenome(msetSWAN)
 gset = addSex(gset)
 pred_sex = 
   as.data.frame(cbind(pData(gset)$predictedSex, pData(gset)$Sex))
@@ -238,16 +248,16 @@ After correcting the sex labels, there are `r sum(dmp$qval <= 0.1)` DMPs with q-
 pheno = pData(rgSet)$Status
 dmp = dmpFinder(m,pheno = pheno,type = "categorical")
 # Code from questions
-diffs <- dmp$intercept 
-chr <- annotation$chr
-pos <- annotation$pos
-cl <- clusterMaker(chr, pos, maxGap = 300) # cluster probes
+diffs = dmp$intercept 
+chr = annotation$chr
+pos = annotation$pos
+cl = clusterMaker(chr, pos, maxGap = 300) # cluster probes
 #Find regions with a stretch of differences
-segs <- getSegments(diffs, f = cl, cutoff = 6)
+segs = getSegments(diffs, f = cl, cutoff = 6)
 #To plot the first region identified
 j=1
 ind = segs$dnIndex[[j]]
-index <- which(cl==cl[ind])
+index = which(cl==cl[ind])
 plot(pos[index],diffs[index],
 xlab=paste("position on", chr[ind]), ylab="diff")
 abline(h = 0, col = "blue")
