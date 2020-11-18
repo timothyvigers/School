@@ -2,7 +2,7 @@
 title: "BIOS 7659 Homework 7"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: word_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +21,7 @@ library(tidyverse)
 Load the data:
 
 ```{r warning=FALSE,message=FALSE}
-baseDir = "C:/Users/tim/Dropbox/Documents/School/Statistical Genomics/Homework Files/HW7/idats"
+baseDir = "/Users/timvigers/GitHub/School/Statistical Genomics/hw7/idats"
 targets = read.metharray.sheet(baseDir)
 rgSet = read.metharray.exp(targets = targets)
 annotation(rgSet)
@@ -126,9 +126,9 @@ msetSWAN = preprocessSWAN(rgSet)
 
 ```{r}
 mdsPlot(msetSWAN,sampGroups = sex,sampNames = rgSet$id,
-        legendPos = "topleft")
+        legendPos = "bottomleft")
 mdsPlot(msetSWAN,numPositions = 10000,sampGroups = sex,
-        sampNames = rgSet$id,legendPos = "topleft")
+        sampNames = rgSet$id,legendPos = "bottomright")
 ```
 
 #### Raw data
@@ -139,6 +139,8 @@ mdsPlot(mset,numPositions = 10000,sampGroups = sex,
         sampNames = rgSet$id,legendPos = "topright")
 ```
 
+When looking at MDS by sex, the conclusions are the same regardless of whether you use the raw or normalized data, or whether you use 1000 or 10000 positions with the most methylation variability. In all four plots, samples 3, 4, and 5 form one cluster and samples 1, 2, and 6 form another. You could maybe argue that sample 1 appears to be in its own space when looking at the 10000 most variable positions, but I think the overarching two-cluster pattern is the same across all the plots. Also, it's interesting 
+
 ### By cancer status
 
 #### SWAN-normalized
@@ -146,8 +148,8 @@ mdsPlot(mset,numPositions = 10000,sampGroups = sex,
 ```{r}
 mdsPlot(msetSWAN,sampGroups = stype,sampNames = rgSet$id,
         legendPos = "bottomleft")
-mdsPlot(msetSWAN,numPositions = 10000,sampGroups = stype,
-        sampNames = rgSet$id)
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = stype,sampNames = rgSet$id,
+        legendPos = "bottomright")
 ```
 
 #### Raw data
