@@ -87,11 +87,15 @@ Again, I had to remove the legend in the density plot because it covers up the r
 ## d) Control probes
 
 ```{r}
-controlStripPlot(rgSet,controls = "BISULFITE CONVERSION I")
-controlStripPlot(rgSet,controls = "NEGATIVE")
+controlStripPlot(rgSet,controls = "BISULFITE CONVERSION I",
+                 sampNames = rgSet$id)
+controlStripPlot(rgSet,controls = "NEGATIVE",
+                 sampNames = rgSet$id)
 ```
 
-Each 450K array includes internal control probes to help with quality control of various pre-treatment steps. Bisulfite conversion probes are included to help assess the efficiency of bisulfite conversion. Negative controls are included to help with background correction, by targeting bisulfite-converted sequences that don't contain CpGs. 
+Each 450K array includes internal control probes to help assess the quality of various pre-treatment steps. Bisulfite conversion probes are included to help assess the efficiency of bisulfite conversion, because "if the bisulfite conversion reaction was successful, the "C" (Converted) probes will match the converted sequence and get extended." Negative controls are included to help with background correction, by targeting bisulfite-converted sequences that don't contain CpGs. 
+
+In the plots above, we want samples to be consistent within each of the red and green channels, so these plots look fairly reasonable. Samples 2 and 5 may look slightly different from the others, but it's difficult to say for sure based on just these plots. Also, the range of intensities is about the same for both the red and green channel, which is a good sign for this data because it indicates that there isn't significant red/green bias. Also, the intensity of the negative probes is generally lower than the bisulfite probes, which indicates that background noise should not be an issue with this dataset.
 
 ## e) Detection p values
 
@@ -103,7 +107,9 @@ colSums(detect >= 0.05)
 rmeans = rowMeans(detect)
 ```
 
-Sample `r colnames(detect)[which.max(colSums(detect >= 0.05))]` has the most detection p values $\geq 0.05$ with `r max(colSums(detect >= 0.05))` (`r round(max(colSums(detect >= 0.05))/nrow(detect)*100,3)`%). Out of the `r nrow(detect)` probes, `r sum(rmeans >= 0.05)` have a mean p value $\geq 0.05$.
+Detection p values indicate whether a probe's signal is greater than the average background signal. They are calculated as $p = 1-\phi[\frac{x-\mu_{neg}}{\sigma_{neg}}]$ where x is the sum of two beads (type I probes) or two color intensities (type II probes) and $\phi$ is the normal CDF.
+
+Sample `r as.numeric(which.max(colSums(detect >= 0.05)))` has the most detection p values $\geq 0.05$ with `r max(colSums(detect >= 0.05))` (`r round(max(colSums(detect >= 0.05))/nrow(detect)*100,3)`%). Out of the `r nrow(detect)` probes, `r sum(rmeans >= 0.05)` have a mean p value $\geq 0.05$.
 
 ### Save the methylation signals
 
@@ -114,22 +120,23 @@ msetSWAN = preprocessSWAN(rgSet)
 
 ## f) Multidimensional scaling (MDS) plots
 
-# ADD SAMPLE NAMES TO ALL PLOTS
-
 ### By sex
 
 #### SWAN-normalized
 
 ```{r}
-mdsPlot(msetSWAN,sampGroups = sex)
-mdsPlot(msetSWAN,numPositions = 10000,sampGroups = sex)
+mdsPlot(msetSWAN,sampGroups = sex,sampNames = rgSet$id,
+        legendPos = "topleft")
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = sex,
+        sampNames = rgSet$id,legendPos = "topleft")
 ```
 
 #### Raw data
 
 ```{r}
-mdsPlot(mset,sampGroups = sex)
-mdsPlot(mset,numPositions = 10000,sampGroups = sex)
+mdsPlot(mset,sampGroups = sex,sampNames = rgSet$id,legendPos = "topleft")
+mdsPlot(mset,numPositions = 10000,sampGroups = sex,
+        sampNames = rgSet$id,legendPos = "topright")
 ```
 
 ### By cancer status
@@ -137,15 +144,19 @@ mdsPlot(mset,numPositions = 10000,sampGroups = sex)
 #### SWAN-normalized
 
 ```{r}
-mdsPlot(msetSWAN,sampGroups = stype)
-mdsPlot(msetSWAN,numPositions = 10000,sampGroups = stype)
+mdsPlot(msetSWAN,sampGroups = stype,sampNames = rgSet$id,
+        legendPos = "bottomleft")
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = stype,
+        sampNames = rgSet$id)
 ```
 
 #### Raw data
 
 ```{r}
-mdsPlot(mset,sampGroups = stype)
-mdsPlot(mset,numPositions = 10000,sampGroups = stype)
+mdsPlot(mset,sampGroups = stype,sampNames = rgSet$id,
+        legendPos = "topleft")
+mdsPlot(mset,numPositions = 10000,sampGroups = stype,
+        sampNames = rgSet$id,legendPos = "topright")
 ```
 
 ## g) Distribution of beta values before and after SWAN normalization
