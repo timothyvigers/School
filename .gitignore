@@ -1,46 +1,8 @@
-.gitignore
-.Rproj.user
 .DS_Store
-
-Biostatistical Methods 1/.DS_Store
-
-Statistical Theory 1/\.Rhistory
-
-Biostatistical Methods 2/HW 3/.RData
-Biostatistical Methods 2/HW 3/.Rhistory
-Biostatistical Methods 2/HW 6/HW 6.Rproj
-Biostatistical Methods 2/HW 6/.Rhistory
-Biostatistical Methods 2/HW 6/.RData
-Biostatistical Methods 2/HW 7/HW 7.Rproj
-Biostatistical Methods 2/HW 7/.RData
-Biostatistical Methods 2/HW 7/.Rhistory
-Biostatistical Methods 2/HW 8/.Rhistory
-Biostatistical Methods 2/HW 8/HW 8.Rproj
-Biostatistical Methods 2/HW 8/.RData
-
-Statistical Theory 2/.Rhistory
-
-Statistical Consulting 2/Group Project/\.Rhistory
-Statistical Consulting 2/Kiernan Project/Kiernan Project.Rproj
-Statistical Consulting 2/Kiernan Project/.RData
-Statistical Consulting 2/Kiernan Project/.Rhistory
-Statistical Consulting 2/Kiernan Project/HW_8_files/figure-latex/unnamed-chunk-5-1.pdf
-
-Analysis of Longitudinal Data/Homework 1/.RData
-Analysis of Longitudinal Data/Homework 1/.Rhistory
-Analysis of Longitudinal Data/Homework 4/.RData
-Analysis of Longitudinal Data/Homework 4/.Rhistory
-Analysis of Longitudinal Data/Final Project/report_cache/
-Analysis of Longitudinal Data/Final Project/report_files/
-Analysis of Longitudinal Data/Final Project/.RDataTmp
-Analysis of Longitudinal Data/Final Project/.Rhistory
-Analysis of Longitudinal Data/Final Project/.Rhistory
-Analysis of Longitudinal Data/Final Project/.Rhistory
-
-Information Visualization/Final Project/data
-/Information Visualization/Paper Critique/examine_use_case.cys
-Statistical Genomics/hw2/.Rhistory
-PhD Theory/hw4/.Rhistory
-Statistical Genomics/hw4/sra_data.fastq.gz
+*.Rproj*
+*.RData
+*.Rhistory
 
 Statistical Genomics/hw7/idats
+Statistical Genomics/hw7/.Rhistory
+Statistical Genomics/hw7/.Rhistory
