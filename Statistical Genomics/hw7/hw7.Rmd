@@ -2,7 +2,7 @@
 title: "BIOS 7659 Homework 7"
 author: "Tim Vigers"
 date: "`r format(Sys.time(), '%d %B %Y')`"
-output: html_document
+output: word_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,6 +14,7 @@ library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(arsenal)
 library(flextable)
 library(tidyverse)
+set.seed(1017)
 ```
 
 # 1. DNA Methylation QC and Normalization (Illumina 450K)
@@ -59,20 +60,20 @@ There are 135,476 type I probes and 350,036 type II probes. Type I probes have t
 ```{r}
 id = pData(rgSet)$id
 densityPlot(rgSet,sampGroups = id)
-densityBeanPlot(rgSet,sampGroups = id)
+densityBeanPlot(rgSet,sampNames = id,sampGroups = id)
 ```
 
-Unfortunately I get the error "'sampNames' is not a graphical parameter" when trying to use `sampNames` as requested in the prompt, so I used sample ID as the group ID. On first inspection, nothing in the density plot particularly jumped out at me, although the peak for sample 5 is a little higher than the other at the 1.0 end of the x axis. This sample also looks different from the others in the bean plot because its center is skewed further to the right than the others.
+Unfortunately I get the error "'sampNames' is not a graphical parameter" when trying to use the `sampNames` argument in `densityPlot()`, so I used sample ID as the group ID. On first inspection, nothing in the density plot particularly jumped out at me, although the peak for sample 5 is a little higher than the others at the 1.0 end of the x axis. This sample also looks different from the others in the bean plot because its center is skewed slightly further to the right.
 
 ### By sample type
 
 ```{r}
 stype = pData(rgSet)$sample_type
 densityPlot(rgSet,sampGroups = stype,legend = F)
-densityBeanPlot(rgSet,sampGroups = stype)
+densityBeanPlot(rgSet,sampNames = id,sampGroups = stype)
 ```
 
-I removed the legend above because otherwise it covers most of the right-hand peak, but tumor samples are in green and normal tissue samples are in orange. No patterns particularly stand out to me here, except that sample 5 stands out even more when it's colored orange. I imagine that people who look at these plots more often might notice a pattern by sample type, but all I can see in these plots is the fact that sample 5 (R06C01) looks different from the rest.
+I removed the legend above because otherwise it covers most of the right-hand peak, but tumor samples are in green and normal tissue samples are in orange. No patterns particularly stand out to me here, except that sample 5 looks even worse when it's colored orange. I imagine that people who look at these plots more often might notice a pattern by sample type, but all I can see in these plots is the fact that sample 5 looks different from the rest.
 
 ### By sex
 
@@ -95,7 +96,7 @@ controlStripPlot(rgSet,controls = "NEGATIVE",
 
 Each 450K array includes internal control probes to help assess the quality of various pre-treatment steps. Bisulfite conversion probes are included to help assess the efficiency of bisulfite conversion, because "if the bisulfite conversion reaction was successful, the "C" (Converted) probes will match the converted sequence and get extended." Negative controls are included to help with background correction, by targeting bisulfite-converted sequences that don't contain CpGs. 
 
-In the plots above, we want samples to be consistent within each of the red and green channels, so these plots look fairly reasonable. Samples 2 and 5 may look slightly different from the others, but it's difficult to say for sure based on just these plots. Also, the range of intensities is about the same for both the red and green channel, which is a good sign for this data because it indicates that there isn't significant red/green bias. Also, the intensity of the negative probes is generally lower than the bisulfite probes, which indicates that background noise should not be an issue with this dataset.
+In the plots above, we want samples to be consistent within each of the red and green channels, so these plots look reasonable. Samples 2 and 5 may look slightly different from the others, but it's difficult to say for sure based on just these plots. Also, the range of intensities is about the same for both the red and green channel, which is a good sign for this dataset because it indicates that there isn't significant red/green bias. Also, the intensity of the negative probes is generally lower than the bisulfite probes, which indicates that background noise should not be an issue with this dataset.
 
 ## e) Detection p values
 
@@ -139,7 +140,7 @@ mdsPlot(mset,numPositions = 10000,sampGroups = sex,
         sampNames = rgSet$id,legendPos = "topright")
 ```
 
-When looking at MDS by sex, the conclusions are the same regardless of whether you use the raw or normalized data, or whether you use 1000 or 10000 positions with the most methylation variability. In all four plots, samples 3, 4, and 5 form one cluster and samples 1, 2, and 6 form another. You could maybe argue that sample 1 appears to be in its own space when looking at the 10000 most variable positions, but I think the overarching two-cluster pattern is the same across all the plots. Also, it's interesting 
+When looking at MDS by sex, the conclusions are the same regardless of whether you use the raw or normalized data, or whether you use 1000 or 10000 positions with the most methylation variability. In all four plots, samples 3, 4, and 5 form one cluster and samples 1, 2, and 6 form another. You could maybe argue that sample 1 appears to be separated along the y axis when looking at the 10000 most variable positions, but I think the overarching two-cluster pattern is the same across all the plots. Also, it's interesting that the samples don't appear to be clustering by sex. Samples 3, 4, and 5 are female, but sample 6 is clustering with the male samples. 
 
 ### By cancer status
 
@@ -161,16 +162,22 @@ mdsPlot(mset,numPositions = 10000,sampGroups = stype,
         sampNames = rgSet$id,legendPos = "topright")
 ```
 
+Again, the clustering patterns don't seem to change much depending on which dataset or how many positions are plotted. Also, the two samples types are split between the two clusters and there doesn't seem to be any pattern by sample type.
+
 ## g) Distribution of beta values before and after SWAN normalization
 
+SWAN is a two part process that uses a random subset of probes for between array normalization. N probes with 1, 2, and 3 underlying CpGs, which results in a pool of 3N type I and 3N type II probes. Quantile normalization is applied to this subset of probes, and then remaining probes are adjusted separately using linear interpolation.
+
 ```{r fig.width=8,fig.height=10}
-par(mfrow=c(6,2),mar=c(1,1,1,1))
+par(mfrow=c(6,2),mar=c(2,2,2,2))
 for (i in 1:6) {
   plotBetasByType(mset[,i],main = paste(colnames(mset[,i]),"Before"))
   plotBetasByType(msetSWAN[,i],
                   main = paste(colnames(msetSWAN[,i]),"After"))
 }
 ```
+
+Prior to normalization, the peak near 0 is slightly lower than the peak near 1, and the overall peak shape is "bumpy" because the type 1 and type 2 peaks are fairly different. After normalization, the type 1 and type 2 peaks are closer to each other (so the overall peak is smoother), and the two overall peaks (near 0 and near 1) are much more similar to each other in height.
 
 # 2. DNA Methylation Annotation and Differentially Methylated Positions (Illumina 450K)
 
@@ -188,88 +195,115 @@ table(annotation$Relation_to_Island) %>% as.data.frame(.) %>%
   rename(.,Feature = Var1) %>% flextable(.)
 ```
 
+CpG islands are genomic regions around 200 bp long, in which 50% or more of the nucleotides are cytoseine or guanine. The CpG sites in these regions are generally unmethylated in normal cells, and 40 - 50% of mammalian gene promoters contain CpG islands. Shores, shelves, and open seas are regions a certain distance away from the CpG island. Shores are within 2 kB of CpG islands, and shelves are within 2 kB of shores (with open seas being the regions between shelves). N refers to regions "north" or upstream of the CpG island whereas S refers to downstream regions. Shores and shelves tend to have more variability than islands, which often makes them more interesting regions to study. 
+
 ## b) Find DMP for cancer status
 
 ```{r}
 m = getM(msetSWAN)
 pheno = pData(rgSet)$Status
-dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+dmp = dmpFinder(m,pheno = pheno,type = "continuous")
 dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
   head(.,10) %>% flextable(.)
 ```
 
-There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. In the DMP table above, a positive intercept indicates that the methylation was higher in the cancer samples compared to the normal tissue samples. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$intercept[dmp$pval <= 1e-5] > 0)` was hypermethylated in cancer samples and `r sum(dmp$intercept[dmp$pval <= 1e-5] < 0)` were hypomethylated. This makes some sense, because I would expect that in general cancer cells would have higher gene expression than normal cells.
+There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. One of the quirks of this package is the fact that using `type = "categorical"` above only provides an intercept, which does not tell you whether one group was hyper or hypomethylated compared to the other. In the results above, a positive beta value indicates that the methylation was higher in the normal samples compared to the cancer samples. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$beta[dmp$pval <= 1e-5] > 0)` were hypomethylated in cancer samples and `r sum(dmp$beta[dmp$pval <= 1e-5] < 0)` was hypermethylated. This makes some sense, because I would expect that in general cancer cells would have higher gene expression than normal cells.
 
 ### Plot CpGs
+
+#### Beta values
 
 ```{r}
 top4 = rownames(dmp[order(dmp$pval)[1:4],])
 plotCpg(msetSWAN,cpg = top4,pheno)
 ```
+
+#### M values
+
+```{r}
+plotCpg(msetSWAN,cpg = top4,pheno,measure = "M")
+```
+
+In general, the values tend to be lower in the cancer samples (except for cg05592581). The differences are a little more noticeable in the M value plots, but overall the effect size is very small for all of these CpGs. In fact, based on the plots alone I might not think there was a significant difference.
 
 ## c) Find DMP for sex
 
 ```{r}
 pheno = pData(rgSet)$Sex
-dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+dmp = dmpFinder(m,pheno = pheno,type = "continuous")
 dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
   head(.,10) %>% flextable(.)
 ```
 
-There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$intercept[dmp$pval <= 1e-5] > 0)` was hypermethylated in females and `r sum(dmp$intercept[dmp$pval <= 1e-5] < 0)` were hypomethylated. 
+This time females are the reference group, so a positive beta value indicates that methylation was higher in males. There are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$. Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$beta[dmp$pval <= 1e-5] > 0)` were hypomethylated in females and `r sum(dmp$beta[dmp$pval <= 1e-5] < 0)` were hypermethylated. 
 
 ### Plot CpGs
+
+#### Beta values
 
 ```{r}
 top4 = rownames(dmp[order(dmp$pval)[1:4],])
 plotCpg(msetSWAN,cpg = top4,pheno)
 ```
 
+#### M Values
+
+```{r}
+plotCpg(msetSWAN,cpg = top4,pheno,measure = "M")
+```
+
+The female samples are generally lower than the males (except for cg17220960), but the effect size of sex is much more pronounced than for cancer vs. normal tissue.
+
 ## d) Estimate whether each sample is male or female
 
 ```{r}
-gset =mapToGenome(msetSWAN)
+gset = mapToGenome(msetSWAN)
 gset = addSex(gset)
 pred_sex = 
-  as.data.frame(cbind(pData(gset)$predictedSex, pData(gset)$Sex))
-colnames(pred_sex) = c("Predicted Sex","Label")
+  as.data.frame(cbind(pData(gset)$predictedSex, pData(gset)$Sex)) %>% 
+  rownames_to_column(.)
+colnames(pred_sex) = c("ID","Predicted Sex","Label")
 flextable(pred_sex)
 ```
 
-### Re-do MDS plot
+Oh no! It appears that samples 2 and 3 are both incorrectly labeled (my guess would be that the labels were switched accidentally during data entry, because this is easy to do and happens all the time).
+
+### Re-do SWAN-Normalized MDS plots
 
 ```{r}
-pred = pred_sex$`Predicted Sex`
-mdsPlot(msetSWAN,sampGroups = pred)
-mdsPlot(msetSWAN,numPositions = 10000,sampGroups = pred)
+mdsPlot(msetSWAN,sampNames = msetSWAN$id,sampGroups = gset$predictedSex)
+mdsPlot(msetSWAN,numPositions = 10000,sampGroups = gset$predictedSex,
+        sampNames = msetSWAN$id,legendPos = "topright")
 ```
+
+Even after fixing the labels, samples do not appear to be clustering by sex. The males samples are both higher on the y axis, so you could argue that they are clustering in terms of sex along one component, but this isn't particularly pronounced.
 
 ### Re-do 2c
 
 ```{r}
-dmp = dmpFinder(m,pheno = pred,type = "categorical")
+m = getM(msetSWAN)
+dmp = dmpFinder(m,pheno = gset$predictedSex,type = "continuous")
 dmp %>% round(.,3) %>% rownames_to_column(var = "CpG") %>% 
   head(.,10) %>% flextable(.)
 ```
 
-After correcting the sex labels, there are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$.
+After correcting the sex labels, there are `r sum(dmp$qval <= 0.1)` DMPs with q-value $\leq 0.10$.Of the `r sum(dmp$pval <= 1e-5)` CpG sites significant at the p $\leq 10^{-5}$ level, `r sum(dmp$beta[dmp$pval <= 1e-5] > 0)` were hypomethylated in females and `r sum(dmp$beta[dmp$pval <= 1e-5] < 0)` were hypermethylated. 
 
 ## e) bumphunter
 
 ```{r}
 # Re-run for cancer status
-pheno = pData(rgSet)$Status
-dmp = dmpFinder(m,pheno = pheno,type = "categorical")
+dmp = dmpFinder(msetSWAN,pheno = msetSWAN$sample_type,type = "continuous")
 # Code from questions
-diffs = dmp$intercept 
+diffs = dmp$beta
 chr = annotation$chr
 pos = annotation$pos
 cl = clusterMaker(chr, pos, maxGap = 300) # cluster probes
 #Find regions with a stretch of differences
-segs = getSegments(diffs, f = cl, cutoff = 6)
+segs = getSegments(diffs, f = cl)
 #To plot the first region identified
 j=1
-ind = segs$dnIndex[[j]]
+ind = segs$upIndex[[j]]
 index = which(cl==cl[ind])
 plot(pos[index],diffs[index],
 xlab=paste("position on", chr[ind]), ylab="diff")
