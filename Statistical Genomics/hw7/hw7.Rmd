@@ -22,7 +22,7 @@ set.seed(1017)
 Load the data:
 
 ```{r warning=FALSE,message=FALSE}
-baseDir = "/Users/timvigers/GitHub/School/Statistical Genomics/hw7/idats"
+baseDir = "/Users/timvigers/Documents/School/Statistical Genomics/Homework Files/Homework 7/idats"
 targets = read.metharray.sheet(baseDir)
 rgSet = read.metharray.exp(targets = targets)
 annotation(rgSet)
