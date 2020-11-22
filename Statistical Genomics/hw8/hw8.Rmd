@@ -44,12 +44,11 @@ dmp = dmpFinder(msetSWAN,pheno = msetSWAN$Sample_Group,type = "continuous")
 Here the unexposed group is the reference, so a negative value of beta in the DMP table indicates that the probe was hypomethylated in the exposed group (and a positive value indicates hypermethylation). There are no probes significant at the $q<0.1$ level, but there are `r sum(dmp$pval<1e-5,na.rm = T)` significant at the $p<10^{-5}$ level:
 
 ```{r}
-dmp %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>%
-  mutate(Direction = ifelse(sign(beta)==-1,"Hypomethylated","Hypermethylated")) %>%
-  select(Probe,beta,Direction,pval) %>% rename("Beta"=beta,"P Value"=pval) %>%
-  flextable(.) %>% footnote(.,i=1,j=3,value = as_paragraph("With respect to exposure"),
-                            ref_symbols = "*",part = "header") %>%
-  set_table_properties(.,layout = "autofit",width = 0.5)
+dmp %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>% mutate(Direction = ifelse(sign(beta)==-1,"Hypomethylated","Hypermethylated")) %>% select(Probe,beta,Direction,pval) %>% rename("Beta"=beta,"P Value"=pval) %>% flextable(.) %>% footnote(.,i=1,j=3,value = as_paragraph("With respect to exposure"),ref_symbols = "*",part = "header") %>% set_table_properties(.,layout = "autofit",width = 0.75)
 ```
 
+## b) Cell-type composition
 
+```{r}
+
+```
