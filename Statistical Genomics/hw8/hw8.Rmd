@@ -11,11 +11,13 @@ knitr::opts_knit$set(root.dir = "/Users/timvigers/GitHub/School/Statistical Geno
 library(FlowSorted.Blood.450k)
 library(quadprog)
 library(IlluminaHumanMethylation450kmanifest)
+library(bPeaks)
 library(flextable)
 library(tidyverse)
+set.seed(1017)
 ```
 
-# 1. Cell Type Composition
+# 1. Cell-Type Composition
 
 Read in the data:
 
@@ -49,6 +51,38 @@ dmp %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>% mutate(Direc
 
 ## b) Cell-type composition
 
-```{r}
+Cell-type composition is important in methylation studies because methylation is a key factor in converting cells from a pluripotent progenitor to specific cell-type. As a result, differentially methylated regions (DMRs) can distinguish cell-types with high sensitivity and specificity [1]. In other words, if you are comparing two samples with different cell-type composition without some sort of adjustment, many DMRs that distinguish between them will likely be the result of cell-type composition rather than the exposure of interest. There are many ways to adjust for cell-type composition when cell-type isn't directly measured, but the approach in Houseman et al. [1] is implemented in `estimateCellCounts()` in the `minfi` package, and that paper is frequently cited. The approach in Jaffe & Irizarry [2] is simply an adaptation of the Houseman algorithm for the 450K array.
 
+The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathbf{Y}_{0h}$ for a homogenous cell population, and proposes the linear model $\mathbf{Y}_{0h}=\mathbf{B}_0\mathbf{w}_{0h}+\mathbf{e}_{0h}$ where $\mathbf{w}_{h}$ is a $d_0\times 1$ covariate vector indicating cell-type and $\mathbf{B}_0$ is an $m\times d_0$ matrix. Also, $h$ indexes the specimen and $\mathbf{e}_{0h}$ is an error vector. Next, they propose a similar model for the data without cell-type measurements: $\mathbf{Y}_{1i}=\mathbf{B}_1\mathbf{z}_{i}+\mathbf{e}_{1i}$ with the linking regression model $\mathbf{B}_1=\mathbf{1}_{m\gamma_0^T}+\mathbf{B}_0\Gamma+\mathbf{U}$ where $i$ indexes samples of interest and $\mathbf{U}$ is a matrix of errors. The math gets fairly complicated after this, so I won't go into any more detail, but the points is that the cell-type mixture coefficients can be "recovered" from $\Gamma$ by estimating $\hat{\mathbf{B}_0}$ and $\hat{\mathbf{B}_1}$ via linear models using ordinary least squares, mixed effects models, limma, or surrogate variable analysis. The authors also recommend bootstrap procedures for estimating standard errors.
+
+## c) Estimate cell counts
+
+```{r}
+rgSetCell = read.metharray.exp(targets=targets,extended=F)
+cells = estimateCellCounts(rgSetCell,meanPlot = T,compositeCellType = "Blood",cellTypes = c("CD8T","CD4T","NK","Bcell","Mono","Gran"))
 ```
+
+The plot above shows the average methylation across cell-type differentiating probes, for our data and the reference data set ("FlowSorted.Blood.450k"). The means of the two datasets should be in a similar range. If not, this suggests large batch effects in the data and the composition estimates should not be trusted (the function automatically performs quantile normalization between the two datasets to reduce potential batch effects). This plot looks reasonable, so we can probably trust these cell-type estimates and repeat part a) with adjustment for cell-type composition:
+
+```{r}
+m = getM(msetSWAN)
+```
+
+# HOW DO WE DEAL WITH DEPENDENCE FOR CELL TYPE PROPORTIONS? None of the rows sum to exactly 1 so maybe this is okay?
+
+
+# 2. ChIP-Seq
+
+Read in the data:
+
+```{r}
+data(yeastCDS) 
+allData = dataReading("./hw8files/tup1_IP.txt", "./hw8files/mock_IP.txt",
+                      yeastSpecies = yeastCDS$Saccharomyces.cerevisiae)
+```
+
+# References
+
+1. Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as surrogate measures of cell mixture distribution. BMC Bioinformatics. 2012;13(1):86. doi:10.1186/1471-2105-13-86
+
+2. Jaffe AE, Irizarry RA. Accounting for cellular heterogeneity is critical in epigenome-wide association studies. Genome Biol. 2014;15(2):R31. doi:10.1186/gb-2014-15-2-r31
