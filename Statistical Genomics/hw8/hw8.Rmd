@@ -1,0 +1,42 @@
+---
+title: "BIOS 7659 Homework 8"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,dpi=600)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/GitHub/School/Statistical Genomics/hw8")
+library(FlowSorted.Blood.450k)
+library(quadprog)
+library(IlluminaHumanMethylation450kmanifest)
+```
+
+# 1. Cell Type Composition
+
+Read in the data:
+
+```{r message=FALSE,warning=FALSE}
+baseDir1 = "blood/plate1"
+targets1 = read.metharray.sheet(baseDir1)
+baseDir2 = "blood/plate2"
+targets2 = read.metharray.sheet(baseDir2)
+targets = rbind(targets1, targets2)
+rgSet = read.metharray.exp(targets=targets,extended=T)
+sampleNames(rgSet) = rgSet[[1]]
+getManifest(rgSet)
+clindat = read.table("blood/demographic.txt", sep="\t", header=T)
+pData(rgSet)$Sample_Group = clindat$Exposure
+pData(rgSet)$child_sex = clindat$child_sex
+```
+
+## a) Find differentially methylated positions based on exposure status
+
+```{r}
+# SWAN normalization
+msetSWAN = preprocessSWAN(rgSet)
+dmp = dmpFinder(msetSWAN,pheno = msetSWAN$Sample_Group,type = "continuous")
+```
+
+
