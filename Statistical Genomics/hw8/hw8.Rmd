@@ -51,7 +51,7 @@ dmp %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>% mutate(Direc
 
 ## b) Cell-type composition
 
-Cell-type composition is important in methylation studies because methylation is a key factor in converting cells from a pluripotent progenitor to specific cell-type. As a result, differentially methylated regions (DMRs) can distinguish cell-types with high sensitivity and specificity [1]. In other words, if you are comparing two samples with different cell-type composition without some sort of adjustment, many DMRs that distinguish between them will likely be the result of cell-type composition rather than the exposure of interest. There are many ways to adjust for cell-type composition when cell-type isn't directly measured, but the approach in Houseman et al. [1] is implemented in `estimateCellCounts()` in the `minfi` package, and that paper is frequently cited. The approach in Jaffe & Irizarry [2] is simply an adaptation of the Houseman algorithm for the 450K array.
+Cell-type composition is important in methylation studies because methylation is a key factor in converting cells from a pluripotent progenitor to specific cell-type. As a result, differentially methylated regions (DMRs) can distinguish cell-types with high sensitivity and specificity [1]. In other words, if you are comparing two samples with different cell-type composition without some sort of adjustment, many DMRs that distinguish between them will likely be the result of cell-type composition rather than the exposure of interest. There are many ways to adjust for cell-type composition when cell-type isn't directly measured, but the approach in Houseman et al. [1] is implemented in `estimateCellCounts()` in the `minfi` package, and that paper is frequently cited. The approach in Jaffe & Irizarry [2] is simply an adaptation of the Houseman algorithm for the 450K array. These approaches require reference data, but there are also reference-free methods such as singular value decomposition, linear models with principal components, SVA, RUV, RUVm, and others. However, the best option if possible is to measure complete blood counts rather than estimating cell types. 
 
 The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathbf{Y}_{0h}$ for a homogenous cell population, and proposes the linear model $\mathbf{Y}_{0h}=\mathbf{B}_0\mathbf{w}_{0h}+\mathbf{e}_{0h}$ where $\mathbf{w}_{h}$ is a $d_0\times 1$ covariate vector indicating cell-type and $\mathbf{B}_0$ is an $m\times d_0$ matrix. Also, $h$ indexes the specimen and $\mathbf{e}_{0h}$ is an error vector. Next, they propose a similar model for the data without cell-type measurements: $\mathbf{Y}_{1i}=\mathbf{B}_1\mathbf{z}_{i}+\mathbf{e}_{1i}$ with the linking regression model $\mathbf{B}_1=\mathbf{1}_{m\gamma_0^T}+\mathbf{B}_0\Gamma+\mathbf{U}$ where $i$ indexes samples of interest and $\mathbf{U}$ is a matrix of errors. The math gets fairly complicated after this, so I won't go into any more detail, but the points is that the cell-type mixture coefficients can be "recovered" from $\Gamma$ by estimating $\hat{\mathbf{B}_0}$ and $\hat{\mathbf{B}_1}$ via linear models using ordinary least squares, mixed effects models, limma, or surrogate variable analysis. The authors also recommend bootstrap procedures for estimating standard errors.
 
@@ -59,17 +59,19 @@ The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathb
 
 ```{r}
 rgSetCell = read.metharray.exp(targets=targets,extended=F)
-cells = estimateCellCounts(rgSetCell,meanPlot = T,compositeCellType = "Blood",cellTypes = c("CD8T","CD4T","NK","Bcell","Mono","Gran"))
+cells = estimateCellCounts(rgSetCell,meanPlot = T,compositeCellType = "Blood",cellTypes = c("Bcell", "CD4T", "CD8T", "Eos", "Gran", "Mono", "Neu", "NK"))
 ```
 
 The plot above shows the average methylation across cell-type differentiating probes, for our data and the reference data set ("FlowSorted.Blood.450k"). The means of the two datasets should be in a similar range. If not, this suggests large batch effects in the data and the composition estimates should not be trusted (the function automatically performs quantile normalization between the two datasets to reduce potential batch effects). This plot looks reasonable, so we can probably trust these cell-type estimates and repeat part a) with adjustment for cell-type composition:
 
 ```{r}
 m = getM(msetSWAN)
+l = apply(m,1,function(r){
+  mod = lm(r ~ msetSWAN$Sample_Group)
+})
 ```
 
 # HOW DO WE DEAL WITH DEPENDENCE FOR CELL TYPE PROPORTIONS? None of the rows sum to exactly 1 so maybe this is okay?
-
 
 # 2. ChIP-Seq
 
