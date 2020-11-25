@@ -12,6 +12,7 @@ library(FlowSorted.Blood.450k)
 library(quadprog)
 library(IlluminaHumanMethylation450kmanifest)
 library(bPeaks)
+library(limma)
 library(flextable)
 library(tidyverse)
 library(parallel)
@@ -58,49 +59,88 @@ The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathb
 
 ## c) Estimate cell counts
 
-```{r}
+```{r message=FALSE,warning=FALSE,fig.width=8,fig.height=8}
 rgSet = read.metharray.exp(targets=targets,extended=F)
-cells = estimateCellCounts(rgSet,meanPlot = T,compositeCellType = "Blood",cellTypes = c("CD8T","CD4T","NK","Bcell","Mono","Gran"),verbose = F)
+cells = estimateCellCounts(rgSet,meanPlot = T,compositeCellType = "Blood",cellTypes = c("CD8T","CD4T","NK","Bcell","Mono","Gran"))
 cells %>% as.data.frame(.) %>% flextable(.) %>% set_table_properties(.,layout = "autofit")
 ```
 
 The plot above shows the average methylation across cell-type differentiating probes, for our data and the reference data set ("FlowSorted.Blood.450k"). The means of the two datasets should be in a similar range. If not, this suggests large batch effects in the data and the composition estimates should not be trusted (the function automatically performs quantile normalization between the two datasets to reduce potential batch effects). This plot looks reasonable, so we can probably trust these cell-type estimates and repeat part a) with adjustment for cell-type composition. Because the cell proportions necessarily sum to 1, we technically should not be treating them as independent variables. One option to get around this issue is to simply drop one of the cell types from the model, so for the purposes of this homework I've decided not to include the NK cells because these generally had very small estimated proportions.
 
-```{r cache=TRUE}
+```{r}
 # Format data
 m = getM(msetSWAN)
 cells = cbind(msetSWAN$Sample_Group,cells)
 colnames(cells)[1] = "Sample_Group"
 cells = cells[,-which(colnames(cells)=="NK")]
-m = as.data.frame(cbind(cells,t(m)))
+# Fit models with limma
+d = model.matrix(~ Sample_Group + CD8T + CD4T + Bcell + Mono + Gran,as.data.frame(cells))
+fit = lmFit(m,d)
+sd = fit$stdev.unscaled
+beta = fit$coefficients[,"Sample_Group"]
+# Calculate p values
+pval = 2*pt(abs(beta / (sd[,"Sample_Group"] * fit$sigma)),
+         df = fit$df.residual,lower.tail = F)
+qval = p.adjust(pval,"fdr")
+dmp = cbind(fit$coefficients,pval)
+dmp = cbind(dmp,qval)
 ```
 
-```{r}
-# Fit models in parallel
-cl = makeCluster(8,type = "FORK")
-l = parLapply(cl,colnames(m)[7:ncol(m)],function(c){
-  #f = as.formula(paste0(c,"~",paste0(colnames(cells),collapse = "+")))
-  f = as.formula(paste0(c,"~Sample_Group"))
-  mod = lm(f,data = m)
-  s = summary(mod)$coefficients
-  return(c(s["Sample_Group","Estimate"],s["Sample_Group","Pr(>|t|)"]))
-})
-stopCluster(cl)
-l = as.data.frame(do.call(rbind,l))
-colnames(l) = c("Beta","P Value")
+One thing I noticed when fitting these models is that many of the regression estimates for cell type are really large with correspondingly large standard errors. When I removed them from the model and re-ran the code I got the same results as `dmpFinder()` in part a), so I don't think it's a programming issue. These estimates may not be a problem, but with more time I would probably investigate them a little. However, for this homework I am assuming that the estimates are okay given that we aren't interested in inference for cell type. Also, I did copy the idea of using `limma::lmFit()` from Karen Kanaster because it is so much faster than `lm()`, but the code above is my own.
+
+There are `r sum(qval<0.1)` probes significant at the $q<0.1$ level, and `r sum(dmp[,"pval"]<1e-5)` probes significant at the $p<10^{-5}$ level:
+
+```{r eval=FALSE}
+dmp %>% filter(pval < 1e-5) %>% mutate(Direction = ifelse(sign(beta)==-1,"Hypomethylated","Hypermethylated")) %>% select(Probe,beta,Direction,pval) %>% rename("Beta"=beta,"P Value"=pval) %>% flextable(.) %>% footnote(.,i=1,j=3,value = as_paragraph("With respect to exposure"),ref_symbols = "*",part = "header") %>% set_table_properties(.,layout = "autofit",width = 0.75)
 ```
 
-One thing I noticed when fitting these models is that many of the regression estimates for cell type are really large with correspondingly large standard errors. When I removed them from the model and re-ran the code I got the same results as `dmpFinder()` in part a), so I don't think it's a code issue. These estimates may not be a problem, but given more time I would probably investigate them a little. However, for this homework I am assuming that the estimates are okay given that we aren't interested in inference for cell type.
+# INTERPRET RESULTS HERE
 
 # 2. ChIP-Seq
 
 Read in the data:
 
 ```{r}
-data(yeastCDS) 
-allData = dataReading("./hw8files/tup1_IP.txt", "./hw8files/mock_IP.txt",
+data(yeastCDS)
+allData = dataReading("./chipseq/tup1_IP.txt", "./chipseq/mock_IP.txt",
                       yeastSpecies = yeastCDS$Saccharomyces.cerevisiae)
 ```
+
+## a) What methods were used?
+
+## b) Average number of sequences mapped
+
+```{r}
+baseLineIP = baseLineCalc(allData$IPdata[,ncol(allData$IPdata)])
+baseLineControl = baseLineCalc(allData$controlData[,ncol(allData$controlData)])
+```
+
+The average number of sequences mapped in the Tup1 ChIP sample is `r baseLineIP` and the average number in the mock sample is `r baseLineControl`, so the Tup1 ChIP sample appears to have a lot more reads.
+
+## c) Peak detection
+
+```{r}
+# Subset the data
+ip = allData$IPdata[allData$IPdata$V1 == "chrV",]
+control = allData$controlData[allData$controlData$V1 == "chrV",]
+peaks = peakDetection(ip$V3,control$V3,"chrV",baseLineIP = baseLineIP,baseLineControl = baseLineControl)
+```
+
+The `peakDetection()` function found `r nrow(peaks)` peaks. 
+
+## d)
+
+## e) Peak location
+
+```{r}
+# Find peaks
+peak_location = peakLocation("./bPeaks_results.bed",yeastCDS$Saccharomyces.cerevisiae)
+# Read results back in
+promoters = read.delim("./bPeaksLocation_peakLocation_inPromoters.txt",header = F)
+cds = read.delim("./bPeaksLocation_peakLocation_inCDS.txt",header = F)
+```
+
+Out of the `r peak_location$numPeaks` peaks detected, `r length(unique(promoters$V1))` are in promoters and `r length(unique(cds$V1))` are in CDS (genes). 
 
 # References
 
