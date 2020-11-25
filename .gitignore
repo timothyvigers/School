@@ -8,4 +8,6 @@ Statistical Genomics/hw8/blood
 Statistical Genomics/hw8/hw8files
 
 Statistical Genomics/final_project/data
+*_cache
+*_files
 .Rproj.user
