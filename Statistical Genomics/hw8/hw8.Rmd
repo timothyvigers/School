@@ -107,6 +107,10 @@ allData = dataReading("./chipseq/tup1_IP.txt", "./chipseq/mock_IP.txt",yeastSpec
 
 ## a) What methods were used?
 
+Sequencing was performed using Illumina HiSeq 2000 or SOLiD V4. Then, cDNA was labeled with Cy3 and hybridized to the NimbleGen S. cerevisiae HX12 array. This array was scanned with a GenePix 4000B, and the image processed using NimbleScan. These signal intensities were normalized to other NimbleGen arrays collected by the Park lab [3].
+
+Next, deep sequencing reads were mapped to the unmasked sacCer3 reference using BWA (with default options), and non-uniquely mapped reads were filtered out. Peak calling was performed using Model-based Analysis of ChIP-Seq (MACS2). For the input control, a Swi6 ChIP sample was sequenced without the immunoprecipitation step. This is "the sheared chromatin from a SWI6 TAP-tagged strain." [3] On the other hand, the mock sample is from wild-type yeast (with no TAP-tagged protein expression) chromatin, but was incubated with a non-specific immunoglobulin G (IgG) antibody.
+
 ## b) Average number of sequences mapped
 
 ```{r}
@@ -125,7 +129,17 @@ control = allData$controlData[allData$controlData$V1 == "chrV",]
 peaks = peakDetection(ip$V3,control$V3,"chrV",baseLineIP = baseLineIP,baseLineControl = baseLineControl,outputName = "bPeaks_results_mock")
 ```
 
-The `peakDetection()` function found `r nrow(peaks)` peaks. 
+The `peakDetection()` function found `r nrow(peaks)` peaks. Peaks are detected using a sliding window along the genome (specified by the `windowSize` parameter) and based on two global parameters and four local parameters. The global parameters $G_{IP}$ and $G_{Control}$ are calculated using the `baseLineCalc()` function above, and represent the sequencing coverage in IP and control samples across the entire genome (e.g. $G_{IP}=\frac{1}{n}\sum_{i=1}^{n}x_{IP_{i}}$ for the input sample). The local parameters for each window $w$ are:
+
+$$C_{1,w}=\frac{1}{n_w}\sum_{i=1}^{n_w}x_{IP_{i,w}}$$ 
+
+$$C_{2,w}=\frac{1}{n_w}\sum_{i=1}^{n_w}x_{Control_{i,w}}$$
+
+$$C_{3,w}=\frac{1}{n_w}\sum_{i=1}^{n_w}log(\frac{x_{IP_{i,w}}}{x_{Control_{i,w}}})$$
+
+$$C_{4,w}=\frac{1}{n_w}\sum_{i=1}^{n_w}\frac{log(x_{IP_{i,w}})+log(x_{Control_{i,w}})}{2}$$
+
+where $n_w$ represents the number of nucleotides in window $w$ and $x_{IP_{i,w}}$ and $x_{Control_{i,w}}$ represent the number of sequences mapped at position $i$ in input and control samples, respectively. Peaks are selected if $C_{1,w}\geq T_1\times G_{IP}; C_{2,w}\leq T_2\times G_{Control}; C_{3,w} \geq T3\text{ and }C_{4,w} \geq Quantile(C_4, T_4)$.
 
 ## d)
 
@@ -164,3 +178,5 @@ The average number of sequences mapped in the input IP sample is `r baseLineCont
 1. Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as surrogate measures of cell mixture distribution. BMC Bioinformatics. 2012;13(1):86. doi:10.1186/1471-2105-13-86
 
 2. Jaffe AE, Irizarry RA. Accounting for cellular heterogeneity is critical in epigenome-wide association studies. Genome Biol. 2014;15(2):R31. doi:10.1186/gb-2014-15-2-r31
+
+3. Park D, Lee Y, Bhupindersingh G, Iyer VR. Widespread misinterpretable ChIP-seq bias in yeast. PloS One. 2013;8(12):e83506. doi:10.1371/journal.pone.0083506
