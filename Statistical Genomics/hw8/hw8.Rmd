@@ -53,7 +53,9 @@ dmp %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>% mutate(Direc
 
 ## b) Cell-type composition
 
-Cell-type composition is important in methylation studies because methylation is a key factor in converting cells from a pluripotent progenitor to specific cell-type. As a result, differentially methylated regions (DMRs) can distinguish cell-types with high sensitivity and specificity [1]. In other words, if you are comparing two samples with different cell-type composition without some sort of adjustment, many DMRs that distinguish between them will likely be the result of cell-type composition rather than the exposure of interest. There are many ways to adjust for cell-type composition when cell-type isn't directly measured, but the approach in Houseman et al. [1] is implemented in `estimateCellCounts()` in the `minfi` package, and that paper is frequently cited. The approach in Jaffe & Irizarry [2] is simply an adaptation of the Houseman algorithm for the 450K array. These approaches require reference data, but there are also reference-free methods such as singular value decomposition, linear models with principal components, SVA, RUV, RUVm, and others. However, the best option if possible is to measure complete blood counts rather than estimating cell types. 
+Cell-type composition is important in methylation studies because methylation is a key factor in converting cells from a pluripotent progenitor to specific cell-type. As a result, differentially methylated regions (DMRs) can distinguish cell-types with high sensitivity and specificity [1]. In other words, if you are comparing two samples with different cell-type composition without some sort of adjustment, many DMRs that distinguish between samples will likely be the result of cell-type composition rather than the exposure of interest. 
+
+There are many ways to adjust for cell-type composition when cell-type isn't directly measured, but the approach in Houseman et al. [1] is implemented in `estimateCellCounts()` in the `minfi` package, and that paper is frequently cited. The approach in Jaffe & Irizarry [2] is simply an adaptation of the Houseman algorithm for the 450K array. These approaches require reference data, but there are also reference-free methods such as singular value decomposition, linear models with principal components, SVA, RUV, RUVm, and others. However, the best option (if possible) is to measure complete blood counts rather than estimating cell types. 
 
 The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathbf{Y}_{0h}$ for a homogenous cell population, and proposes the linear model $\mathbf{Y}_{0h}=\mathbf{B}_0\mathbf{w}_{0h}+\mathbf{e}_{0h}$ where $\mathbf{w}_{h}$ is a $d_0\times 1$ covariate vector indicating cell-type and $\mathbf{B}_0$ is an $m\times d_0$ matrix. Also, $h$ indexes the specimen and $\mathbf{e}_{0h}$ is an error vector. Next, they propose a similar model for the data without cell-type measurements: $\mathbf{Y}_{1i}=\mathbf{B}_1\mathbf{z}_{i}+\mathbf{e}_{1i}$ with the linking regression model $\mathbf{B}_1=\mathbf{1}_{m\gamma_0^T}+\mathbf{B}_0\Gamma+\mathbf{U}$ where $i$ indexes samples of interest and $\mathbf{U}$ is a matrix of errors. The math gets fairly complicated after this, so I won't go into any more detail, but the points is that the cell-type mixture coefficients can be "recovered" from $\Gamma$ by estimating $\hat{\mathbf{B}_0}$ and $\hat{\mathbf{B}_1}$ via linear models using ordinary least squares, mixed effects models, limma, or surrogate variable analysis. The authors also recommend bootstrap procedures for estimating standard errors.
 
@@ -62,10 +64,12 @@ The Houseman algorithm takes an $m\times 1$ vector of methylation values $\mathb
 ```{r fig.width=8,fig.height=8}
 rgSet = read.metharray.exp(targets=targets,extended=F)
 cells = estimateCellCounts(rgSet,meanPlot = T,compositeCellType = "Blood",cellTypes = c("CD8T","CD4T","NK","Bcell","Mono","Gran"))
-cells %>% as.data.frame(.) %>% flextable(.) %>% set_table_properties(.,layout = "autofit")
+cells %>% as.data.frame(.) %>% flextable(.) %>% set_table_properties(.,layout = "autofit") %>% set_caption(.,"Estimated Cell-Type Proportions")
 ```
 
-The plot above shows the average methylation across cell-type differentiating probes, for our data and the reference data set ("FlowSorted.Blood.450k"). The means of the two datasets should be in a similar range. If not, this suggests large batch effects in the data and the composition estimates should not be trusted (the function automatically performs quantile normalization between the two datasets to reduce potential batch effects). This plot looks reasonable, so we can probably trust these cell-type estimates and repeat part a) with adjustment for cell-type composition. Because the cell proportions necessarily sum to 1, we technically should not be treating them as independent variables. One option to get around this issue is to simply drop one of the cell types from the model, so for the purposes of this homework I've decided not to include the NK cells because these generally had very small estimated proportions.
+The plot above shows the average methylation across cell-type differentiating probes, for our data and the reference data set ("FlowSorted.Blood.450k"). The means of the two datasets should be in a similar range. If not, this suggests large batch effects in the data and the composition estimates should not be trusted (the function automatically performs quantile normalization between the two datasets to reduce potential batch effects). This plot looks reasonable, so we can probably trust these cell-type estimates and repeat part a) with adjustment for cell-type composition. 
+
+Because the cell proportions necessarily sum to 1, we technically should not be treating them as independent variables. One option to get around this issue is to simply drop one of the cell types from the model, so for the purposes of this homework I've decided not to include the NK cells, because these generally had very small estimated proportions.
 
 ```{r}
 # Format data
@@ -94,7 +98,7 @@ There are `r sum(qval<0.1)` probes significant at the $q<0.1$ level, and `r sum(
 dmp %>% as.data.frame(.) %>% rownames_to_column(var="Probe") %>% filter(pval < 1e-5) %>% mutate(Direction = ifelse(sign(Sample_Group)==-1,"Hypomethylated","Hypermethylated")) %>% select(Probe,Sample_Group,Direction,pval) %>% rename("Beta"=Sample_Group,"P Value"=pval) %>% flextable(.) %>% footnote(.,i=1,j=3,value = as_paragraph("With respect to exposure"),ref_symbols = "*",part = "header") %>% set_table_properties(.,layout = "autofit",width = 0.75)
 ```
 
-# INTERPRET RESULTS HERE
+After adjusting for cell type composition, there are a lot more significant probes, and the majority of them are still hypomethylated with respect to the exposure. If there were no changes to the results that would suggest that the cell types were pretty even distributed among all the samples, but this suggests that there are important cell-type differences between samples. In addition to cell type, I would also definitely adjust for age and sex. Both of these are known to be associated with methylation patterns, so it's important to collect that information in all genomics studies and to adjust for them in all analyses.
 
 # 2. ChIP-Seq
 
@@ -147,7 +151,9 @@ In the PDF produced by `bPeaks` (above), the parameter and results summaries do 
 
 ## d)
 
+There are many good alternatives to `bPeaks` that use some sort of statistical test, including Useq (binomial), MACS, PeakSeq, CSAR (Poisson), CisGenome (negative binomial), and ZINBA (zero-inflated negative binomial). Hpeak and BayesPeak use hidden Markov models. I don't have time to describe all of them, but given these choices I would probably use MACS because it seems to be commonly used, and the documentation looks clear and in-depth. 
 
+First, MACS (which stands for **M**odel-based **A**nalysis of **C**hIP-**S**eq) linearly scales the control read count to match the total input count, then removes duplicate reads. Then, read distribution along the genome is modeled with a Poisson distribution and the parameter $\lambda_{BG}$ is estimated. Similar to `bPeaks`, MACS then slides a window along the genome to find candidate peaks based on Poisson($\lambda_{BG}$) distribution p-values < $10^{-5}$. Then for each candidate peaks, MACS finds $\lambda_{local} = max(\lambda_{BG}, \lambda_{5k}, \lambda_{10k})$ where  $\lambda_{5k}$ and $\lambda_{10k}$ are estimated from the 5 kb or 10 kb window centered at the candidate peak location. $\lambda_{local}$ allows MACS to calculate a p value for each candidate peak, rather than simply relying on fold change.[4]
 
 ## e) Peak location
 
@@ -170,7 +176,7 @@ allData = dataReading("./chipseq/tup1_IP.txt","./chipseq/input_IP.txt",yeastSpec
 baseLineControl = baseLineCalc(allData$controlData[,ncol(allData$controlData)])
 # Peak detection
 control = allData$controlData[allData$controlData$V1 == "chrV",]
-peaks = peakDetection(ip$V3,control$V3,"chrV",baseLineIP = baseLineIP,baseLineControl = baseLineControl)
+peaks = peakDetection(ip$V3,control$V3,"chrV",baseLineIP = baseLineIP,baseLineControl = baseLineControl,outputName = "bPeaks_results_input")
 # Peak locations
 peak_location = peakLocation("./bPeaks_results.bed",yeastCDS$Saccharomyces.cerevisiae,outputName = "bPeaksLocation_input")
 promoters = read.delim("./bPeaksLocation_input_peakLocation_inPromoters.txt",header = F)
@@ -179,6 +185,8 @@ cds = read.delim("./bPeaksLocation_input_peakLocation_inCDS.txt",header = F)
 
 The average number of sequences mapped in the input IP sample is `r baseLineControl`, which is much closer the Tup 1 sample (`r baseLineIP`) than the mock sample was. With the new control data, the `peakDetection()` function found `r nrow(peaks)` peaks. Of these peaks, `r length(unique(promoters$V1))` are in promoters and `r length(unique(cds$V1))` are in genes, so at least 1 peak must be in both a gene and promoter.
 
+The Park et al. [3] paper found that expression bias due to genes that are transcribed at high rates was not effectively controlled for by the input sample. So, they recommend using "mock ChIP data to minimize false positives." Our results here generally agree because we found two positives when using the input control that were eliminated when using the mock sample. Also, in the data summary for the input sample the $T_2$ cutoff is so large that it isn't even visible on the plot. This is a good visual representation of the false positives, because there are several windows to the right side of the x axis that would likely be excluded with a better control sample. However, the differences between the two do not seem drastic to me, so I think it would be okay to use the input sample if it's the only option available. 
+
 # References
 
 1. Houseman EA, Accomando WP, Koestler DC, et al. DNA methylation arrays as surrogate measures of cell mixture distribution. BMC Bioinformatics. 2012;13(1):86. doi:10.1186/1471-2105-13-86
@@ -186,3 +194,5 @@ The average number of sequences mapped in the input IP sample is `r baseLineCont
 2. Jaffe AE, Irizarry RA. Accounting for cellular heterogeneity is critical in epigenome-wide association studies. Genome Biol. 2014;15(2):R31. doi:10.1186/gb-2014-15-2-r31
 
 3. Park D, Lee Y, Bhupindersingh G, Iyer VR. Widespread misinterpretable ChIP-seq bias in yeast. PloS One. 2013;8(12):e83506. doi:10.1371/journal.pone.0083506
+
+4. Zhang Y, Liu T, Meyer CA, et al. Model-based Analysis of ChIP-Seq (MACS). Genome Biol. 2008;9(9):R137. doi:10.1186/gb-2008-9-9-r137
