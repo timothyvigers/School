@@ -1,0 +1,41 @@
+---
+title: "Untitled"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/GitHub/School/Statistical Genomics/final_project")
+library(skimr)
+library(nlme)
+library(tidyverse)
+```
+
+```{r eval=FALSE}
+# Import data
+load("./data/Mmatrix.platformAdj.regressOut.Rdata")
+pheno = read.csv("./data/Infant_Diet_Methylation_Phenotype_Final.csv",
+                 na.strings = c("","-999"))
+# Subset methylation data
+M.adj = M.adj[,colnames(M.adj) %in% pheno$Array]
+# Check phenotype data
+skim(pheno)
+# Merge
+M.adj = t(M.adj) 
+df = cbind(pheno,M.adj[match(pheno$Array,rownames(M.adj)),1:20])
+# Write
+save(df,"./data/final_data.RData")
+```
+
+```{r}
+# lme4
+system.time({
+  modl = lmer(cg00000029 ~ SEX + clinage + (1|ID),df)
+})
+# nlme
+system.time({
+  mod = lme(df$cg00000029, model.matrix(~SEX + clinage+ID,df),random = ~1|ID,)
+})
+```
