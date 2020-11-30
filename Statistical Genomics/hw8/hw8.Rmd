@@ -147,7 +147,11 @@ where $n_w$ represents the number of nucleotides in window $w$ and $x_{IP_{i,w}}
 
 ![bPeaks Data Summary for Mock Sample](./bPeaks_results_mock_dataSummary.pdf){width=90%}
 
-In the PDF produced by `bPeaks` (above), the parameter and results summaries do what they say on the tin and summarize the parameters and results. The bottom left figure plots $T_1$ and $T_2$ for each window, and the red lines indicate the chosen thresholds (in this case the defaults). Positive windows must have IP signal > $T_1$ and control signal < $T_2$, and windows that meet these requirements are highlighted in red. The bottom right figure plots $T_3$ and $T_4$. Positive windows must have logFC > $T_3$ and density of reads > $T_4$, so the windows meeting these requirements are again highlighted in red.
+In the summary PDF produced by `bPeaks` (above), the parameter and results summaries do what they say on the tin and summarize the parameters and results. The bottom left figure plots $T_1$ and $T_2$ for each window, and the red lines indicate the chosen thresholds (in this case the defaults). Positive windows must have IP signal > $T_1$ and control signal < $T_2$, and windows that meet these requirements are highlighted in red. The bottom right figure plots $T_3$ and $T_4$. Positive windows must have logFC > $T_3$ and density of reads > $T_4$, so the windows meeting these requirements are again highlighted in red.
+
+![bPeaks Drawing for Mock Sample](./bPeaks_results_mock_bPeaksDrawing1.pdf){width=90%}
+
+The bPeaksDrawing PDF contains one page per peak detected, and each plot within a page shows one of $T_1$, $T_2$, $T_3$, or $T_4$ by chromosomal position. The horizontal red lines indicate the chosen threshold for that parameter and the vertical dashed blue lines indicate the window around the peak (although in these plots it appears that the window size is 300 bp rather than 150, which suggests that the `windowSize` determines the size on either side of a peak). I think these plots are a nice way of showing how large each peak is, which might allow some manual filtering if certain peaks just barely reach the thresholds. 
 
 ## d)
 
@@ -186,6 +190,10 @@ cds = read.delim("./bPeaksLocation_input_peakLocation_inCDS.txt",header = F)
 The average number of sequences mapped in the input IP sample is `r baseLineControl`, which is much closer the Tup 1 sample (`r baseLineIP`) than the mock sample was. With the new control data, the `peakDetection()` function found `r nrow(peaks)` peaks. Of these peaks, `r length(unique(promoters$V1))` are in promoters and `r length(unique(cds$V1))` are in genes, so at least 1 peak must be in both a gene and promoter.
 
 The Park et al. [3] paper found that expression bias due to genes that are transcribed at high rates was not effectively controlled for by the input sample. So, they recommend using "mock ChIP data to minimize false positives." Our results here generally agree because we found two positives when using the input control that were eliminated when using the mock sample. Also, in the data summary for the input sample the $T_2$ cutoff is so large that it isn't even visible on the plot. This is a good visual representation of the false positives, because there are several windows to the right side of the x axis that would likely be excluded with a better control sample. However, the differences between the two do not seem drastic to me, so I think it would be okay to use the input sample if it's the only option available. 
+
+![bPeaks Data Summary for Input Sample](./bPeaks_results_input_dataSummary.pdf){width=90%}
+
+![bPeaks Drawing for Input Sample](./bPeaks_results_input_bPeaksDrawing1.pdf){width=90%}
 
 # References
 

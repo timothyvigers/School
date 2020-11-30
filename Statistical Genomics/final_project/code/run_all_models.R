@@ -1,4 +1,5 @@
 library(parallel)
+library(nlme)
 setwd("/Users/timvigers/GitHub/School/Statistical Genomics/final_project")
 load("./data/final_data.RData")
 # Cluster
