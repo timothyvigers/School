@@ -1,0 +1,28 @@
+---
+title: "BIOS 7659 Homework 9"
+author: "Tim Vigers"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE,dpi=600)
+knitr::opts_knit$set(root.dir = "/Users/timvigers/GitHub/School/Statistical Genomics/hw9")
+library(class)
+set.seed(1017)
+```
+
+# 1. Classification
+
+Import and prepare the data:
+
+```{r}
+load("./data/dataHW9-breastcancer.Rdata")
+train = breastcancer[[1]] #training expression data
+trainclass = breastcancer[[2]] #training classes
+test = newpatients #new expression data
+testclass = trueclasses #new classes
+```
+
+## a. Describe the k-nearest neighbor algorithm
+
