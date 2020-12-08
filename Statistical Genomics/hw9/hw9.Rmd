@@ -9,6 +9,7 @@ output: word_document
 knitr::opts_chunk$set(echo=TRUE,dpi=600)
 knitr::opts_knit$set(root.dir = "/Users/timvigers/GitHub/School/Statistical Genomics/hw9")
 library(class)
+library(caret)
 library(flextable)
 library(tidyverse)
 library(ggdendro)
@@ -36,7 +37,7 @@ testclass = trueclasses #new classes
 k = knn(train = t(train),test = t(train),cl = trainclass,k = 3)
 ```
 
-Using the `train` dataset for both training and testing results in `r sum(k == trainclass)` correct classifications out of `r length(trainclass)` (about `r round(sum(k == trainclass) / length(trainclass),3)*100`%). It is definitely not good practice to use the same data for training and testing, because it almost guarantees overfitting. Overfitting means that the model does really well on the training data, but not as well on other data, which means it has limited real-world application. 
+Using the `train` dataset for both training and testing results in `r sum(k == trainclass)` correct classifications out of `r length(trainclass)` (about `r round(sum(k == trainclass) / length(trainclass),3)*100`%). It is definitely not good practice to use the same data for training and testing, because it almost guarantees overfitting. Overfitting means that the model does really well on the training data, but not as well on other data, so it has limited real-world application. One way to think about it is that the algorithm is modeling the noise in the data in addition to the signal.
 
 ## b. Repeat part a) for multiple values of k.
 
@@ -51,23 +52,22 @@ p = as.data.frame(cbind(ks,unlist(e)))
 ggplot(p,aes(x=ks,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("Error Rate")
 ```
 
-It's best to choose odd values of k in order to avoid issues with potential ties (especially when there are only two classes), although the `knn()` function does include some tie-breaking methods that allow for equal values of k. Also, you cannot use a value of k that is greater than the number of observations, so the range of k is $[1,n]$ when $n$ is odd and $[1,n-1]$ when n is even.
+I only looked at odd values of $k$ here because it's best to avoid issues with potential ties (especially when there are only two classes), although the `knn()` function does include some tie-breaking methods that allow for equal values of k. Also, you cannot use a value of k that is greater than the number of observations, so the range of k is $[1,n]$.
 
-Based on the plot above, I would use $k=1$ because it produces the lowest error rate (0%).
+Based on the plot above, I would use $k=25$ because it produces the lowest error rate (about `r round(p$V2[order(p$V2)[2]],3)*100`%) among the reasonable values for $k$. In this case where we are using the same data for training and testing, we would definitely not want to use $k=1$, because it is really just matching each point to itself (which explains the 0% error rate).
 
 ## c. Predict the tumor class for three new subjects
 
 ```{r}
-predict1 = knn(train = t(train), test = t(newpatients), cl = trainclass, k = 1)
-predict3 = knn(train = t(train), test = t(newpatients), cl = trainclass, k = 3)
+predict = knn(train = t(train), test = t(newpatients), cl = trainclass, k = 25)
 ```
  
-Using $k=1$, we are able to correctly predict the class for `r sum(predict1 == trueclasses)` out of 3 new patients. Interestingly, despite the higher error rate in part b, using $k=3$ results in perfect prediction for the three new patients.
+Using $k=25$, we are able to correctly predict the class for `r sum(predict == trueclasses)` out of 3 new patients.
 
 ## d. Cross validation
 
 ```{r}
-# Split data using the caret package
+t = t(train)
 # Get indices
 n = 1:46
 d1 = sample(n,10)
@@ -75,33 +75,49 @@ d2 = sample(n[!(n%in%d1)],10)
 d3 = sample(n[!(n%in%c(d1,d2))],10)
 d4 = sample(n[!(n%in%c(d1,d2,d3))],10)
 d5 = setdiff(n,c(d1,d2,d3,d4))
-# As DFs
-df1 = t(train)[d1,]
-df2 = t(train)[d2,]
-df3 = t(train)[d3,]
-df4 = t(train)[d4,]
-df5 = t(train)[d5,]
 # CV
-es = lapply(c(1,3,5,7,9), function(k){
-  kn1 = knn(test = df1, train = df1, cl = trainclass[d1], k = k)
+ks = ks[ks <= 30]
+es = lapply(ks, function(k){
+  kn1 = knn(train = t[c(d2,d3,d4),],test = t[d1,], cl = trainclass[c(d2,d3,d4)], k = k)
   e1 = sum(kn1 != trainclass[d1])/10
-  kn2 = knn(test = df2, train = df2, cl = trainclass[d2], k = k)
+  kn2 = knn(train = t[c(d1,d3,d4),],test = t[d2,], cl = trainclass[c(d1,d3,d4)], k = k)
   e2 = sum(kn2 != trainclass[d2])/10
-  kn3 = knn(test = df3, train = df3, cl = trainclass[d3], k = k)
+  kn3 = knn(train = t[c(d1,d2,d4),],test = t[d3,], cl = trainclass[c(d1,d2,d4)], k = k)
   e3 = sum(kn3 != trainclass[d3])/10
-  kn4 = knn(test = df4, train = df4, cl = trainclass[d4], k = k)
+  kn4 = knn(train = t[c(d1,d2,d3),],test = t[d4,], cl = trainclass[c(d1,d2,d3)], k = k)
   e4 = sum(kn4 != trainclass[d4])/10
   mean(c(e1,e2,e3,e4))
 })
 # Plot
-p = as.data.frame(cbind(c(1,3,5,7,9),unlist(es)))
-ggplot(p,aes(x=V1,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("CV Error Rate")+
-  scale_x_continuous(breaks = c(1,3,5,7,9))
+p = as.data.frame(cbind(ks,unlist(es)))
+ggplot(p,aes(x=ks,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("CV Error Rate")
 ```
  
-In general, this CV error plot agrees with the previous section. Using $k=1$ has the lowest error, and the error rate increases with $k$.
+The 4-fold CV results follow a similar visual pattern overall compared to the previous section, but there are two important differences. First, $k=1$ is no longer matching each point to itself, so the error rate is increased. More importantly, though, is the fact that 25 no longer appears to be a good choice. In fact it's only as good as randomly guessing between the two classes (where we'd expect an error rate of 0.5). Based on this I would choose $k=7$, $k=9$, or $k=11$ instead.
+
+Because I'm not all that confident in my code, I decided to check it with the `caret` package, which has great built-in functions for validating machine learning. There is obviously a random element to how the dataset is divided into folds, so the numbers may not match up exactly, but you would hope for some agreement in terms of the choice of $k$.
+ 
+```{r}
+# Check with the caret package
+t = t(train)
+t = as.data.frame(t[c(d1,d2,d3,d4),])
+t$class = trainclass[c(d1,d2,d3,d4)]
+trControl <- trainControl(method = "cv",
+                          number = 4)
+fit <- train(class ~ .,method = "knn",tuneGrid = expand.grid(k = ks),
+             trControl = trControl,metric = "Accuracy",data = t)
+fit$results %>% flextable(.)
+# Plot
+p = as.data.frame(fit$results)
+p$error = 1 - p$Accuracy
+ggplot(p,aes(x=k,y=error)) + geom_point() + theme_bw() + xlab("k") + ylab("caret Error Rate")
+```
+ 
+The `caret` package would pick $k=$ `r as.numeric(fit$bestTune)`, which was also selcted by my own CV code. So that's a good sign for both my code and the choice of $k$.
  
 ## e. Write your own code for KNN
+
+Note that the following code is not a general-purpose KNN function, but instead assumes that the training and testing sets are the same. It also assumes no ties, so I will again only be testing with odd values of $k$.
 
 ```{r}
 # This function requires that samples are in columns and genes are in rows. 
@@ -129,16 +145,20 @@ p = as.data.frame(cbind(ks,unlist(e)))
 ggplot(p,aes(x=ks,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("Error Rate")
 ```
 
-This plot looks very similar to the one in part a which used Euclidean distance. Once again I think I would choose $k=1$ based on this training data, because this resulted in 0 error.
+This plot looks very similar to the one in part a which used Euclidean distance. Once again I think I would choose $k=25$ based on this training data ($k=29$ would also work), but it would be good to repeat the CV process before moving forward with that choice.
 
 # 2. Clustering
+
+```{r include=FALSE}
+set.seed(1018)
+```
 
 Read in the data and standardize:
 
 ```{r}
 df = read.table("./data/dataHW9-cellcycle.txt")
 genes = df[,1:2]
-rownames(df) = df$V1
+rownames(df) = df$V2
 df$V1 = NULL
 df$V2 = NULL
 df = t(apply(df, 1, scale))
@@ -157,7 +177,7 @@ ggplot(p,aes(x=V1,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("Total W
   scale_x_continuous(breaks = c(1,3,5,7,9))
 ```
 
-Based solely on this plot I think I would choose $k=4$ because that's where the plot "elbow" appears to be. However, you could also argue that the elbow is at $k=3$, and this makes intuitive sense because we already know we have three different kinds of gene in this dataset:
+Based solely on this plot I think you could choose either $k=3$ or $k=4$ as the plot "elbow." However, we already know we have three different kinds of gene in this dataset, so I'll continue with that.
 
 ```{r}
 # Final clusters
@@ -168,7 +188,7 @@ genes %>% arrange(Cluster) %>% rename("Gene ID" = V1,"Gene Name" = V2) %>% flext
   set_table_properties(.,layout = "autofit",width = 0.5)
 ```
 
-Generally speaking the genes have clustered together by type, with genes encoding ribosomal proteins forming cluster 1, heat shock proteins forming cluster 2, and mini-chromosome maintenance complex proteins forming cluster 3. However, gene "YLR259C" clusters with the ribosomal proteins rather than the heat shock proteins as you would expect. 
+Generally speaking the genes have clustered together by type, with genes encoding ribosomal proteins forming cluster 1, mini-chromosome maintenance complex proteins forming cluster 2, and heat shock proteins forming cluster 3. However, gene "YLR259C" clusters with the ribosomal proteins rather than the other heat shock proteins. 
 
 ## b. Hierarchical clustering
 
@@ -178,7 +198,7 @@ h = hclust(d)
 plot(h,xlab = "Euclidean")
 ```
 
-If you cut the dendrogram above at a high point (between 5 and 6), there are 3 groups which generally match the 3 clusters in the part above. However, using this method gene "YLR259C" is clustered with the two other heat shock proteins, which makes more intuitive sense than the kmeans results. 
+If you cut the dendrogram above at a high point (around 5 or 6), there are 3 groups which generally match the 3 clusters in the part above. However, using this method gene "YLR259C" is clustered with the two other heat shock proteins, which makes more intuitive sense than the kmeans results. 
 
 By default, `hclust()` uses the bottom up method for creating clusters based on a dissimilarity matrix. So, each item starts in its own cluster. Then the algorithm iteratively joins the two most similar clusters and re-computes the distances between clusters using the Lance-Williams formula until there is only one cluster left.
 
