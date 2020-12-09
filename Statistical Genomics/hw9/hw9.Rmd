@@ -29,9 +29,11 @@ test = newpatients #new expression data
 testclass = trueclasses #new classes
 ```
 
-## a. Describe the k-nearest neighbor algorithm
+## a. Describe the k-nearest neighbor (KNN) algorithm
 
-# DESCRIBE THE ALGORITHM
+The first step in the KNN algorithm is to take each sample that you want to classify (the test set), and calculate the distances between  those samples and your labeled training set using your favorite distance metric (Euclidean, 1-correlation, $p$ norm, etc.). Then, for each new sample you find the $k$ closest training samples. Each of these labeled $k$ nearest neighbors "votes" on the classification for the new sample, and that sample is labeled by majority vote (e.g. if 3 of the neighbors are labeled "ER+" and 5 are labeled "ER-", the new sample will be classified as "ER-"). It's also possible to weight each neighbor's vote so that closer training samples have more influence than more distant neighbors.
+
+Run the `knn()` function from the `class` package:
 
 ```{r}
 k = knn(train = t(train),test = t(train),cl = trainclass,k = 3)
@@ -113,7 +115,7 @@ p$error = 1 - p$Accuracy
 ggplot(p,aes(x=k,y=error)) + geom_point() + theme_bw() + xlab("k") + ylab("caret Error Rate")
 ```
  
-The `caret` package would pick $k=$ `r as.numeric(fit$bestTune)`, which was also selcted by my own CV code. So that's a good sign for both my code and the choice of $k$.
+The `caret` package would pick $k=$ `r as.numeric(fit$bestTune)`, which was also selected by my own CV code. So that's a good sign for both my code and the choice of $k$.
  
 ## e. Write your own code for KNN
 
@@ -132,7 +134,7 @@ knn_tim = function(train,classes,k = 3){
 }
 ```
 
-Test multiple values for $k$.
+Test multiple values for $k$:
 
 ```{r}
 ks = 1:46
@@ -177,7 +179,7 @@ ggplot(p,aes(x=V1,y=V2)) + geom_point() + theme_bw() + xlab("k") + ylab("Total W
   scale_x_continuous(breaks = c(1,3,5,7,9))
 ```
 
-Based solely on this plot I think you could choose either $k=3$ or $k=4$ as the plot "elbow." However, we already know we have three different kinds of gene in this dataset, so I'll continue with that.
+Based solely on this plot I think you could choose either $k=3$ or $k=4$ as the plot "elbow." However, we already know we have three different kinds of gene in this dataset, so I'll continue with $k=3$.
 
 ```{r}
 # Final clusters
@@ -198,37 +200,44 @@ h = hclust(d)
 plot(h,xlab = "Euclidean")
 ```
 
-If you cut the dendrogram above at a high point (around 5 or 6), there are 3 groups which generally match the 3 clusters in the part above. However, using this method gene "YLR259C" is clustered with the two other heat shock proteins, which makes more intuitive sense than the kmeans results. 
+If you cut the dendrogram above at a high point (around 6), the genes are nicely clustered by type. 
 
-By default, `hclust()` uses the bottom up method for creating clusters based on a dissimilarity matrix. So, each item starts in its own cluster. Then the algorithm iteratively joins the two most similar clusters and re-computes the distances between clusters using the Lance-Williams formula until there is only one cluster left.
+`hclust()` uses a bottom up method for creating clusters based on a dissimilarity matrix. So, each item starts in its own cluster. Then the algorithm iteratively joins the two most similar clusters and re-computes the distances between clusters until there is only one cluster left.
 
-`hclust()` can also use different clustering methods, including "ward.D", "ward.D2", "single", "average", "mcquitty", "median" or "centroid," all of which are described in detail in the function documentation. 
+`hclust()` can use different measures of closeness when combining clusters, including complete linkage (the default), single linkage, mean linkage, and distance between centroids. Single linkage ("nearest neighbor") combines clusters based on the minimum distance between two points in the different clusters, while complete linkage ("farthest neighbor") is based on the maximum distance between two points. Mean linkage uses the average pairwise difference across the two clusters, and `method = "centroid"` uses the distance between cluster centroids.
 
 ```{r}
-methods = c("ward.D","ward.D2","single","average","mcquitty","median","centroid")
-# Plot
-invisible(lapply(methods, function(m){
-  h = hclust(d,method = m)
-  plot(h,xlab = "Euclidean")
-}))
+h = hclust(d,method = "single")
+single = ggdendrogram(h) + ggtitle("Single linkage")
+h = hclust(d,method = "complete")
+complete = ggdendrogram(h) + ggtitle("Complete linkage")
+h = hclust(d,method = "average")
+mean = ggdendrogram(h) + ggtitle("Mean linkage")
+h = hclust(d,method = "centroid")
+dist = ggdendrogram(h) + ggtitle("Centroid distance")
+p = (single + complete)/(mean + dist)
+print(p + plot_annotation(title = "Linkage comparison"))
 ```
 
-Interestingly, these dendrograms look completely different at first glance depending on which method is used, despite the fact that all of them use the same dissimilarity matrix. In this case the default algorithm appears to be the only one that correctly clusters the genes by type. However, the other methods generally agree with one another in terms of which genes are grouping, and these groups generally match the results of kmeans (although sometimes "YLR259C" is off on its own).
+In this case the default algorithm (complete linkage) appears to be the only one that clusters the genes by type. However, the other methods generally agree with one another in terms of which genes are grouping, and these groups generally match the results of kmeans (although sometimes "HSP60" is off on its own).
 
 ### Repeat with Manhattan distance
 
 ```{r}
 d2 = dist(df,method = "manhattan")
 h2 = hclust(d2)
-plot(h2,xlab = "Manhattan")
+manhattan = ggdendrogram(h2) + ggtitle("Manhattan distance")
+euclidean = complete + ggtitle("Euclidean distance")
+p = manhattan + euclidean
+print(p + plot_annotation(title = "Complete linkage"))
 ```
 
-This dendrogram looks almost exactly the same as when we used Euclidean distance, but the scale of the "Height" is larger when using Manhattan (L1) distance. 
+The dendrograms look almost exactly the same regardless of which distance metric is used, but the scale of the height is larger when using Manhattan (L1) distance. 
 
 ### Compare distance metrics for different clustering methods
 
 ```{r}
-methods = c("complete","ward.D","ward.D2","single","average","mcquitty","median","centroid")
+methods = c("centroid","single","average")
 invisible(lapply(methods, function(m){
   h1 = hclust(d,method = m)
   h1 = ggdendrogram(h1) + ggtitle("Euclidean")
@@ -239,4 +248,4 @@ invisible(lapply(methods, function(m){
 }))
 ```
 
-The alternative methods appear to depend more on which distance metric is used, and it's difficult to tell which combination of methods works the best. So, I would probably use the default clustering method with Euclidean distance if I didn't have any outside knowlege to guide me.
+The alternative methods appear to depend more on which distance metric is used, but generally speaking the genes cluster by type regardless of the method or distance metric. The major differences have to do with how "HSP60" clusters: Sometimes it is grouped with the other heat shock protein genes, sometimes it is grouped with ribosomal proteins instead, and sometimes it is off on its own. Because the other genes don't seem to be affected by the clustering method or distance metric, it might be worth looking into "HSP60" further to see why it appears to be different from the other genes.
