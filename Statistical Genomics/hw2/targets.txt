@@ -1,9 +1,0 @@
-Name	FileName	Target
-High1	High_1_HG-U133_Plus_2.CEL	High
-High2	High_2_HG-U133_Plus_2.CEL	High
-High3	High_3_HG-U133_Plus_2.CEL	High
-High4	High_4_HG-U133_Plus_2.CEL	High
-Low1	Low_1_HG-U133_Plus_2.CEL	Low
-Low2	Low_2_HG-U133_Plus_2.CEL	Low
-Low3	Low_3_HG-U133_Plus_2.CEL	Low
-Low4	Low_4_HG-U133_Plus_2.CEL	Low
