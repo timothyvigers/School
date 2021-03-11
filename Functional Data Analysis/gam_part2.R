@@ -29,8 +29,8 @@ f2hat_x1_x2 <- predict(fit_tprs_x1_x2_f2, newdata=df_pred, type='terms')
 # Plot a heatmaps of fhat(x1,x2) - ftrue(x1,x2)
 plt_diff <-
   data.frame(df_pred, 
-             f1hat=df_pred$f1y-f1hat_x1_x2[,"s(x1,x2)"],
-             f2hat=df_pred$f2y-f2hat_x1_x2[,"s(x1,x2)"]) %>%
+             f1hat=df_pred$f1y-f1hat_x1_x2[,"te(x1,x2)"],
+             f2hat=df_pred$f2y-f2hat_x1_x2[,"te(x1,x2)"]) %>%
   pivot_longer(cols=c("f1hat","f2hat")) %>%
   ggplot() + theme_bw() +
   geom_raster(aes(x1,x2,fill=value)) + facet_wrap(~name) +
