@@ -1,0 +1,264 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% "ModernCV" CV and Cover Letter
+% LaTeX Template
+% Version 1.3 (29/10/16)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Xavier Danaux (xdanaux@gmail.com) with modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+% Important note:
+% This template requires the moderncv.cls and .sty files to be in the same 
+% directory as this .tex file. These files provide the resume style and themes 
+% used for structuring the document.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[12pt,letterpaper,sans]{moderncv} % Font sizes: 10, 11, or 12; paper sizes: a4paper, letterpaper, a5paper, legalpaper, executivepaper or landscape; font families: sans or roman
+
+\moderncvstyle{casual} % CV theme - options include: 'casual' (default), 'classic', 'oldstyle' and 'banking'
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\makeatletter
+\patchcmd{\makeletterhead}% <cmd>
+  {\raggedright \@opening}% <search>
+  {\@opening}% <replace>
+  {}{}% <success><failure>
+\makeatother
+
+\moderncvcolor{purple} % CV color - options include: 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+\usepackage[style=authoryear,sorting=ydnt,dashed=false]{biblatex}
+
+\renewbibmacro*{date}{}
+\renewbibmacro*{date+extrayear}{}
+\renewbibmacro*{issue+date}{}
+\newcommand*{\bibyear}{}
+
+\defbibenvironment{bibliography}
+  {\list
+     {\iffieldequals{year}{\bibyear}
+        {}
+        {\printfield{year}%
+         \savefield{year}{\bibyear}}}
+     {\setlength{\topsep}{0pt}% layout parameters based on moderncvstyleclassic.sty
+      \setlength{\labelwidth}{\hintscolumnwidth}%
+      \setlength{\labelsep}{\separatorcolumnwidth}%
+      \setlength{\itemsep}{\bibitemsep}%
+      \leftmargin\labelwidth%
+      \advance\leftmargin\labelsep}%
+      \sloppy\clubpenalty4000\widowpenalty4000}
+  {\endlist}
+  {\item}
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage[scale=0.75]{geometry} % Reduce document margins
+%\setlength{\hintscolumnwidth}{3cm} % Uncomment to change the width of the dates column
+%\setlength{\makecvtitlenamewidth}{10cm} % For the 'classic' style, uncomment to adjust the width of the space allocated to your name
+%----------------------------------------------------------------------------------------
+%	NAME AND CONTACT INFORMATION SECTION
+%----------------------------------------------------------------------------------------
+\firstname{Tim} % Your first name
+\familyname{Vigers} % Your last name
+\addbibresource{resume.bib}
+% All information in this block is optional, comment out any lines you don't need
+\title{Curriculum Vitae}
+\address{1150 Leyden St.}{Denver, CO 80220}
+\mobile{720.394.5769}
+\email{tim.b.vigers@gmail.com}
+\homepage{github.com/timothyvigers}{} % The first argument is the url for the clickable link, the second argument is the url displayed in the template - this allows special characters to be displayed such as the tilde in this example
+
+%----------------------------------------------------------------------------------------
+
+% Define \cvdoublecolumn, which sets its arguments in two columns without any labels
+
+\newcommand{\cvdoublecolumn}[2]{%
+  \cvitem[0.75em]{}{%
+    \begin{minipage}[t]{\listdoubleitemcolumnwidth}#1\end{minipage}%
+    \hfill%
+    \begin{minipage}[t]{\listdoubleitemcolumnwidth}#2\end{minipage}%
+    }%
+}
+
+% usage: \cvreference{name}{address line 1}{address line 2}{address line 3}{address line 4}{e-mail address}{phone number}
+% Everything but the name is optional
+% If \addresssymbol, \emailsymbol or \phonesymbol are specified, they will be used.
+% (Per default, \addresssymbol isn't specified, the other two are specified.)
+% If you don't like the symbols, remove them from the following code, including the tilde ~ (space).
+
+\newcommand{\cvreference}[7]{%
+    \textbf{#1}\newline% Name
+    \ifthenelse{\equal{#2}{}}{}{\addresssymbol~#2\newline}%
+    \ifthenelse{\equal{#3}{}}{}{#3\newline}%
+    \ifthenelse{\equal{#4}{}}{}{#4\newline}%
+    \ifthenelse{\equal{#5}{}}{}{#5\newline}%
+    \ifthenelse{\equal{#6}{}}{}{\emailsymbol~\texttt{#6}\newline}%
+    \ifthenelse{\equal{#7}{}}{}{\phonesymbol~#7}}
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	COVER LETTER
+%----------------------------------------------------------------------------------------
+
+% To remove the cover letter, comment out this entire block
+
+\clearpage
+
+% \recipient{University of Colorado}{CU Anschutz Medical Campus\\School of Medicine, Department of Pediatrics\\Section of Endocrinology} % Letter recipient
+% \date{\today} % Letter date
+% \opening{To whom it may concern,} % Opening greeting
+
+% \makelettertitle % Print letter title
+% I am excited to apply for the Biostatistics Research Instructor position with the Department of
+% Pediatrics Endocrinology Section. I have just over two years' experience with biostatistics
+% consulting at the Barbara Davis Center as part of my graduate student research assistant role.
+% I will be defending my biostatistics MS thesis at the end of May, and would love the opportunity
+% to continue in and expand on my role at the BDC after graduation.
+% \newline{}\newline{}
+% During my time at the BDC, I've had the opportunity to work on multiple research projects
+% covering a wide range of statistical methods at every stage of the clinical research process from
+% study design and power calculations to manuscript writing and review. Our work has provided me with experience
+% in all of the technical competencies required for this position, and all of our projects have resulted in published conference abstracts or peer reviewed manuscripts.
+% In addition to technical proficiency with programming and statistical modeling, I believe the Child Health Biostatistics Core
+% would benefit from my attention to detail, ability to manage multiple projects at once while maintaining
+% a high standard, positive outlook even under pressure, and enthusiasm for exploring new statistical
+% and machine learning techniques.
+% \newline{}\newline{}
+% I believe I would be an excellent fit for this position given my work experience at both
+% Children's Hospital Colorado and the Barbara Davis Center, and hope to hear from you soon.
+% \newline{}\newline{}\newline{}
+% Sincerely,
+% \newline{}\newline{}
+% Tim Vigers
+\newpage
+
+%----------------------------------------------------------------------------------------
+%	CURRICULUM VITAE
+%----------------------------------------------------------------------------------------
+
+\makecvtitle % Print the CV title	
+
+%----------------------------------------------------------------------------------------
+%	EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Education}
+
+\cventry{2018--2021}{Master of Science}{The University of Colorado}{Denver}{}{Biostatistics}
+\cventry{2011--2014}{Bachelor of Arts}{The University of Colorado}{Boulder}{}{Molecular, Cellular, and Developmental Biology}
+
+\section{Masters Thesis}
+
+\cvitem{Title}{\emph{A Mediation Approach to Discovering Causal Relationships Between the Metabolome and DNA Methylation in Type 1 Diabetes}}
+\cvitem{Supervisors}{Katerina Kechris, PhD, Lauren Vanderlinden, MS, and Jill Norris, PhD}
+
+%----------------------------------------------------------------------------------------
+%	WORK EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Experience}
+
+\cventry{2018--Present}{Research Assistant and Research Instructor}{\textsc{CU}}{Denver}{}{In my research assistant position as a student and my current role as an instructor I have consulted with investigators and clinicians on REDCap database design and data collection, protocol and grant review, study design and randomization schemes, power calculations, manuscript review, and statistical analyses. Responsibilities included:
+    \newline{}
+    \begin{itemize}
+        \item Longitudinal analysis using generalized linear mixed models
+        \item Logistic regression, ROC curves, and other predictive modeling techniques including random forest and deep learning
+        \item Multivariate analysis of high dimensional omics data, primarily using PLS-DA
+        \item Shrinkage regression techniques for model selection.
+        \item Genome-wide association studies, including data pre-processing, imputation, and implementation of novel analysis pipelines.
+        \item Joint modeling for longitudinal continuous glucose monitor (CGM) and time-to-event data.
+        \item Wrote and maintained an R package for analysis of CGM data which has been downloaded approximately 20,000 times.
+        \item Developed interactive applications in R Shiny and Python Dash.
+    \end{itemize}}
+
+%------------------------------------------------
+
+\cventry{2015--2018}{Professional Research Assistant}{\textsc{Children's Hospital Colorado}}{Aurora, CO}{}{
+    \begin{itemize}
+        \item Managed two NIH-funded research studies.
+        \item Recruited, screened, and obtained consent from over 190 study subjects.
+        \item Perform all study visits and some sample processing for both studies.
+        \item Developed a manual of procedures for all study activities and performed all regulatory processes (IRB amendments, continuing review, AE reporting, etc.).
+        \item Responsible for all data management and entry for both studies.
+    \end{itemize}}
+
+%----------------------------------------------------------------------------------------
+%	COMPUTER SKILLS SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Computer skills}
+
+\cvitem{Basic}{\textsc{SAS},\textsc{Julia}}
+\cvitem{Intermediate}{\textsc{python}, Jupyter Notebooks, \LaTeX, Linux, Parallel Computing}
+\cvitem{Advanced}{\textsc{R},R Markdown}
+
+%----------------------------------------------------------------------------------------
+%	COMMUNICATION SKILLS SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Communication Skills}
+
+\cvitem{2019}{Poster at the Advanced Technologies and Treatments for Diabetes Conference in Berlin, Germany}
+\cvitem{2017}{Poster at the North American Cystic Fibrosis Conference in Indianapolis, IN}
+\cvitem{2016}{Poster at the North American Cystic Fibrosis Conference in Orlando, FL}
+\cvitem{2015}{Poster at the North American Cystic Fibrosis Conference in Phoenix, AZ}
+
+%----------------------------------------------------------------------------------------
+%	INTERESTS SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Interests}
+
+\renewcommand{\listitemsymbol}{-~} % Changes the symbol used for lists
+
+\cvlistdoubleitem{Music}{Cooking}
+\cvlistdoubleitem{Running}{Reading}
+\cvlistdoubleitem{Movies}{Basketball}
+
+%----------------------------------------------------------------------------------------
+%	REFERENCES SECTION
+%----------------------------------------------------------------------------------------
+\newpage
+\section{References}
+\cvreference{Laura Pyle, PhD}
+{Department of Pediatrics}
+{University of Colorado Anschutz Medical Campus}
+{13123 E 16th Avenue, A036-B265}
+{Aurora, CO 80045}
+{laura.pyle@cuanschutz.edu}
+{303-724-4355}
+\newline{}\newline{}\newline{}
+\cvreference{Petter Bjornstad, MD}
+{Department of Pediatrics}
+{University of Colorado Anschutz Medical Campus}
+{13121 E. 17th Ave.}
+{Aurora, CO 80045}
+{petter.bjornstad@childrenscolorado.org}
+{303.724.2323}
+\newline{}\newline{}\newline{}
+\cvreference{Alex Kaizer, PhD}
+{Department of Biostatistics \& Informatics}
+{University of Colorado Anschutz Medical Campus}
+{13001 East 17th Pl., Mail Stop B119}
+{Aurora, CO 80045}
+{alex.kaizer@cuanschutz.edu}
+{303.724.4101}
+
+%----------------------------------------------------------------------------------------
+%	PUBLICATIONS SECTION
+%----------------------------------------------------------------------------------------
+\newpage
+\nocite{akturkComparisonCgmanalysisFree2022, bergetRealWorldPerformance2021, bergetSixMonthsHybrid2020, carreauClinicalPredictionScore2019, chanContinuousGlucoseMonitoring2018, chanHemoglobinA1cAccurately2018, chanRelationshipContinuousGlucose2022, forlenzaPredictingSuccessFirstGeneration2022, liContinuousGlucoseMonitoring2019, messerNovelPredictorsDaily2022, messerRealWorldHybrid2020, messerRealWorldUseNew2021, odonnellBringBloodGlucose2022, shahTypeDiabetesOnset2019, simonReducedInsulinSensitivity2018, tellBromocriptineQuickRelease2022, vigersCgmanalysisPackageDescriptive2019, vigersMediationApproachDiscovering2021, vigersPlasmaLevelsCarboxylic2022, walker-shortEpigenomeWideAssociationStudy2021}
+\printbibliography[title={Publications}]
+
+\end{document}
