@@ -35,7 +35,7 @@
   {}{}% <success><failure>
 \makeatother
 
-\moderncvcolor{purple} % CV color - options include: 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+\moderncvcolor{blue} % CV color - options include: 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
 \usepackage[style=authoryear,sorting=ydnt,dashed=false]{biblatex}
 
 \renewbibmacro*{date}{}
@@ -60,7 +60,6 @@
   {\item}
 
 \usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
-
 \usepackage[scale=0.75]{geometry} % Reduce document margins
 %\setlength{\hintscolumnwidth}{3cm} % Uncomment to change the width of the dates column
 %\setlength{\makecvtitlenamewidth}{10cm} % For the 'classic' style, uncomment to adjust the width of the space allocated to your name
@@ -74,7 +73,7 @@
 \title{Curriculum Vitae}
 \address{1150 Leyden St.}{Denver, CO 80220}
 \mobile{720.394.5769}
-\email{tim.b.vigers@gmail.com}
+\email{tvigers@mailbox.org}
 \homepage{github.com/timothyvigers}{} % The first argument is the url for the clickable link, the second argument is the url displayed in the template - this allows special characters to be displayed such as the tilde in this example
 
 %----------------------------------------------------------------------------------------
@@ -168,17 +167,18 @@
 
 \section{Experience}
 
-\cventry{2018--Present}{Research Assistant and Research Instructor}{\textsc{CU}}{Denver}{}{In my research assistant position as a student and my current role as an instructor I have consulted with investigators and clinicians on REDCap database design and data collection, protocol and grant review, study design and randomization schemes, power calculations, manuscript review, and statistical analyses. Responsibilities included:
+\cventry{2018--Present}{Research Assistant and Research Instructor}{\textsc{CU}}{Denver}{}{Much of my current role as a research instructor involves making complex statistical models understandable for investigators and clinicians. I have also consulted with investigators on REDCap database design and data collection, protocol and grant review, study design and randomization schemes, power calculations, manuscript review, and statistical analyses. Responsibilities included:
     \newline{}
     \begin{itemize}
-        \item Longitudinal analysis using generalized linear mixed models
-        \item Logistic regression, ROC curves, and other predictive modeling techniques including random forest and deep learning
-        \item Multivariate analysis of high dimensional omics data, primarily using PLS-DA
+        \item Developed interactive applications in R Shiny and Python Dash.
+        \item Multivariate analysis and integration of multiple high dimensional omics datasets.
+        \item Wrote and maintained an R package for analysis of CGM data which has been downloaded approximately 34,000 times.
+        \item Functional data analysis of continuous glucose monitor (CGM) data.
+        \item Joint modeling for longitudinal CGM and time-to-event data.
+        \item Longitudinal analysis using generalized linear mixed models.
+        \item Logistic regression, ROC curves, and other predictive modeling techniques including random forest and deep learning.
         \item Shrinkage regression techniques for model selection.
         \item Genome-wide association studies, including data pre-processing, imputation, and implementation of novel analysis pipelines.
-        \item Joint modeling for longitudinal continuous glucose monitor (CGM) and time-to-event data.
-        \item Wrote and maintained an R package for analysis of CGM data which has been downloaded approximately 20,000 times.
-        \item Developed interactive applications in R Shiny and Python Dash.
     \end{itemize}}
 
 %------------------------------------------------
@@ -203,15 +203,29 @@
 \cvitem{Advanced}{\textsc{R},R Markdown}
 
 %----------------------------------------------------------------------------------------
+%	PUBLICATIONS SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Publications}
+
+\cvitem{ORCiD}{\href{url}{https://orcid.org/0000-0001-7087-8570}}
+\cvitem{Scholar}{\href{url}{https://bit.ly/3P6sqIB}}
+\cvitem{R Package}{\href{url}{https://cran.r-project.org/package=cgmanalysis}}
+
+%----------------------------------------------------------------------------------------
 %	COMMUNICATION SKILLS SECTION
 %----------------------------------------------------------------------------------------
 
 \section{Communication Skills}
 
-\cvitem{2019}{Poster at the Advanced Technologies and Treatments for Diabetes Conference in Berlin, Germany}
-\cvitem{2017}{Poster at the North American Cystic Fibrosis Conference in Indianapolis, IN}
-\cvitem{2016}{Poster at the North American Cystic Fibrosis Conference in Orlando, FL}
-\cvitem{2015}{Poster at the North American Cystic Fibrosis Conference in Phoenix, AZ}
+\cvitem{2023}{Multiple Posters at the American Diabetes Association Annual Conference}
+\cvitem{2023}{Presentation at the European Diabetic Nephropathy Study Group}
+\cvitem{2022}{Multiple Posters at the American Society of Nephrology Annual Conference}
+\cvitem{2022}{Multiple Posters at the American Diabetes Association Annual Conference}
+\cvitem{2021}{Multiple Posters at the American Diabetes Association Annual Conference}
+\cvitem{2020}{Multiple Posters at the American Diabetes Association Annual Conference}
+\cvitem{2019}{Poster at the Advanced Technologies and Treatments for Diabetes Conference}
+\cvitem{2015 - 2017}{Posters at the North American Cystic Fibrosis Conference}
 
 %----------------------------------------------------------------------------------------
 %	INTERESTS SECTION
@@ -222,7 +236,7 @@
 \renewcommand{\listitemsymbol}{-~} % Changes the symbol used for lists
 
 \cvlistdoubleitem{Music}{Cooking}
-\cvlistdoubleitem{Running}{Reading}
+\cvlistdoubleitem{Cycling}{Reading}
 \cvlistdoubleitem{Movies}{Basketball}
 
 %----------------------------------------------------------------------------------------
