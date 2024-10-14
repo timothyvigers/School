@@ -71,9 +71,9 @@
 \addbibresource{resume.bib}
 % All information in this block is optional, comment out any lines you don't need
 \title{Curriculum Vitae}
-\address{1150 Leyden St.}{Denver, CO 80220}
+\address{2953 S Verbena Way}{Denver, CO 80231}
 \mobile{720.394.5769}
-\email{tvigers@mailbox.org}
+\email{tim.b.vigers@gmail.com}
 \homepage{github.com/timothyvigers}{} % The first argument is the url for the clickable link, the second argument is the url displayed in the template - this allows special characters to be displayed such as the tilde in this example
 
 %----------------------------------------------------------------------------------------
@@ -168,17 +168,17 @@
 
 \section{Experience}
 
-\cventry{2018--Present}{Research Assistant and Research Instructor}{CU}{Denver}{}{Much of my current role as a research instructor involves making complex statistical models understandable for investigators and clinicians, usually through visualization in Quarto HTML reports. I have also worked with Shiny and Dash to create interactive dashboards that allow clinicians to explore their data and perform simple analyses. Responsibilities include:
-    \newline{}
+\cventry{2018--Present}{Research Assistant and Research Instructor}{CU}{Denver}{}{Much of my current role as a research instructor involves selecting and fitting complex statistical models, and making the results understandable for investigators and clinicians. Responsibilities include:
     \begin{itemize}
-        \item Developed interactive applications in R Shiny and Python Dash.
-        \item Wrote and maintained an R package for analysis of CGM data which has been downloaded approximately 34,000 times.
-        \item Functional data analysis of continuous glucose monitor (CGM) data.
         \item Logistic regression, ROC curves, and other predictive modeling techniques including random forest and deep learning.
+        \item Functional data analysis of continuous glucose monitor (CGM) data.
         \item Multivariate analysis and integration of multiple high dimensional omics datasets.
         \item Longitudinal analysis using generalized linear mixed models.
         \item Joint modeling for longitudinal CGM and time-to-event data.
+        \item Co-PI and lead biostatistician on a multi-center observational study.
+        \item Wrote and maintain an R package for analysis of CGM data which has been downloaded approximately 45,000 times.
         \item Shrinkage regression techniques for model selection.
+        \item Developed interactive applications in R Shiny and Python Dash.
     \end{itemize}}
 
 %------------------------------------------------
@@ -203,21 +203,13 @@
 \cvitem{Advanced}{R, R Markdown, R Shiny, Linux, Parallel Computing}
 
 %----------------------------------------------------------------------------------------
-%	PUBLICATIONS SECTION
-%----------------------------------------------------------------------------------------
-
-\section{Publications}
-
-\cvitem{ORCiD}{\href{url}{https://orcid.org/0000-0001-7087-8570}}
-\cvitem{Scholar}{\href{url}{https://bit.ly/3P6sqIB}}
-\cvitem{R Package}{\href{url}{https://cran.r-project.org/package=cgmanalysis}}
-
-%----------------------------------------------------------------------------------------
 %	COMMUNICATION SKILLS SECTION
 %----------------------------------------------------------------------------------------
 
 \section{Communication Skills}
 
+\cvitem{2024}{Multiple Posters at the North American Cystic Fibrosis Conference, including 
+Jr Investigator Clinical Award for best abstract presentation}
 \cvitem{2023}{Multiple Posters at the American Diabetes Association Annual Conference}
 \cvitem{2023}{Presentation at the European Diabetic Nephropathy Study Group}
 \cvitem{2022}{Multiple Posters at the American Society of Nephrology Annual Conference}
@@ -240,37 +232,19 @@
 %----------------------------------------------------------------------------------------
 %	REFERENCES SECTION
 %----------------------------------------------------------------------------------------
-\newpage
-\section{References}
-\cvreference{Laura Pyle, PhD}
-{Department of Pediatrics}
-{University of Colorado Anschutz Medical Campus}
-{13123 E 16th Avenue, A036-B265}
-{Aurora, CO 80045}
-{laura.pyle@cuanschutz.edu}
-{303-724-4355}
-\newline{}\newline{}\newline{}
-\cvreference{Petter Bjornstad, MD}
-{Department of Pediatrics}
-{University of Colorado Anschutz Medical Campus}
-{13121 E. 17th Ave.}
-{Aurora, CO 80045}
-{petter.bjornstad@childrenscolorado.org}
-{303.724.2323}
-\newline{}\newline{}\newline{}
-\cvreference{Alex Kaizer, PhD}
-{Department of Biostatistics \& Informatics}
-{University of Colorado Anschutz Medical Campus}
-{13001 East 17th Pl., Mail Stop B119}
-{Aurora, CO 80045}
-{alex.kaizer@cuanschutz.edu}
-{303.724.4101}
 
-%----------------------------------------------------------------------------------------
-%	PUBLICATIONS SECTION
-%----------------------------------------------------------------------------------------
+\section{References}
+References available upon request
+
 \newpage
-\nocite{akturkComparisonCgmanalysisFree2022, bergetRealWorldPerformance2021, bergetSixMonthsHybrid2020, carreauClinicalPredictionScore2019, chanContinuousGlucoseMonitoring2018, chanHemoglobinA1cAccurately2018, chanRelationshipContinuousGlucose2022, forlenzaPredictingSuccessFirstGeneration2022, liContinuousGlucoseMonitoring2019, messerNovelPredictorsDaily2022, messerRealWorldHybrid2020, messerRealWorldUseNew2021, odonnellBringBloodGlucose2022, shahTypeDiabetesOnset2019, simonReducedInsulinSensitivity2018, tellBromocriptineQuickRelease2022, vigersCgmanalysisPackageDescriptive2019, vigersMediationApproachDiscovering2021, vigersPlasmaLevelsCarboxylic2022, walker-shortEpigenomeWideAssociationStudy2021}
+% Publications from a BibTeX file without multibib
+\renewcommand{\refname}{Publications} 
+\nocite{*}                   % cite all entrys in bib file
 \printbibliography[title={Publications}]
+
+\section{Additional Publications}
+\cvitem{Scholar}{\href{url}{https://bit.ly/3P6sqIB}}
+\cvitem{ORCiD}{\href{url}{https://orcid.org/0000-0001-7087-8570}}
+\cvitem{R Package}{\href{url}{https://cran.r-project.org/package=cgmanalysis}}
 
 \end{document}
